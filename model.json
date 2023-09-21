@@ -1,0 +1,49 @@
+{
+  "buildtool": "1.1",
+  "database": "aoi",
+  "user": "yuhki",
+  "server": "crud.netb.co.kr",
+  "password": "dkTkfl123!",
+  "auth": "none",
+  "adminLevel": "3",  
+  "table": [
+    {
+      "name": "user",
+      "map": [
+        {
+          "name": "level",
+          "data": ["", "normal:Normal", "premium:Manager", "admin:Administrator"]
+        },
+        {
+          "name": "status",
+          "data": ["", "use:사용", "notuser:사용안함"]
+        }
+      ],  
+      "method": [
+        "GetByEmail",
+        "CountByEmail",
+        "FindByLevel",        
+        "UpdateImageById"
+      ]
+    },    
+    {
+      "name": "token",             
+      "method" : [
+        "GetByUser"
+      ],
+      "session" : [
+        {
+          "key": "id",
+          "column": "user"
+        }
+      ]  
+    },    
+    {
+      "name": "smsauth",             
+      "method" : [
+        "GetByHpNumber",
+        "DeleteByHp"
+      ]      
+    }
+  ]   
+}
