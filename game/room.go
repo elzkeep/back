@@ -22,7 +22,9 @@ func Make(id int64) {
 	g.BuildStart()
 
 	log.Println(g.FirstBuild(0, 3, 4))
+	g.TurnEnd(0)
 	log.Println(g.GetRoundTile(0, 0))
+	g.TurnEnd(0)
 
 	g.Start()
 

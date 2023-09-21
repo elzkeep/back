@@ -9,9 +9,8 @@ import (
 type Color int
 
 const (
-	Empty Color = -1
-	None  Color = -1
-	River Color = iota - 2
+	None Color = iota
+	River
 	Red
 	Yellow
 	Brown
@@ -22,7 +21,7 @@ const (
 )
 
 func (p Color) ToString() string {
-	colors := []string{"River", "Red", "Yellow", "Brown", "Black", "Blue", "Green", "Gray"}
+	colors := []string{"", "River", "Red", "Yellow", "Brown", "Black", "Blue", "Green", "Gray"}
 
 	pos := int(p)
 	ret := "      "
@@ -34,24 +33,24 @@ func (p Color) ToString() string {
 }
 
 func (p Color) ToShortString() string {
-	colors := []string{"Ri", "Re", "Ye", "Br", "Bl", "Bu", "Gr", "Gy"}
+	colors := []string{"", "Ri", "Re", "Ye", "Br", "Bl", "Bu", "Gr", "Gy"}
 
 	pos := int(p)
 	str := colors[pos]
 
-	if pos == 1 {
+	if p == Red {
 		return fmt.Sprintf("%v", aurora.BgRed(aurora.Black(str)))
-	} else if pos == 2 {
+	} else if p == Yellow {
 		return fmt.Sprintf("%v", aurora.BgYellow(aurora.Black(str)))
-	} else if pos == 3 {
+	} else if p == Brown {
 		return fmt.Sprintf("%v", aurora.BgBrightMagenta(aurora.Black(str)))
-	} else if pos == 4 {
+	} else if p == Black {
 		return fmt.Sprintf("%v", aurora.BgBrightBlack(aurora.Black(str)))
-	} else if pos == 5 {
+	} else if p == Blue {
 		return fmt.Sprintf("%v", aurora.BgBlue(aurora.Black(str)))
-	} else if pos == 6 {
+	} else if p == Green {
 		return fmt.Sprintf("%v", aurora.BgGreen(aurora.Black(str)))
-	} else if pos == 7 {
+	} else if p == Gray {
 		return fmt.Sprintf("%v", aurora.White(aurora.Black(str)))
 	} else {
 		return str
@@ -59,23 +58,21 @@ func (p Color) ToShortString() string {
 }
 
 func (p Color) ToStringBackground(value string) string {
-	pos := int(p)
-
 	str := fmt.Sprintf("%-6s", value)
 
-	if pos == 1 {
+	if p == Red {
 		return fmt.Sprintf("%v", aurora.BgRed(aurora.Black(str)))
-	} else if pos == 2 {
+	} else if p == Yellow {
 		return fmt.Sprintf("%v", aurora.BgYellow(aurora.Black(str)))
-	} else if pos == 3 {
+	} else if p == Brown {
 		return fmt.Sprintf("%v", aurora.BgBrightMagenta(aurora.Black(str)))
-	} else if pos == 4 {
+	} else if p == Black {
 		return fmt.Sprintf("%v", aurora.BgBrightCyan(aurora.Black(str)))
-	} else if pos == 5 {
+	} else if p == Blue {
 		return fmt.Sprintf("%v", aurora.BgBlue(aurora.Black(str)))
-	} else if pos == 6 {
+	} else if p == Green {
 		return fmt.Sprintf("%v", aurora.BgGreen(aurora.Black(str)))
-	} else if pos == 7 {
+	} else if p == Gray {
 		return fmt.Sprintf("%v", aurora.BgWhite(aurora.Black(str)))
 	} else {
 		return str

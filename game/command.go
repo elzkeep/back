@@ -8,7 +8,7 @@ import (
 )
 
 func ConvertPosition(str string) (int, int) {
-	return int(str[0]) - 'a', global.Atoi(str[1:]) - 1
+	return int(str[0]) - 'A', global.Atoi(str[1:]) - 1
 }
 
 func ConvertBuilding(str string) resources.Building {
@@ -64,7 +64,7 @@ func ConvertScience(str string) ScienceType {
 
 func Command(p *Game, str string) error {
 	log.Println("Command", str)
-	strs := strings.Split(strings.ToLower(str), " ")
+	strs := strings.Split(str, " ")
 
 	user := global.Atoi(strs[0])
 	cmd := strs[1]
@@ -102,5 +102,11 @@ func Command(p *Game, str string) error {
 
 	}
 
+	if err == nil {
+		log.Println("TURN END ==========================")
+		p.TurnEnd(user)
+	}
+
+	log.Println(err)
 	return err
 }

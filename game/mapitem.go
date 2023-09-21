@@ -14,8 +14,8 @@ type Mapitem struct {
 func NewMapitem() *Mapitem {
 	var item Mapitem
 
-	item.Type = color.Empty
-	item.Owner = color.Empty
+	item.Type = color.None
+	item.Owner = color.None
 	item.Building = resources.None
 
 	return &item

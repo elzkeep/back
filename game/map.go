@@ -12,6 +12,7 @@ import (
 )
 
 type Map struct {
+	Index      int                        `json:"index"`
 	Type       int                        `json:"type"`
 	Mx         int                        `json:"-"`
 	Width      int                        `json:"width"`
@@ -95,31 +96,86 @@ func NewMap() *Map {
 		y++
 	}
 
+	item.Index = 0
 	return &item
 }
 
 func (p *Map) SetType(x int, y int, value color.Color) {
 	p.Data[x+p.Mx][y+1].Type = value
+	p.Index++
 }
 
 func (p *Map) GetType(x int, y int) color.Color {
+	if x+p.Mx < 0 {
+		log.Println("none 1")
+		return color.None
+	}
+
+	if x+p.Mx >= p.Width+2 {
+		log.Println("none 2")
+		return color.None
+	}
+
+	if y+1 < 0 {
+		log.Println("none 3")
+		return color.None
+	}
+
+	if y+1 >= p.Height+2 {
+		log.Println("none 4")
+		return color.None
+	}
+
 	return p.Data[x+p.Mx][y+1].Type
 }
 
 func (p *Map) SetOwner(x int, y int, value color.Color) {
-	log.Println("SetOwner", x, y)
 	p.Data[x+p.Mx][y+1].Owner = value
+	p.Index++
 }
 
 func (p *Map) GetOwner(x int, y int) color.Color {
+	if x+p.Mx < 0 {
+		return color.None
+	}
+
+	if x+p.Mx >= p.Width+2 {
+		return color.None
+	}
+
+	if y+1 < 0 {
+		return color.None
+	}
+
+	if y+1 >= p.Height+2 {
+		return color.None
+	}
+
 	return p.Data[x+p.Mx][y+1].Owner
 }
 
 func (p *Map) SetBuilding(x int, y int, value resources.Building) {
 	p.Data[x+p.Mx][y+1].Building = value
+	p.Index++
 }
 
 func (p *Map) GetBuilding(x int, y int) resources.Building {
+	if x+p.Mx < 0 {
+		return resources.None
+	}
+
+	if x+p.Mx >= p.Width {
+		return resources.None
+	}
+
+	if y+1 < 0 {
+		return resources.None
+	}
+
+	if y+1 >= p.Height {
+		return resources.None
+	}
+
 	return p.Data[x+p.Mx][y+1].Building
 }
 
@@ -199,6 +255,10 @@ func (p *Map) GetDistance(x1 int, y1 int, x2 int, y2 int) int {
 
 func (p *Map) CheckBuild(x int, y int, colorval color.Color, spade int) error {
 	typeval := p.GetType(x, y)
+	owner := p.GetOwner(x, y)
+
+	log.Println("checkbuild", typeval, x, y)
+	log.Println("checkbuild", owner, x, y)
 
 	if typeval <= color.River {
 		return errors.New("river")
@@ -241,6 +301,7 @@ func (p *Map) Build(x int, y int, color color.Color, building resources.Building
 	p.Data[x+p.Mx][y+1].Type = color
 	p.Data[x+p.Mx][y+1].Owner = color
 	p.Data[x+p.Mx][y+1].Building = building
+	p.Index++
 }
 
 func (p *Map) Print() {

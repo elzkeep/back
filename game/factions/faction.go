@@ -39,12 +39,12 @@ type Faction struct {
 	Color             color.Color
 	Resource          Resource
 	Tiles             []Tile
-	MaxBuilding       [5]int
-	Building          [5]int
-	BuildingPower     [5]int
+	MaxBuilding       [6]int
+	Building          [6]int
+	BuildingPower     [6]int
 	BuildingList      []Position
 	BridgeList        []BridgePosition
-	Price             [5]Price
+	Price             [6]Price
 	AdvanceShipPrice  Price
 	AdvanceSpadePrice Price
 	Incomes           [][]Price
@@ -91,10 +91,11 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.RoundTile = nil
 
 	item.Tiles = make([]Tile, 0)
-	item.MaxBuilding = [5]int{9, 4, 3, 1, 1}
-	item.Building = [5]int{0, 0, 0, 0, 0}
-	item.BuildingPower = [5]int{1, 2, 2, 3, 3}
-	item.Price = [5]Price{
+	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
+	item.Building = [6]int{0, 0, 0, 0, 0, 0}
+	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
+	item.Price = [6]Price{
+		Price{Worker: 0, Coin: 0},
 		Price{Worker: 1, Coin: 2},
 		Price{Worker: 2, Coin: 3},
 		Price{Worker: 3, Coin: 5},
@@ -106,6 +107,7 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 5}
 
 	item.Incomes = [][]Price{
+		[]Price{Price{}},
 		[]Price{Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}},
 		[]Price{Price{}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 2}, Price{Coin: 2, Power: 2}},
 		[]Price{Price{}, Price{Prist: 1}, Price{Prist: 1}, Price{Prist: 1}},
@@ -485,9 +487,14 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 		return errors.New("not found building")
 	}
 
+	log.Println("max", p.MaxBuilding[target])
+	log.Println("current", p.Building[target])
 	if p.MaxBuilding[target] <= p.Building[target] {
+		log.Println("this this")
 		return errors.New("full building")
 	}
+
+	log.Println("nonono")
 
 	err := CheckResource(p.Resource, p.Price[target])
 	if err != nil {

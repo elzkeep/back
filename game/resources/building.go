@@ -3,8 +3,8 @@ package resources
 type Building int
 
 const (
-	None Building = -1
-	D    Building = iota - 1
+	None Building = iota
+	D
 	TP
 	TE
 	SH
@@ -18,7 +18,7 @@ const (
 )
 
 func (p Building) ToString() string {
-	names := []string{"D", "TP", "TE", "SH", "SA", "WHITE_D", "WHITE_TP", "WHITE_TE", "WHITE_SH", "WHITE_SA", "WHITE_MT"}
+	names := []string{"", "D", "TP", "TE", "SH", "SA", "WHITE_D", "WHITE_TP", "WHITE_TE", "WHITE_SH", "WHITE_SA", "WHITE_MT"}
 
 	pos := int(p)
 
@@ -30,7 +30,7 @@ func (p Building) ToString() string {
 }
 
 func (p Building) Power() int {
-	powers := []int{1, 2, 2, 3, 3, 1, 2, 2, 3, 3, 4}
+	powers := []int{0, 1, 2, 2, 3, 3, 1, 2, 2, 3, 3, 4}
 	pos := int(p)
 
 	return powers[pos]

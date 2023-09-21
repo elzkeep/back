@@ -197,8 +197,8 @@ func (p *Game) IsScienceTurn() bool {
 
 func (p *Game) FirstBuild(user int, x int, y int) error {
 	if p.Round != BuildRound {
-		log.Println("round error")
-		return errors.New("round error")
+		log.Println("round error : FirstBuild")
+		return errors.New("round error : FirstBuild")
 	}
 
 	if !p.IsTurn(user) {
@@ -248,6 +248,7 @@ func (p *Game) Build(user int, x int, y int) error {
 	err := p.Map.CheckBuild(x, y, faction.Color, faction.GetSpadeCount())
 
 	if err != nil {
+		log.Println("map check build error")
 		log.Println(err)
 		return err
 	}
@@ -292,12 +293,18 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 		return errors.New("Already completed the action")
 	}
 
+	log.Println(p.Map.GetOwner(x, y))
+	log.Println(faction.Color)
 	if p.Map.GetOwner(x, y) != faction.Color {
 		log.Println("not owner")
 		return errors.New("not owner")
 	}
 
-	faction.Upgrade(x, y, target)
+	err := faction.Upgrade(x, y, target)
+
+	if err != nil {
+		return err
+	}
 
 	p.Map.SetBuilding(x, y, target)
 
@@ -519,8 +526,8 @@ func (p *Game) Spade() {
 
 func (p *Game) GetRoundTile(user int, tile int) error {
 	if p.Round != RoundTileRound {
-		log.Println("round error")
-		return errors.New("round error")
+		log.Println("round error : GetRoundTile")
+		return errors.New("round error : GetRoundTile")
 	}
 
 	if !p.IsTurn(user) {
@@ -531,8 +538,6 @@ func (p *Game) GetRoundTile(user int, tile int) error {
 	faction := p.Factions[user].GetInstance()
 	p.RoundTile.Items[tile].Use = true
 	faction.RoundTile = &p.RoundTile.Items[tile]
-
-	p.TurnEnd(user)
 
 	return nil
 }
