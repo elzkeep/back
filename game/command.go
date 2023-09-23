@@ -99,6 +99,11 @@ func Command(p *Game, str string) error {
 		target := ConvertScience(strs[2])
 		err = p.SupployScholar(user, target)
 	} else if cmd == "action" {
+		action := strs[2][:2]
+		log.Println(action)
+		pos := global.Atoi(strs[2][3:]) - 1
+		err = p.PowerAction(user, pos)
+	} else if cmd == "action" {
 
 	}
 

@@ -15,18 +15,18 @@ const (
 )
 
 type Game struct {
-	Map      *Map
-	Sciences *Science
-	Factions []factions.FactionInterface
+	Map      *Map                        `json:"map"`
+	Sciences *Science                    `json:"sciences"`
+	Factions []factions.FactionInterface `json:"factions"`
 
-	PowerActions *action.PowerAction
-	BookAction   *action.BookAction
-	RoundTile    *resources.RoundTile
-	RoundBonuss  *RoundBonus
-	Cities       *City
-	Turn         []Turn
-	PowerTurn    []Turn
-	Round        int
+	PowerActions *action.PowerAction  `json:"powerActions"`
+	BookActions  *action.BookAction   `json:"bookActions"`
+	RoundTiles   *resources.RoundTile `json:"roundTiles"`
+	RoundBonuss  *RoundBonus          `json:"roundBonus"`
+	Cities       *City                `json:"cities"`
+	Turn         []Turn               `json:"turn"`
+	PowerTurn    []Turn               `json:"powerTurn"`
+	Round        int                  `json:"round"`
 }
 
 type TurnType int
@@ -49,8 +49,8 @@ func NewGame() *Game {
 
 	var item Game
 	item.PowerActions = action.NewPowerAction()
-	item.BookAction = action.NewBookAction()
-	item.RoundTile = resources.NewRoundTile()
+	item.BookActions = action.NewBookAction()
+	item.RoundTiles = resources.NewRoundTile()
 	item.RoundBonuss = NewRoundBonus()
 	item.Cities = NewCity()
 
@@ -104,7 +104,7 @@ func (p *Game) IsNormalTurn(user int) bool {
 }
 
 func (p *Game) BuildStart() {
-	p.RoundTile.Init(len(p.Factions))
+	p.RoundTiles.Init(len(p.Factions))
 
 	for i, _ := range p.Factions {
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
@@ -118,7 +118,7 @@ func (p *Game) BuildStart() {
 }
 
 func (p *Game) Start() {
-	p.RoundTile.Start()
+	p.RoundTiles.Start()
 
 	p.Round++
 
@@ -371,18 +371,18 @@ func (p *Game) Book(user int, pos int) error {
 		return errors.New("not found")
 	}
 
-	if p.BookAction.IsUse(pos) {
+	if p.BookActions.IsUse(pos) {
 		log.Println("already")
 		return errors.New("already")
 	}
 
 	have := faction.Resource.Book
-	if have < p.BookAction.GetNeedBook(pos) {
+	if have < p.BookActions.GetNeedBook(pos) {
 		log.Println("not enough book")
 		return errors.New("not enough book")
 	}
 
-	item := p.BookAction.Action(pos)
+	item := p.BookActions.Action(pos)
 	faction.Book(item)
 
 	return nil
@@ -504,7 +504,7 @@ func (p *Game) Pass(user int, tile resources.RoundTileType) error {
 	}
 
 	faction := p.Factions[user].GetInstance()
-	roundTile := p.RoundTile.GetTile(tile)
+	roundTile := p.RoundTiles.GetTile(tile)
 	faction.Pass(roundTile)
 
 	p.TurnEnd(user)
@@ -536,8 +536,8 @@ func (p *Game) GetRoundTile(user int, tile int) error {
 	}
 
 	faction := p.Factions[user].GetInstance()
-	p.RoundTile.Items[tile].Use = true
-	faction.RoundTile = &p.RoundTile.Items[tile]
+	p.RoundTiles.Items[tile].Use = true
+	faction.RoundTile = &p.RoundTiles.Items[tile]
 
 	return nil
 }

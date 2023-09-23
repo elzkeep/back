@@ -5,12 +5,12 @@ import (
 )
 
 type Science struct {
-	Any         int
-	Single      int
-	Banking     int
-	Law         int
-	Engineering int
-	Medicine    int
+	Any         int `json:"any"`
+	Single      int `json:"single"`
+	Banking     int `json:"banking"`
+	Law         int `json:"law"`
+	Engineering int `json:"engineering"`
+	Medicine    int `json:"medicine"`
 }
 
 type BuildVP struct {
@@ -28,32 +28,32 @@ type BuildVP struct {
 }
 
 type Price struct {
-	Coin      int
-	Worker    int
-	Prist     int
-	Power     int
-	Spade     int
-	Bridge    int
-	Book      int
-	TpUpgrade int
-	TpVP      int
-	Science   Science
-	VP        int
+	Coin      int     `json:"coin"`
+	Worker    int     `json:"worker"`
+	Prist     int     `json:"prist"`
+	Power     int     `json:"power"`
+	Spade     int     `json:"spade"`
+	Bridge    int     `json:"bridge"`
+	Book      int     `json:"book"`
+	TpUpgrade int     `json:"tpUpgrade"`
+	TpVP      int     `json:"tpVP"`
+	Science   Science `json:"science"`
+	VP        int     `json:"vp"`
 }
 
 type Resource struct {
-	Coin      int
-	Worker    int
-	Prist     int
-	Power     [3]int
-	Spade     int
-	Bridge    int
-	Book      int
-	TpUpgrade int
-	TpVP      int
-	City      int
-	Science   Science
-	VP        int
+	Coin      int     `json:"coin"`
+	Worker    int     `json:"worker"`
+	Prist     int     `json:"prist"`
+	Power     [3]int  `json:"power"`
+	Spade     int     `json:"spade"`
+	Bridge    int     `json:"bridge"`
+	Book      int     `json:"book"`
+	TpUpgrade int     `json:"tpupgrade"`
+	TpVP      int     `json:"tpvp"`
+	City      int     `json:"city"`
+	Science   Science `json:"science"`
+	VP        int     `json:"vp"`
 }
 
 func CheckResource(have Resource, need Price) error {

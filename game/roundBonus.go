@@ -21,16 +21,16 @@ const (
 )
 
 type RoundBonusItem struct {
-	Type    RoundBonusType
-	Name    string
-	Science resources.Science
-	Receive resources.Price
-	Build   resources.BuildVP
+	Type    RoundBonusType    `json:"type"`
+	Name    string            `json:"name"`
+	Science resources.Science `json:"science"`
+	Receive resources.Price   `json:"receive"`
+	Build   resources.BuildVP `json:"build"`
 }
 
 type RoundBonus struct {
-	Items      []RoundBonusItem
-	FinalRound RoundBonusItem
+	Items      []RoundBonusItem `json:"items"`
+	FinalRound RoundBonusItem   `json:"final"`
 }
 
 func NewRoundBonus() *RoundBonus {

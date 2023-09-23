@@ -2,6 +2,7 @@ package action
 
 import (
 	"aoi/game/resources"
+	"log"
 )
 
 type PowerActionType int
@@ -16,7 +17,7 @@ const (
 )
 
 type PowerAction struct {
-	Items []PowerActionItem
+	Items []PowerActionItem `json:"items"`
 }
 
 func NewPowerAction() *PowerAction {
@@ -25,12 +26,12 @@ func NewPowerAction() *PowerAction {
 	item.Items = make([]PowerActionItem, 0)
 
 	item.Items = []PowerActionItem{
-		PowerActionItem{Name: "1 bridge", Power: 3, Receive: resources.Price{Bridge: 1}, Use: false},
-		PowerActionItem{Name: "2 prist", Power: 3, Receive: resources.Price{Prist: 1}, Use: false},
-		PowerActionItem{Name: "2 worker", Power: 4, Receive: resources.Price{Worker: 2}, Use: false},
-		PowerActionItem{Name: "7 coin", Power: 4, Receive: resources.Price{Coin: 7}, Use: false},
-		PowerActionItem{Name: "1 spade", Power: 4, Receive: resources.Price{Spade: 1}, Use: false},
-		PowerActionItem{Name: "2 space", Power: 6, Receive: resources.Price{Spade: 2}, Use: false},
+		PowerActionItem{Type: Bridge, Name: "1 bridge", Power: 3, Receive: resources.Price{Bridge: 1}, Use: false},
+		PowerActionItem{Type: Prist, Name: "2 prist", Power: 3, Receive: resources.Price{Prist: 1}, Use: false},
+		PowerActionItem{Type: Worker, Name: "2 worker", Power: 4, Receive: resources.Price{Worker: 2}, Use: false},
+		PowerActionItem{Type: Coin, Name: "7 coin", Power: 4, Receive: resources.Price{Coin: 7}, Use: false},
+		PowerActionItem{Type: Spade, Name: "1 spade", Power: 4, Receive: resources.Price{Spade: 1}, Use: false},
+		PowerActionItem{Type: Spade2, Name: "2 space", Power: 6, Receive: resources.Price{Spade: 2}, Use: false},
 	}
 
 	return &item
@@ -41,6 +42,7 @@ func (p *PowerAction) GetNeedPower(pos int) int {
 }
 
 func (p *PowerAction) IsUse(pos int) bool {
+	log.Println("length", len(p.Items), "pos", pos)
 	return p.Items[pos].Use
 }
 

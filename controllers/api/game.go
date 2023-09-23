@@ -14,6 +14,16 @@ func (c *GameController) Make(id int64) {
 	game.Make(id)
 }
 
+func (c *GameController) Game(id int64) {
+	g := game.Get(id)
+
+	if g == nil {
+		game.Make(id)
+		g = game.Get(id)
+	}
+	c.Set("item", g)
+}
+
 func (c *GameController) Map(id int64) {
 	g := game.Get(id)
 
@@ -22,8 +32,6 @@ func (c *GameController) Map(id int64) {
 		g = game.Get(id)
 	}
 	c.Set("item", g.Map)
-
-	g.Map.Print()
 }
 
 // @Post()

@@ -18,15 +18,15 @@ const (
 )
 
 type RoundTileItem struct {
-	Type    RoundTileType
-	Name    string
-	Receive Price
-	Use     bool
-	Ship    int
+	Type    RoundTileType `json:"type"`
+	Name    string        `json:"name"`
+	Receive Price         `json:"receive"`
+	Use     bool          `json:"use"`
+	Ship    int           `json:"ship"`
 }
 
 type RoundTile struct {
-	Items []RoundTileItem
+	Items []RoundTileItem `json:"items"`
 }
 
 func NewRoundTile() *RoundTile {

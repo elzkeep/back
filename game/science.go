@@ -17,8 +17,8 @@ const (
 )
 
 type Science struct {
-	Count [][]color.Color
-	Value []map[color.Color]int
+	Count [][]color.Color       `json:"count"`
+	Value []map[color.Color]int `json:"value"`
 }
 
 func NewScience() *Science {
