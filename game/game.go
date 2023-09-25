@@ -22,7 +22,7 @@ type Game struct {
 	PowerActions *action.PowerAction  `json:"powerActions"`
 	BookActions  *action.BookAction   `json:"bookActions"`
 	RoundTiles   *resources.RoundTile `json:"roundTiles"`
-	RoundBonuss  *RoundBonus          `json:"roundBonus"`
+	RoundBonuss  *RoundBonus          `json:"roundBonuss"`
 	Cities       *City                `json:"cities"`
 	Turn         []Turn               `json:"turn"`
 	PowerTurn    []Turn               `json:"powerTurn"`

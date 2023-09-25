@@ -34,35 +34,35 @@ type FactionInterface interface {
 }
 
 type Faction struct {
-	Name              string
-	Ename             string
-	Color             color.Color
-	Resource          Resource
-	Tiles             []Tile
-	MaxBuilding       [6]int
-	Building          [6]int
-	BuildingPower     [6]int
-	BuildingList      []Position
-	BridgeList        []BridgePosition
-	Price             [6]Price
-	AdvanceShipPrice  Price
-	AdvanceSpadePrice Price
-	Incomes           [][]Price
-	Point             int
-	TownPower         int
-	Spade             int
-	MaxSpade          int
-	Ship              int
-	MaxShip           int
-	MaxPrist          int
-	Science           []int
-	Key               int
-	RoundTile         *RoundTileItem
-	Action            bool
-	MaxBridge         int
-	ExtraBuild        int
-	VP                int
-	City              int
+	Name              string           `json:"name"`
+	Ename             string           `json:"ename"`
+	Color             color.Color      `json:"color"`
+	Resource          Resource         `json:"resource"`
+	Tiles             []Tile           `json:"tiles"`
+	MaxBuilding       [6]int           `json:"maxBuilding"`
+	Building          [6]int           `json:"building"`
+	BuildingPower     [6]int           `json:"buildingPower"`
+	BuildingList      []Position       `json:"buildingList"`
+	BridgeList        []BridgePosition `json:"bridgeList"`
+	Price             [6]Price         `json:"price"`
+	AdvanceShipPrice  Price            `json:"advanceShipPrice"`
+	AdvanceSpadePrice Price            `json:"advanceSpadePrice"`
+	Incomes           [][]Price        `json:"incomes"`
+	Point             int              `json:"point"`
+	TownPower         int              `json:"townPower"`
+	Spade             int              `json:"spade"`
+	MaxSpade          int              `json:"maxSpade"`
+	Ship              int              `json:"ship"`
+	MaxShip           int              `json:"maxShip"`
+	MaxPrist          int              `json:"maxPrist"`
+	Science           []int            `json:"science"`
+	Key               int              `json:"key"`
+	RoundTile         *RoundTileItem   `json:"roundTile"`
+	Action            bool             `json:"action"`
+	MaxBridge         int              `json:"maxBridge"`
+	ExtraBuild        int              `json:"extraBuild"`
+	VP                int              `json:"vp"`
+	City              int              `json:"city"`
 }
 
 func NewFaction(name string, ename string, color color.Color) *Faction {

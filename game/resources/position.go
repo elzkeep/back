@@ -1,9 +1,9 @@
 package resources
 
 type Position struct {
-	X        int
-	Y        int
-	Building Building
+	X        int      `json:"x"`
+	Y        int      `json:"y"`
+	Building Building `json:"building"`
 }
 
 func GetGroundPosition(x int, y int) []Position {

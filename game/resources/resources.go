@@ -14,17 +14,17 @@ type Science struct {
 }
 
 type BuildVP struct {
-	D          int
-	TP         int
-	TE         int
-	SHSA       int
-	Spade      int
-	Science    int
-	City       int
-	Advance    int
-	Innovation int
-	Edge       int
-	River      int
+	D          int `json:"d"`
+	TP         int `json:"tp"`
+	TE         int `json:"te"`
+	SHSA       int `json:"shsa"`
+	Spade      int `json:"spade"`
+	Science    int `json:"science"`
+	City       int `json:"city"`
+	Advance    int `json:"advance"`
+	Innovation int `json:"innovation"`
+	Edge       int `json:"edge"`
+	River      int `json:"river"`
 }
 
 type Price struct {
@@ -36,7 +36,7 @@ type Price struct {
 	Bridge    int     `json:"bridge"`
 	Book      int     `json:"book"`
 	TpUpgrade int     `json:"tpUpgrade"`
-	TpVP      int     `json:"tpVP"`
+	TpVP      int     `json:"tpVp"`
 	Science   Science `json:"science"`
 	VP        int     `json:"vp"`
 }
@@ -49,8 +49,8 @@ type Resource struct {
 	Spade     int     `json:"spade"`
 	Bridge    int     `json:"bridge"`
 	Book      int     `json:"book"`
-	TpUpgrade int     `json:"tpupgrade"`
-	TpVP      int     `json:"tpvp"`
+	TpUpgrade int     `json:"tpUpgrade"`
+	TpVP      int     `json:"tpVp"`
 	City      int     `json:"city"`
 	Science   Science `json:"science"`
 	VP        int     `json:"vp"`
