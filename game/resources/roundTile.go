@@ -1,6 +1,8 @@
 package resources
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type RoundTileType int
 
@@ -21,6 +23,7 @@ type RoundTileItem struct {
 	Type    RoundTileType `json:"type"`
 	Name    string        `json:"name"`
 	Receive Price         `json:"receive"`
+	Pass    Price         `json:"pass"`
 	Use     bool          `json:"use"`
 	Ship    int           `json:"ship"`
 }
@@ -39,16 +42,16 @@ func NewRoundTile() *RoundTile {
 
 func (p *RoundTile) Init(count int) {
 	items := []RoundTileItem{
-		RoundTileItem{Type: SideVP, Name: "side vp", Ship: 1, Use: false},
-		RoundTileItem{Type: PristVP, Name: "prist vp", Receive: Price{Prist: 1}, Use: false},
-		RoundTileItem{Type: TpVP, Name: "tp vp", Receive: Price{Power: 3}, Use: false},
-		RoundTileItem{Type: ShVP, Name: "sh/sa vp", Receive: Price{Worker: 1}, Use: false},
-		RoundTileItem{Type: Spade, Name: "1 spade", Receive: Price{Book: 1}, Use: false},
-		RoundTileItem{Type: Bridge, Name: "1 bridge", Receive: Price{Book: 1}, Use: false},
+		RoundTileItem{Type: SideVP, Name: "side VP", Ship: 1, Use: false},
+		RoundTileItem{Type: PristVP, Name: "P VP", Receive: Price{Prist: 1}, Use: false},
+		RoundTileItem{Type: TpVP, Name: "TP VP", Receive: Price{Power: 3}, Use: false},
+		RoundTileItem{Type: ShVP, Name: "SH/SA VP", Receive: Price{Worker: 1}, Pass: Price{ShVP: 4}, Use: false},
+		RoundTileItem{Type: Spade, Name: "spd", Receive: Price{Book: 1}, Use: false},
+		RoundTileItem{Type: Bridge, Name: "bridge", Receive: Price{Book: 1}, Use: false},
 		RoundTileItem{Type: ScienceCube, Name: "1 science", Receive: Price{Worker: 2}, Use: false},
-		RoundTileItem{Type: TeScienceCoin, Name: "te science", Receive: Price{Coin: 4}, Use: false},
-		RoundTileItem{Type: Power, Name: "4 power", Receive: Price{Coin: 2}, Use: false},
-		RoundTileItem{Type: Coin, Name: "6 coin", Receive: Price{Coin: 6}, Use: false},
+		RoundTileItem{Type: TeScienceCoin, Name: "te science", Receive: Price{Coin: 4}, Pass: Price{Science: Science{Any: 1}}, Use: false},
+		RoundTileItem{Type: Power, Name: "4PW", Receive: Price{Coin: 2}, Use: false},
+		RoundTileItem{Type: Coin, Name: "6C", Receive: Price{Coin: 6}, Use: false},
 	}
 
 	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
@@ -68,6 +71,17 @@ func (p *RoundTile) Start() {
 	}
 }
 
-func (p *RoundTile) GetTile(pos RoundTileType) *RoundTileItem {
+func (p *RoundTile) GetTile(pos int) *RoundTileItem {
 	return &p.Items[pos]
+}
+
+func (p *RoundTile) Pass(pos int) *RoundTileItem {
+	ret := &p.Items[pos]
+
+	/*
+		p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
+		p.Items = append(p.Items, *tile)
+	*/
+
+	return ret
 }

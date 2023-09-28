@@ -31,6 +31,8 @@ type FactionInterface interface {
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
 	Pass(tile *RoundTileItem) error
 	ReceiveCity(item city.CityItem) error
+	Dig(dig int) error
+	ConvertDig(spade int) error
 }
 
 type Faction struct {
@@ -63,6 +65,7 @@ type Faction struct {
 	ExtraBuild        int              `json:"extraBuild"`
 	VP                int              `json:"vp"`
 	City              int              `json:"city"`
+	IsPass            bool             `json:"-"`
 }
 
 func NewFaction(name string, ename string, color color.Color) *Faction {
@@ -88,7 +91,8 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.Key = 0
 	item.Action = false
 	item.ExtraBuild = 0
-	item.RoundTile = nil
+	item.RoundTile = &RoundTileItem{}
+	item.IsPass = false
 
 	item.Tiles = make([]Tile, 0)
 	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
@@ -124,6 +128,7 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.Resource.Coin = 100
 	item.Resource.Worker = 100
 	item.Resource.Prist = 7
+	item.Resource.Book = 100
 	item.Resource.Power = [3]int{0, 0, 12}
 
 	return &item
@@ -189,16 +194,26 @@ func (p *Faction) GetHavePowerCount() int {
 }
 
 func (p *Faction) ReceiveResource(receive Price) {
+	log.Println("ReceiveResource", receive)
 	p.Resource.Coin += receive.Coin
 	p.Resource.Worker += receive.Worker
 	p.Resource.Prist += receive.Prist
 	p.Resource.Book += receive.Book
 	p.Resource.Spade += receive.Spade
 
+	p.Resource.City += receive.City
 	p.Resource.VP += receive.VP
 
-	if p.MaxBridge > 0 {
-		p.Resource.Bridge += receive.Bridge
+	p.Resource.Bridge += receive.Bridge
+
+	p.Resource.TpUpgrade += receive.TpUpgrade
+
+	if p.Resource.Bridge > p.MaxBridge {
+		p.Resource.Bridge = p.MaxBridge
+	}
+
+	if p.Resource.Prist > p.MaxPrist {
+		p.Resource.Prist = p.MaxPrist
 	}
 
 	if receive.Spade > 0 {
@@ -235,6 +250,8 @@ func (p *Faction) Income() {
 	if p.Resource.Bridge > p.MaxBridge {
 		p.Resource.Bridge = p.MaxBridge
 	}
+
+	p.IsPass = false
 }
 
 func (p *Faction) Burn(count int) bool {
@@ -401,6 +418,8 @@ func (p *Faction) AdvanceShip() error {
 
 	p.Action = true
 
+	p.Print()
+
 	return nil
 }
 
@@ -422,6 +441,8 @@ func (p *Faction) AdvanceSpade() error {
 	p.Spade++
 
 	p.Action = true
+
+	p.Print()
 
 	return nil
 }
@@ -467,6 +488,8 @@ func (p *Faction) Build(x int, y int, needSpade int) error {
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: D})
 
 	p.Action = true
+
+	p.Print()
 
 	return nil
 }
@@ -519,6 +542,8 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 
 	p.Action = true
 
+	p.Print()
+
 	return nil
 }
 
@@ -528,6 +553,8 @@ func (p *Faction) SendScholar() error {
 
 	p.Action = true
 
+	p.Print()
+
 	return nil
 }
 
@@ -535,6 +562,8 @@ func (p *Faction) SupployScholar() error {
 	p.Resource.Prist--
 
 	p.Action = true
+
+	p.Print()
 
 	return nil
 }
@@ -545,6 +574,8 @@ func (p *Faction) PowerAction(item action.PowerActionItem) error {
 
 	p.Action = true
 
+	p.Print()
+
 	return nil
 }
 
@@ -553,6 +584,8 @@ func (p *Faction) Book(item action.BookActionItem) error {
 	p.ReceiveResource(item.Receive)
 
 	p.Action = true
+
+	p.Print()
 
 	return nil
 }
@@ -567,6 +600,9 @@ func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	p.MaxBridge--
 
 	p.BridgeList = append(p.BridgeList, BridgePosition{X1: x1, Y1: y1, X2: x2, Y2: y2})
+
+	p.Print()
+
 	return nil
 }
 
@@ -580,7 +616,17 @@ func (p *Faction) Pass(tile *RoundTileItem) error {
 	p.RoundTile = tile
 	p.RoundTile.Use = true
 
+	p.Resource.Spade = 0
+	p.Resource.Bridge = 0
+	p.Resource.TpUpgrade = 0
+
 	p.ReceiveResource(p.RoundTile.Receive)
+
+	p.IsPass = true
+
+	p.Action = true
+
+	p.Print()
 
 	return nil
 }
@@ -593,6 +639,29 @@ func (p *Faction) ReceiveCity(item city.CityItem) error {
 	p.Resource.City--
 	p.City++
 	p.Key++
+
+	return nil
+}
+
+func (p *Faction) Dig(dig int) error {
+	if p.Resource.Spade < dig {
+		return errors.New("not enough spade")
+	}
+
+	p.Resource.Spade -= dig
+
+	return nil
+}
+
+func (p *Faction) ConvertDig(spade int) error {
+	if p.Resource.Worker < p.GetWorkerForSpade()*spade {
+		return errors.New("not enough worker")
+	}
+
+	p.Resource.Worker -= p.GetWorkerForSpade() * spade
+	p.Resource.Spade += spade
+
+	p.Action = true
 
 	return nil
 }

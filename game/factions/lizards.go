@@ -78,3 +78,11 @@ func (p *Lizards) ReceiveCity(item city.CityItem) error {
 func (p *Lizards) Pass(tile *resources.RoundTileItem) error {
 	return p.Faction.Pass(tile)
 }
+
+func (p *Lizards) Dig(dig int) error {
+	return p.Faction.Dig(dig)
+}
+
+func (p *Lizards) ConvertDig(spade int) error {
+	return p.Faction.ConvertDig(spade)
+}

@@ -78,3 +78,11 @@ func (p *Monks) ReceiveCity(item city.CityItem) error {
 func (p *Monks) Pass(tile *resources.RoundTileItem) error {
 	return p.Faction.Pass(tile)
 }
+
+func (p *Monks) Dig(dig int) error {
+	return p.Faction.Dig(dig)
+}
+
+func (p *Monks) ConvertDig(spade int) error {
+	return p.Faction.ConvertDig(spade)
+}

@@ -23,6 +23,7 @@ type Game struct {
 	BookActions  *action.BookAction   `json:"bookActions"`
 	RoundTiles   *resources.RoundTile `json:"roundTiles"`
 	RoundBonuss  *RoundBonus          `json:"roundBonuss"`
+	PalaceTiles  *resources.Tile      `json:"PalaceTiles"`
 	Cities       *City                `json:"cities"`
 	Turn         []Turn               `json:"turn"`
 	PowerTurn    []Turn               `json:"powerTurn"`
@@ -52,6 +53,7 @@ func NewGame() *Game {
 	item.BookActions = action.NewBookAction()
 	item.RoundTiles = resources.NewRoundTile()
 	item.RoundBonuss = NewRoundBonus()
+	item.PalaceTiles = resources.NewTile()
 	item.Cities = NewCity()
 
 	item.Map = NewMap()
@@ -118,6 +120,7 @@ func (p *Game) BuildStart() {
 }
 
 func (p *Game) Start() {
+	log.Println("Start")
 	p.RoundTiles.Start()
 
 	p.Round++
@@ -130,9 +133,15 @@ func (p *Game) Start() {
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
 	}
 
+	p.PowerActions.Start()
+	p.BookActions.Start()
+
+	log.Println("round", p.Round)
+
 }
 
 func (p *Game) TurnEnd(user int) {
+	log.Println("TurnEnd")
 	faction := p.Factions[user].GetInstance()
 	faction.Action = false
 
@@ -144,7 +153,9 @@ func (p *Game) TurnEnd(user int) {
 
 	if p.Round > 0 {
 		if turnType != PowerTurn && user >= 0 {
-			p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
+			if !faction.IsPass {
+				p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
+			}
 		}
 	}
 
@@ -350,7 +361,7 @@ func (p *Game) PowerAction(user int, pos int) error {
 	return nil
 }
 
-func (p *Game) Book(user int, pos int) error {
+func (p *Game) BookAction(user int, pos int) error {
 	if p.Round < 1 {
 		log.Println("round error")
 		return errors.New("round error")
@@ -449,6 +460,8 @@ func (p *Game) SendScholar(user int, pos ScienceType) error {
 		return errors.New("It's not a turn")
 	}
 
+	log.Println("pos", pos)
+
 	faction := p.Factions[user].GetInstance()
 	if faction.Action {
 		return errors.New("Already completed the action")
@@ -492,7 +505,7 @@ func (p *Game) SupployScholar(user int, pos ScienceType) error {
 	return nil
 }
 
-func (p *Game) Pass(user int, tile resources.RoundTileType) error {
+func (p *Game) Pass(user int, pos int) error {
 	if p.Round < 1 {
 		log.Println("round error")
 		return errors.New("round error")
@@ -504,7 +517,7 @@ func (p *Game) Pass(user int, tile resources.RoundTileType) error {
 	}
 
 	faction := p.Factions[user].GetInstance()
-	roundTile := p.RoundTiles.GetTile(tile)
+	roundTile := p.RoundTiles.Pass(pos)
 	faction.Pass(roundTile)
 
 	p.TurnEnd(user)
@@ -515,13 +528,62 @@ func (p *Game) Pass(user int, tile resources.RoundTileType) error {
 func (p *Game) FactionAction() {
 }
 
-func (p *Game) Spade() {
-	/*
-		needSpade := p.Map.GetNeedSpade(x, y, faction.Color) - faction.Resource.Spade
-		if needSpade < 0 {
-			needSpade = 0
+func (p *Game) Dig(user int, x int, y int, dig int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) || p.IsPowerTurn() {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+
+	if p.Map.GetType(x, y) == color.River {
+		log.Println("can't spade")
+		return errors.New("can't spade")
+	}
+
+	if faction.Resource.Spade < dig {
+		log.Println("not have spade")
+		return errors.New("not have spade")
+	}
+
+	needSpade := p.Map.GetNeedSpade(x, y, faction.Color)
+	if needSpade == 0 {
+		log.Println("need not spade")
+		return errors.New("need not spade")
+	}
+
+	spade := 0
+	var change color.Color
+	if dig >= needSpade {
+		change = faction.Color
+		spade = needSpade
+	} else {
+		target := p.Map.GetType(x, y)
+
+		diff := faction.Color - target
+
+		change := 0
+		if diff > 0 {
+			change = int(target) + dig
+		} else {
+			change = int(target) - dig
+			if change <= int(color.River) {
+				change += 7
+			}
 		}
-	*/
+
+		spade = dig
+	}
+
+	faction.Dig(spade)
+	p.Map.SetType(x, y, color.Color(change))
+
+	return nil
 }
 
 func (p *Game) GetRoundTile(user int, tile int) error {
@@ -538,6 +600,8 @@ func (p *Game) GetRoundTile(user int, tile int) error {
 	faction := p.Factions[user].GetInstance()
 	p.RoundTiles.Items[tile].Use = true
 	faction.RoundTile = &p.RoundTiles.Items[tile]
+
+	p.TurnEnd(user)
 
 	return nil
 }
@@ -732,4 +796,20 @@ func (p *Game) Science(user int, resource resources.Price) error {
 }
 
 func (p *Game) RoundBonus(faction *factions.Faction) {
+}
+
+func (p *Game) ConvertDig(user int, spade int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+	faction.ConvertDig(spade)
+	return nil
 }

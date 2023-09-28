@@ -26,12 +26,12 @@ func NewBookAction() *BookAction {
 	item.Items = make([]BookActionItem, 0)
 
 	items := []BookActionItem{
-		BookActionItem{Type: Power5, Name: "5 power", Book: 1, Receive: resources.Price{Power: 5}, Use: false},
+		BookActionItem{Type: Power5, Name: "5PW", Book: 1, Receive: resources.Price{Power: 5}, Use: false},
 		BookActionItem{Type: Science, Name: "2 science", Book: 1, Receive: resources.Price{Science: resources.Science{Single: 2}}, Use: false},
-		BookActionItem{Type: Coin6, Name: "6 coin", Book: 2, Receive: resources.Price{Coin: 6}, Use: false},
-		BookActionItem{Type: TpUpgrade, Name: "tp upgrade", Book: 2, Receive: resources.Price{TpUpgrade: 1}, Use: false},
-		BookActionItem{Type: TpVP, Name: "tp vp", Book: 2, Receive: resources.Price{TpVP: 2}, Use: false},
-		BookActionItem{Type: Spade3, Name: "3 space", Book: 3, Receive: resources.Price{Spade: 3}, Use: false},
+		BookActionItem{Type: Coin6, Name: "6C", Book: 2, Receive: resources.Price{Coin: 6}, Use: false},
+		BookActionItem{Type: TpUpgrade, Name: "TP up", Book: 2, Receive: resources.Price{TpUpgrade: 1}, Use: false},
+		BookActionItem{Type: TpVP, Name: "TP VP", Book: 2, Receive: resources.Price{TpVP: 2}, Use: false},
+		BookActionItem{Type: Spade3, Name: "3 spd", Book: 3, Receive: resources.Price{Spade: 3}, Use: false},
 	}
 
 	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
@@ -56,7 +56,7 @@ func (p *BookAction) Action(pos int) BookActionItem {
 	return p.Items[int(pos)]
 }
 
-func (p *BookAction) Pass() {
+func (p *BookAction) Start() {
 	count := len(p.Items)
 
 	for i := 0; i < count; i++ {

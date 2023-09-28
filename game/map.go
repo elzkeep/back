@@ -409,6 +409,10 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 	}
 
 	for _, v := range p.BridgeList {
+		if v.Color != user {
+			continue
+		}
+
 		if x == v.X1 && y == v.Y1 {
 			if p.GetOwner(v.X2, v.Y2) == user {
 				return true
@@ -426,7 +430,7 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 }
 
 func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistance int) bool {
-	if distance == maxDistance {
+	if distance >= maxDistance {
 		return false
 	}
 
@@ -436,8 +440,6 @@ func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistanc
 		if p.GetType(v.X, v.Y) != color.River {
 			continue
 		}
-
-		log.Println(v.X, v.Y)
 
 		items := resources.GetGroundPosition(v.X, v.Y)
 		for _, item := range items {

@@ -42,11 +42,11 @@ func ConvertBuilding(str string) resources.Building {
 func ConvertScience(str string) ScienceType {
 	if str == "banking" {
 		return Banking
-	} else if str == "Law" {
+	} else if str == "law" {
 		return Law
-	} else if str == "Engineering" {
+	} else if str == "engineering" {
 		return Engineering
-	} else if str == "Medicine" {
+	} else if str == "medicine" {
 		return Medicine
 	}
 
@@ -102,14 +102,36 @@ func Command(p *Game, str string) error {
 		action := strs[2][:2]
 		log.Println(action)
 		pos := global.Atoi(strs[2][3:]) - 1
-		err = p.PowerAction(user, pos)
-	} else if cmd == "action" {
 
+		if pos >= len(p.PowerActions.Items) {
+			err = p.BookAction(user, pos-len(p.PowerActions.Items))
+		} else {
+			err = p.PowerAction(user, pos)
+		}
+	} else if cmd == "pass" {
+		pos := global.Atoi(strs[2])
+
+		err = p.Pass(user, pos)
+	} else if cmd == "roundtile" {
+		pos := global.Atoi(strs[2])
+
+		err = p.GetRoundTile(user, pos)
+	} else if cmd == "transform" {
+		x, y := ConvertPosition(strs[2])
+		dig := global.Atoi(strs[3])
+
+		err = p.Dig(user, x, y, dig)
+	} else if cmd == "dig" {
+		dig := global.Atoi(strs[2])
+
+		err = p.ConvertDig(user, dig)
+	} else if cmd == "save" {
+		p.TurnEnd(user)
 	}
 
 	if err == nil {
-		log.Println("TURN END ==========================")
-		p.TurnEnd(user)
+		//log.Println("TURN END ==========================")
+		//p.TurnEnd(user)
 	}
 
 	log.Println(err)
