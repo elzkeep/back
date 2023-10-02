@@ -47,22 +47,23 @@ type Price struct {
 }
 
 type Resource struct {
-	Coin      int     `json:"coin"`
-	Worker    int     `json:"worker"`
-	Prist     int     `json:"prist"`
-	Power     [3]int  `json:"power"`
-	Spade     int     `json:"spade"`
-	Bridge    int     `json:"bridge"`
-	Book      int     `json:"book"`
-	TpUpgrade int     `json:"tpUpgrade"`
-	TpVP      int     `json:"tpVp"`
-	City      int     `json:"city"`
-	Science   Science `json:"science"`
-	VP        int     `json:"vp"`
-	Downgrade int     `json:"downgrade"`
-	Tile      int     `json:"tile"`
-	ShVP      int     `json:"shVp"`
-	TeVP      int     `json:"teVp"`
+	Coin       int     `json:"coin"`
+	Worker     int     `json:"worker"`
+	Prist      int     `json:"prist"`
+	Power      [3]int  `json:"power"`
+	Spade      int     `json:"spade"`
+	Bridge     int     `json:"bridge"`
+	Book       int     `json:"book"`
+	TpUpgrade  int     `json:"tpUpgrade"`
+	TpVP       int     `json:"tpVp"`
+	City       int     `json:"city"`
+	Science    Science `json:"science"`
+	VP         int     `json:"vp"`
+	Downgrade  int     `json:"downgrade"`
+	PalaceTile int     `json:"palaceTile"`
+	SchoolTile int     `json:"schoolTile"`
+	ShVP       int     `json:"shVp"`
+	TeVP       int     `json:"teVp"`
 }
 
 func CheckResource(have Resource, need Price) error {

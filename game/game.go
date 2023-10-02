@@ -19,15 +19,16 @@ type Game struct {
 	Sciences *Science                    `json:"sciences"`
 	Factions []factions.FactionInterface `json:"factions"`
 
-	PowerActions *action.PowerAction  `json:"powerActions"`
-	BookActions  *action.BookAction   `json:"bookActions"`
-	RoundTiles   *resources.RoundTile `json:"roundTiles"`
-	RoundBonuss  *RoundBonus          `json:"roundBonuss"`
-	PalaceTiles  *resources.Tile      `json:"PalaceTiles"`
-	Cities       *City                `json:"cities"`
-	Turn         []Turn               `json:"turn"`
-	PowerTurn    []Turn               `json:"powerTurn"`
-	Round        int                  `json:"round"`
+	PowerActions *action.PowerAction   `json:"powerActions"`
+	BookActions  *action.BookAction    `json:"bookActions"`
+	RoundTiles   *resources.RoundTile  `json:"roundTiles"`
+	RoundBonuss  *RoundBonus           `json:"roundBonuss"`
+	PalaceTiles  *resources.PalaceTile `json:"palaceTiles"`
+	SchoolTiles  *resources.SchoolTile `json:"schoolTiles"`
+	Cities       *City                 `json:"cities"`
+	Turn         []Turn                `json:"turn"`
+	PowerTurn    []Turn                `json:"powerTurn"`
+	Round        int                   `json:"round"`
 }
 
 type TurnType int
@@ -53,7 +54,8 @@ func NewGame() *Game {
 	item.BookActions = action.NewBookAction()
 	item.RoundTiles = resources.NewRoundTile()
 	item.RoundBonuss = NewRoundBonus()
-	item.PalaceTiles = resources.NewTile()
+	item.PalaceTiles = resources.NewPalaceTile()
+	item.SchoolTiles = resources.NewSchoolTile()
 	item.Cities = NewCity()
 
 	item.Map = NewMap()
@@ -66,6 +68,12 @@ func NewGame() *Game {
 	item.Round = -1
 
 	return &item
+}
+
+func (p *Game) InitGame() {
+	count := len(p.Factions)
+	p.PalaceTiles.Init(count)
+	p.SchoolTiles.Init(count)
 }
 
 func (p *Game) AddFaction(item factions.FactionInterface) {
@@ -143,7 +151,7 @@ func (p *Game) Start() {
 func (p *Game) TurnEnd(user int) {
 	log.Println("TurnEnd")
 	faction := p.Factions[user].GetInstance()
-	faction.Action = false
+	faction.TurnEnd()
 
 	turnType := p.Turn[0].Type
 
@@ -264,7 +272,7 @@ func (p *Game) Build(user int, x int, y int) error {
 		return err
 	}
 
-	needSpade := p.Map.GetNeedSpade(x, y, faction.Color) - faction.Resource.Spade
+	needSpade := p.Map.GetNeedSpade(x, y, faction.Color)
 	if needSpade < 0 {
 		needSpade = 0
 	}
@@ -811,5 +819,96 @@ func (p *Game) ConvertDig(user int, spade int) error {
 
 	faction := p.Factions[user].GetInstance()
 	faction.ConvertDig(spade)
+	return nil
+}
+
+func (p *Game) PalaceTile(user int, pos int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	log.Println("palace", len(p.PalaceTiles.Items), pos)
+	if pos >= len(p.PalaceTiles.Items) {
+		log.Println("not found tile")
+		return errors.New("not found tile")
+	}
+
+	tile := p.PalaceTiles.Items[pos]
+
+	if tile.Use == true {
+		return errors.New("already select")
+	}
+
+	faction := p.Factions[user].GetInstance()
+	err := faction.PalaceTile(tile)
+
+	if err == nil {
+		p.PalaceTiles.Setup(pos)
+	}
+	return nil
+}
+
+func (p *Game) TileAction(user int, category resources.TileCategory, pos int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) || p.IsPowerTurn() {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+	if faction.Action {
+		return errors.New("Already completed the action")
+	}
+
+	err := faction.TileAction(category, pos)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (p *Game) SchoolTile(user int, science int, level int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	if p.SchoolTiles.Items[science][level].Count == 0 {
+		log.Println("tile not remain")
+		return errors.New("tile not remain")
+	}
+
+	tile := p.SchoolTiles.Items[science][level].Tile
+
+	faction := p.Factions[user].GetInstance()
+	err := faction.SchoolTile(tile)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	faction.ReceiveResource(resources.Price{Book: level})
+	p.Sciences.Action(faction, ScienceType(science), 3-level)
+
+	p.SchoolTiles.Items[science][level].Count--
+
 	return nil
 }

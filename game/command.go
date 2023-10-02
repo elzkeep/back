@@ -81,6 +81,13 @@ func Command(p *Game, str string) error {
 		} else {
 			err = p.Build(user, x, y)
 		}
+	} else if cmd == "dig" {
+		x, y := ConvertPosition(strs[2])
+		dig := global.Atoi(strs[3])
+
+		log.Println(x, y)
+
+		err = p.Dig(user, x, y, dig)
 	} else if cmd == "upgrade" {
 		x, y := ConvertPosition(strs[2])
 		target := ConvertBuilding(strs[3])
@@ -100,13 +107,30 @@ func Command(p *Game, str string) error {
 		err = p.SupployScholar(user, target)
 	} else if cmd == "action" {
 		action := strs[2][:2]
-		log.Println(action)
-		pos := global.Atoi(strs[2][3:]) - 1
 
-		if pos >= len(p.PowerActions.Items) {
-			err = p.BookAction(user, pos-len(p.PowerActions.Items))
-		} else {
-			err = p.PowerAction(user, pos)
+		if action == "AC" {
+			pos := global.Atoi(strs[2][3:]) - 1
+
+			if pos >= len(p.PowerActions.Items) {
+				err = p.BookAction(user, pos-len(p.PowerActions.Items))
+			} else {
+				err = p.PowerAction(user, pos)
+			}
+		} else if action == "PA" {
+			pos := global.Atoi(strs[2][6:]) - 1
+			err = p.TileAction(user, resources.TilePalace, pos)
+		} else if action == "RO" {
+			pos := global.Atoi(strs[2][5:]) - 1
+			err = p.TileAction(user, resources.TileRound, pos)
+		} else if action == "SC" {
+			pos := global.Atoi(strs[2][6:])
+
+			pos += int(resources.TileRoundCoin)
+			log.Println("pos", pos)
+			err = p.TileAction(user, resources.TileSchool, pos)
+		} else if action == "IN" {
+			pos := global.Atoi(strs[2][10:]) - 1
+			err = p.TileAction(user, resources.TileInnovation, pos)
 		}
 	} else if cmd == "pass" {
 		pos := global.Atoi(strs[2])
@@ -121,10 +145,19 @@ func Command(p *Game, str string) error {
 		dig := global.Atoi(strs[3])
 
 		err = p.Dig(user, x, y, dig)
-	} else if cmd == "dig" {
+	} else if cmd == "spade" {
 		dig := global.Atoi(strs[2])
 
 		err = p.ConvertDig(user, dig)
+	} else if cmd == "palacetile" {
+		pos := global.Atoi(strs[2])
+
+		p.PalaceTile(user, pos)
+	} else if cmd == "schooltile" {
+		science := ConvertScience(strs[2])
+		level := 3 - global.Atoi(strs[3])
+
+		p.SchoolTile(user, int(science), level)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	}
@@ -134,6 +167,7 @@ func Command(p *Game, str string) error {
 		//p.TurnEnd(user)
 	}
 
+	p.Map.Index++
 	log.Println(err)
 	return err
 }

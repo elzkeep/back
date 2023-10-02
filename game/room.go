@@ -18,8 +18,12 @@ func Make(id int64) {
 	g.AddFaction(&factions.Monks{})
 	//g.AddFaction(&factions.Lizards{})
 
-	g.BuildStart()
+	g.InitGame()
 
+	g.BuildStart()
+	g.FirstBuild(0, 3, 4)
+	g.FirstBuild(0, 4, 11)
+	g.GetRoundTile(0, 0)
 	/*
 		log.Println(g.FirstBuild(0, 3, 4))
 		g.TurnEnd(0)

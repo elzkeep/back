@@ -13,11 +13,12 @@ import (
 )
 
 type FactionInterface interface {
+	GetInstance() *Faction
+
 	Init()
 	Print()
 	Income()
 	PassIncome()
-	GetInstance() *Faction
 
 	FirstBuild(x int, y int)
 	Build(x int, y int, needSpade int) error
@@ -29,10 +30,14 @@ type FactionInterface interface {
 	PowerAction(item action.PowerActionItem) error
 	Book(item action.BookActionItem) error
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
-	Pass(tile *RoundTileItem) error
+	Pass(tile *TileItem) error
 	ReceiveCity(item city.CityItem) error
 	Dig(dig int) error
 	ConvertDig(spade int) error
+	TurnEnd() error
+	PalaceTile(tile TileItem) error
+	SchoolTile(tile TileItem) error
+	TileAction(category TileCategory, pos int) error
 }
 
 type Faction struct {
@@ -40,7 +45,7 @@ type Faction struct {
 	Ename             string           `json:"ename"`
 	Color             color.Color      `json:"color"`
 	Resource          Resource         `json:"resource"`
-	Tiles             []Tile           `json:"tiles"`
+	Tiles             []TileItem       `json:"tiles"`
 	MaxBuilding       [6]int           `json:"maxBuilding"`
 	Building          [6]int           `json:"building"`
 	BuildingPower     [6]int           `json:"buildingPower"`
@@ -59,7 +64,7 @@ type Faction struct {
 	MaxPrist          int              `json:"maxPrist"`
 	Science           []int            `json:"science"`
 	Key               int              `json:"key"`
-	RoundTile         *RoundTileItem   `json:"roundTile"`
+	RoundTile         *TileItem        `json:"roundTile"`
 	Action            bool             `json:"action"`
 	MaxBridge         int              `json:"maxBridge"`
 	ExtraBuild        int              `json:"extraBuild"`
@@ -91,10 +96,10 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.Key = 0
 	item.Action = false
 	item.ExtraBuild = 0
-	item.RoundTile = &RoundTileItem{}
+	item.RoundTile = &TileItem{}
 	item.IsPass = false
 
-	item.Tiles = make([]Tile, 0)
+	item.Tiles = make([]TileItem, 0)
 	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
 	item.Building = [6]int{0, 0, 0, 0, 0, 0}
 	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
@@ -475,6 +480,8 @@ func (p *Faction) Build(x int, y int, needSpade int) error {
 		return errors.New("not enough spade")
 	}
 
+	log.Println(p.Resource.Spade, needSpade)
+
 	if p.Resource.Spade >= needSpade {
 		p.Resource.Spade -= needSpade
 	} else {
@@ -539,6 +546,12 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 	}
 
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: target})
+
+	if target == SH {
+		p.Resource.PalaceTile++
+	} else if target == TE || target == SA {
+		p.Resource.SchoolTile++
+	}
 
 	p.Action = true
 
@@ -606,7 +619,7 @@ func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return nil
 }
 
-func (p *Faction) Pass(tile *RoundTileItem) error {
+func (p *Faction) Pass(tile *TileItem) error {
 	p.PassIncome()
 
 	if p.RoundTile != nil {
@@ -614,13 +627,18 @@ func (p *Faction) Pass(tile *RoundTileItem) error {
 	}
 
 	p.RoundTile = tile
-	p.RoundTile.Use = true
+	p.RoundTile.Use = false
 
 	p.Resource.Spade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
 
 	p.ReceiveResource(p.RoundTile.Receive)
+
+	for i, v := range p.Tiles {
+		p.ReceiveResource(v.Receive)
+		p.Tiles[i].Use = false
+	}
 
 	p.IsPass = true
 
@@ -654,6 +672,10 @@ func (p *Faction) Dig(dig int) error {
 }
 
 func (p *Faction) ConvertDig(spade int) error {
+	if p.Action == true && p.ExtraBuild == 0 {
+		return errors.New("already action end")
+	}
+
 	if p.Resource.Worker < p.GetWorkerForSpade()*spade {
 		return errors.New("not enough worker")
 	}
@@ -661,7 +683,86 @@ func (p *Faction) ConvertDig(spade int) error {
 	p.Resource.Worker -= p.GetWorkerForSpade() * spade
 	p.Resource.Spade += spade
 
-	p.Action = true
+	return nil
+}
 
+func (p *Faction) TurnEnd() error {
+	p.Action = false
+	p.Resource.Spade = 0
+	p.Resource.Science = Science{}
+
+	return nil
+}
+
+func (p *Faction) PalaceTile(tile TileItem) error {
+	if p.Resource.PalaceTile == 0 {
+		return errors.New("not have palace tile")
+	}
+
+	for _, v := range p.Tiles {
+		if v.Category == TilePalace {
+			return errors.New("already")
+		}
+	}
+	p.Tiles = append(p.Tiles, tile)
+
+	p.ReceiveResource(tile.Once)
+
+	p.Resource.PalaceTile--
+
+	return nil
+}
+
+func (p *Faction) SchoolTile(tile TileItem) error {
+	if p.Resource.SchoolTile == 0 {
+		return errors.New("not have school tile")
+	}
+
+	for _, v := range p.Tiles {
+		if v.Type == tile.Type {
+			return errors.New("already")
+		}
+	}
+	p.Tiles = append(p.Tiles, tile)
+
+	p.ReceiveResource(tile.Once)
+
+	p.Resource.SchoolTile--
+
+	return nil
+}
+
+func (p *Faction) TileAction(category TileCategory, pos int) error {
+	var tile *TileItem
+
+	if category == TileRound {
+		if p.RoundTile.Type != TileType(pos) {
+			return errors.New("not found")
+		}
+
+		tile = p.RoundTile
+	} else {
+		find := -1
+		for i, v := range p.Tiles {
+			if v.Category == category && v.Type == TileType(pos) {
+				find = i
+				break
+			}
+		}
+
+		if find == -1 {
+			return errors.New("not found")
+		}
+
+		tile = &p.Tiles[find]
+	}
+
+	if tile.Use == true {
+		return errors.New("already")
+	}
+
+	p.ReceiveResource(tile.Action)
+
+	tile.Use = true
 	return nil
 }

@@ -75,7 +75,7 @@ func (p *Lizards) ReceiveCity(item city.CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Lizards) Pass(tile *resources.RoundTileItem) error {
+func (p *Lizards) Pass(tile *resources.TileItem) error {
 	return p.Faction.Pass(tile)
 }
 
@@ -85,4 +85,20 @@ func (p *Lizards) Dig(dig int) error {
 
 func (p *Lizards) ConvertDig(spade int) error {
 	return p.Faction.ConvertDig(spade)
+}
+
+func (p *Lizards) TurnEnd() error {
+	return p.Faction.TurnEnd()
+}
+
+func (p *Lizards) PalaceTile(tile resources.TileItem) error {
+	return p.Faction.PalaceTile(tile)
+}
+
+func (p *Lizards) SchoolTile(tile resources.TileItem) error {
+	return p.Faction.SchoolTile(tile)
+}
+
+func (p *Lizards) TileAction(category resources.TileCategory, pos int) error {
+	return p.Faction.TileAction(category, pos)
 }
