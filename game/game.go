@@ -608,6 +608,7 @@ func (p *Game) GetRoundTile(user int, tile int) error {
 	faction := p.Factions[user].GetInstance()
 	p.RoundTiles.Items[tile].Use = true
 	faction.RoundTile = &p.RoundTiles.Items[tile]
+	log.Println("tile ", p.RoundTiles.Items[tile].Category)
 
 	p.TurnEnd(user)
 
@@ -783,13 +784,13 @@ func (p *Game) City(user int, city CityType) error {
 	return nil
 }
 
-func (p *Game) Science(user int, resource resources.Price) error {
+func (p *Game) Science(user int, pos ScienceType, level int) error {
 	if p.Round < 1 {
 		log.Println("round error")
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || !p.IsScienceTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
 	}
@@ -799,6 +800,23 @@ func (p *Game) Science(user int, resource resources.Price) error {
 		log.Println("have not science")
 		return errors.New("have not science")
 	}
+
+	if level > 1 {
+		if faction.Resource.Science.Single < level {
+			log.Println("not enough science")
+			return errors.New("not enough science")
+		}
+
+		faction.Resource.Science.Single -= level
+	} else {
+		if faction.Resource.Science.Single > 0 {
+			faction.Resource.Science.Single -= level
+		} else {
+			faction.Resource.Science.Any -= level
+		}
+	}
+
+	p.Sciences.Action(faction, pos, level)
 
 	return nil
 }

@@ -199,19 +199,23 @@ func (p *Faction) GetHavePowerCount() int {
 }
 
 func (p *Faction) ReceiveResource(receive Price) {
-	log.Println("ReceiveResource", receive)
 	p.Resource.Coin += receive.Coin
 	p.Resource.Worker += receive.Worker
 	p.Resource.Prist += receive.Prist
 	p.Resource.Book += receive.Book
 	p.Resource.Spade += receive.Spade
 
+	p.Resource.Science.Any += receive.Science.Any
+	p.Resource.Science.Single += receive.Science.Single
+
 	p.Resource.City += receive.City
-	p.Resource.VP += receive.VP
+	p.VP += receive.VP
 
 	p.Resource.Bridge += receive.Bridge
 
 	p.Resource.TpUpgrade += receive.TpUpgrade
+
+	p.Resource.SchoolTile += receive.Tile
 
 	if p.Resource.Bridge > p.MaxBridge {
 		p.Resource.Bridge = p.MaxBridge
@@ -224,6 +228,10 @@ func (p *Faction) ReceiveResource(receive Price) {
 	if receive.Spade > 0 {
 		p.ExtraBuild = 1
 	}
+
+	log.Println("receive", receive.TpVP, p.Building[TP])
+
+	p.VP += receive.TpVP * p.Building[TP]
 
 	p.ReceivePower(receive.Power, false)
 }
@@ -240,11 +248,9 @@ func (p *Faction) Income() {
 	}
 
 	p.ReceiveResource(p.RoundTile.Receive)
-	// 패스타일
-	// science
-	// sh 타일
-	// te 타일
-	// innovation 타일
+	for _, v := range p.Tiles {
+		p.ReceiveResource(v.Receive)
+	}
 
 	p.ReceivePower(power, false)
 
@@ -633,10 +639,10 @@ func (p *Faction) Pass(tile *TileItem) error {
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
 
-	p.ReceiveResource(p.RoundTile.Receive)
+	p.ReceiveResource(p.RoundTile.Pass)
 
 	for i, v := range p.Tiles {
-		p.ReceiveResource(v.Receive)
+		p.ReceiveResource(v.Pass)
 		p.Tiles[i].Use = false
 	}
 

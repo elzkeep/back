@@ -105,6 +105,10 @@ func Command(p *Game, str string) error {
 	} else if cmd == "supploy" {
 		target := ConvertScience(strs[2])
 		err = p.SupployScholar(user, target)
+	} else if cmd == "science" {
+		target := ConvertScience(strs[2])
+		level := global.Atoi(strs[3])
+		err = p.Science(user, target, level)
 	} else if cmd == "action" {
 		action := strs[2][:2]
 
@@ -158,6 +162,11 @@ func Command(p *Game, str string) error {
 		level := 3 - global.Atoi(strs[3])
 
 		p.SchoolTile(user, int(science), level)
+	} else if cmd == "bridge" {
+		x, y := ConvertPosition(strs[2])
+		x2, y2 := ConvertPosition(strs[3])
+
+		p.Bridge(user, x, y, x2, y2)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	}
