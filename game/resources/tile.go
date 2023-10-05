@@ -62,8 +62,10 @@ type TileItem struct {
 	Action   Price        `json:"action"`
 	Once     Price        `json:"once"`
 	Pass     Price        `json:"pass"`
+	Build    BuildVP      `json:"build"`
 	Use      bool         `json:"use"`
 	Ship     int          `json:"ship"`
+	Coin     int          `json:"coin"`
 }
 
 type Tile struct {

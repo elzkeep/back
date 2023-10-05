@@ -40,8 +40,8 @@ func (p *SchoolTile) Init(count int) {
 	items := []TileItem{
 		TileItem{Category: TileSchool, Type: TileSchoolWorker, Name: "2W", Receive: Price{Worker: 1, Science: Science{Any: 1}}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolSpade, Name: "prist vp", Once: Price{Spade: 2}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolPrist, Name: "tp vp", Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolSideVP, Name: "sh/sa vp", Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolPrist, Name: "tp vp", Build: BuildVP{Prist: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolSideVP, Name: "sh/sa vp", Build: BuildVP{Edge: 3}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolCoin, Name: "1 spade", Receive: Price{Coin: 2, VP: 3}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolAnnex, Name: "1 bridge", Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolNeutral, Name: "1 science", Receive: Price{Power: 2, Coin: 2}, Use: false},

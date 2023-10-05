@@ -635,6 +635,9 @@ func (p *Faction) Pass(tile *TileItem) error {
 	p.RoundTile = tile
 	p.RoundTile.Use = false
 
+	p.Resource.Coin += p.RoundTile.Coin
+	p.RoundTile.Coin = 0
+
 	p.Resource.Spade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0

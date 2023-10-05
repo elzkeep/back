@@ -25,6 +25,7 @@ type BuildVP struct {
 	Innovation int `json:"innovation"`
 	Edge       int `json:"edge"`
 	River      int `json:"river"`
+	Prist      int `json:"prist"`
 }
 
 type Price struct {
