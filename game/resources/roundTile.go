@@ -1,5 +1,7 @@
 package resources
 
+import "log"
+
 type RoundTile struct {
 	Items []TileItem `json:"items"`
 }
@@ -14,7 +16,7 @@ func NewRoundTile() *RoundTile {
 
 func (p *RoundTile) Init(count int) {
 	items := []TileItem{
-		TileItem{Category: TileRound, Type: TileRoundSideVP, Name: "side VP", Build: BuildVP{River: 2}, Ship: 1, Use: false},
+		TileItem{Category: TileRound, Type: TileRoundEdgeVP, Name: "side VP", Build: BuildVP{River: 2}, Ship: 1, Use: false},
 		TileItem{Category: TileRound, Type: TileRoundPristVP, Name: "P VP", Receive: Price{Prist: 1}, Build: BuildVP{Prist: 2}, Use: false},
 		TileItem{Category: TileRound, Type: TileRoundTpVP, Name: "TP VP", Receive: Price{Power: 3}, Build: BuildVP{TP: 3}, Use: false},
 		TileItem{Category: TileRound, Type: TileRoundShVP, Name: "SH/SA VP", Receive: Price{Worker: 1}, Pass: Price{ShVP: 4}, Use: false},
@@ -39,25 +41,21 @@ func (p *RoundTile) Init(count int) {
 
 func (p *RoundTile) Start() {
 	for i, _ := range p.Items {
-		if p.Items[i].Use == true {
-			return
-		}
-
+		p.Items[i].Use = false
 		p.Items[i].Coin++
 	}
 }
 
-func (p *RoundTile) GetTile(pos int) *TileItem {
-	return &p.Items[pos]
-}
+func (p *RoundTile) Pass(pos int) TileItem {
+	log.Println("pos", pos)
+	ret := p.Items[pos]
+	log.Println(ret.Name)
 
-func (p *RoundTile) Pass(pos int) *TileItem {
-	ret := &p.Items[pos]
-
-	/*
-		p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
-		p.Items = append(p.Items, *tile)
-	*/
+	p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
 
 	return ret
+}
+
+func (p *RoundTile) Add(tile TileItem) {
+	p.Items = append(p.Items, tile)
 }

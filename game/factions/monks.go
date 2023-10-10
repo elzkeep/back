@@ -2,21 +2,24 @@ package factions
 
 import (
 	"aoi/game/action"
-	"aoi/game/color"
 	"aoi/game/resources"
-	"aoi/game/resources/city"
 )
 
 type Monks struct {
 	Faction *Faction
 }
 
-func (p *Monks) Init() {
-	p.Faction = NewFaction("몽크", "Monks", color.Yellow)
+func (p *Monks) Init(tile resources.TileItem) {
+	p.Faction = NewFaction("Monks", "Monks", resources.GetFactionTile(resources.TileFactionMonks), tile)
+	p.Faction.FirstBuilding = resources.SA
 }
 
 func (p *Monks) Income() {
 	p.Faction.Income()
+}
+
+func (p *Monks) FirstIncome() {
+	p.Faction.FirstIncome()
 }
 
 func (p *Monks) Print() {
@@ -71,11 +74,11 @@ func (p *Monks) PassIncome() {
 	p.Faction.PassIncome()
 }
 
-func (p *Monks) ReceiveCity(item city.CityItem) error {
+func (p *Monks) ReceiveCity(item resources.CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Monks) Pass(tile *resources.TileItem) error {
+func (p *Monks) Pass(tile resources.TileItem) (error, resources.TileItem) {
 	return p.Faction.Pass(tile)
 }
 

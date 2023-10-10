@@ -77,6 +77,13 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) {
 				return
 			}
 			user.Key--
+
+			for i, v := range user.Cities {
+				if v.Use == true {
+					user.Cities[i].Use = false
+					break
+				}
+			}
 		}
 
 		p.Value[pos][user.Color]++

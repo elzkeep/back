@@ -4,6 +4,7 @@ type Position struct {
 	X        int      `json:"x"`
 	Y        int      `json:"y"`
 	Building Building `json:"building"`
+	City     bool     `json:"city"`
 }
 
 func GetGroundPosition(x int, y int) []Position {

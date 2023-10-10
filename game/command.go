@@ -124,10 +124,10 @@ func Command(p *Game, str string) error {
 			pos := global.Atoi(strs[2][6:]) - 1
 			err = p.TileAction(user, resources.TilePalace, pos)
 		} else if action == "RO" {
-			pos := global.Atoi(strs[2][5:]) - 1
+			pos := global.Atoi(strs[2][5:]) + int(resources.TilePalaceVp)
 			err = p.TileAction(user, resources.TileRound, pos)
 		} else if action == "SC" {
-			pos := global.Atoi(strs[2][6:])
+			pos := global.Atoi(strs[2][6:]) + int(resources.TileRoundCoin)
 
 			pos += int(resources.TileRoundCoin)
 			log.Println("pos", pos)
@@ -167,6 +167,10 @@ func Command(p *Game, str string) error {
 		x2, y2 := ConvertPosition(strs[3])
 
 		p.Bridge(user, x, y, x2, y2)
+	} else if cmd == "city" {
+		pos := global.Atoi(strs[2]) - 1
+
+		p.City(user, resources.CityType(pos))
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	}

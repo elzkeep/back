@@ -37,6 +37,7 @@ const (
 	NormalTurn TurnType = iota
 	PowerTurn
 	ScienceTurn
+	SpadeTurn
 )
 
 type Turn struct {
@@ -76,8 +77,8 @@ func (p *Game) InitGame() {
 	p.SchoolTiles.Init(count)
 }
 
-func (p *Game) AddFaction(item factions.FactionInterface) {
-	item.Init()
+func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileItem) {
+	item.Init(tile)
 
 	p.Factions = append(p.Factions, item)
 
@@ -160,9 +161,16 @@ func (p *Game) TurnEnd(user int) {
 	p.Turn = append(p.PowerTurn, p.Turn...)
 
 	if p.Round > 0 {
-		if turnType != PowerTurn && user >= 0 {
-			if !faction.IsPass {
-				p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
+		if user >= 0 {
+			if turnType == NormalTurn {
+				if faction.IsPass {
+					if !faction.Resource.Science.IsEmpty() {
+						turn := []Turn{Turn{User: user, Type: NormalTurn}}
+						p.Turn = append(turn, p.Turn...)
+					}
+				} else {
+					p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
+				}
 			}
 		}
 	}
@@ -175,6 +183,10 @@ func (p *Game) TurnEnd(user int) {
 
 			p.Round = RoundTileRound
 		} else if p.Round == RoundTileRound {
+			for _, v := range p.Factions {
+				v.FirstIncome()
+			}
+
 			p.Start()
 		} else {
 			p.RoundEnd()
@@ -237,7 +249,7 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 	log.Println("build success")
 	faction.FirstBuild(x, y)
 
-	p.Map.Build(x, y, faction.Color, resources.D)
+	p.Map.Build(x, y, faction.Color, faction.FirstBuilding)
 
 	p.TurnEnd(user)
 
@@ -259,6 +271,7 @@ func (p *Game) Build(user int, x int, y int) error {
 
 	flag := p.Map.CheckDistance(faction.Color, faction.GetShipDistance(), x, y)
 
+	log.Println("flag", flag)
 	if flag == false {
 		log.Println("ship distance error")
 		return errors.New("ship distance error")
@@ -283,9 +296,20 @@ func (p *Game) Build(user int, x int, y int) error {
 		return err
 	}
 
+	if p.Map.IsRiverside(x, y) {
+		faction.ReceiveRiverVP()
+	}
+
+	if p.Map.IsEdge(x, y) {
+		faction.ReceiveEdgeVP()
+	}
+
 	p.Map.Build(x, y, faction.Color, resources.D)
 
-	if p.Map.CheckCity(faction.Color, x, y) == true {
+	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+
+	if len(lists) > 0 {
+		faction.CityBuildingList = lists
 		faction.Resource.City++
 	}
 
@@ -327,7 +351,10 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 
 	p.Map.SetBuilding(x, y, target)
 
-	if p.Map.CheckCity(faction.Color, x, y) == true {
+	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+
+	if len(lists) > 0 {
+		faction.CityBuildingList = lists
 		faction.Resource.City++
 	}
 
@@ -526,7 +553,16 @@ func (p *Game) Pass(user int, pos int) error {
 
 	faction := p.Factions[user].GetInstance()
 	roundTile := p.RoundTiles.Pass(pos)
-	faction.Pass(roundTile)
+	err, tile := faction.Pass(roundTile)
+
+	if err != nil {
+		p.RoundTiles.Add(roundTile)
+
+		log.Println(err)
+		return err
+	}
+
+	p.RoundTiles.Add(tile)
 
 	p.TurnEnd(user)
 
@@ -594,7 +630,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	return nil
 }
 
-func (p *Game) GetRoundTile(user int, tile int) error {
+func (p *Game) GetRoundTile(user int, pos int) error {
 	if p.Round != RoundTileRound {
 		log.Println("round error : GetRoundTile")
 		return errors.New("round error : GetRoundTile")
@@ -606,9 +642,9 @@ func (p *Game) GetRoundTile(user int, tile int) error {
 	}
 
 	faction := p.Factions[user].GetInstance()
-	p.RoundTiles.Items[tile].Use = true
-	faction.RoundTile = &p.RoundTiles.Items[tile]
-	log.Println("tile ", p.RoundTiles.Items[tile].Category)
+	tile := p.RoundTiles.Pass(pos)
+	log.Println("tile name", tile.Name)
+	faction.RoundTile(tile)
 
 	p.TurnEnd(user)
 
@@ -755,7 +791,7 @@ func (p *Game) PowerConfirm(user int, confirm bool) error {
 	return nil
 }
 
-func (p *Game) City(user int, city CityType) error {
+func (p *Game) City(user int, city resources.CityType) error {
 	if p.Round < 1 {
 		log.Println("round error")
 		return errors.New("round error")
@@ -780,6 +816,9 @@ func (p *Game) City(user int, city CityType) error {
 	tile := p.Cities.Use(city)
 	faction.ReceiveCity(tile)
 	p.Sciences.Receive(faction, tile.Receive)
+
+	p.Map.AddCityBuildingList(faction.CityBuildingList)
+	faction.CityBuildingList = make([]resources.Position, 0)
 
 	return nil
 }

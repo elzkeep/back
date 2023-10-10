@@ -1,7 +1,9 @@
 package game
 
 import (
+	"aoi/game/color"
 	"aoi/game/factions"
+	"aoi/game/resources"
 )
 
 var rooms map[int64]*Game
@@ -15,7 +17,7 @@ func Make(id int64) {
 
 	rooms[id] = g
 
-	g.AddFaction(&factions.Monks{})
+	g.AddFaction(&factions.Monks{}, resources.GetColorTile(color.Yellow))
 	//g.AddFaction(&factions.Lizards{})
 
 	g.InitGame()

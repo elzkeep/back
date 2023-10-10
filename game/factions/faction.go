@@ -4,9 +4,7 @@ import (
 	"aoi/game/action"
 	"aoi/game/color"
 	. "aoi/game/resources"
-	"aoi/game/resources/city"
 	"errors"
-	"fmt"
 
 	"log"
 	"math"
@@ -15,8 +13,9 @@ import (
 type FactionInterface interface {
 	GetInstance() *Faction
 
-	Init()
+	Init(tile TileItem)
 	Print()
+	FirstIncome()
 	Income()
 	PassIncome()
 
@@ -30,8 +29,8 @@ type FactionInterface interface {
 	PowerAction(item action.PowerActionItem) error
 	Book(item action.BookActionItem) error
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
-	Pass(tile *TileItem) error
-	ReceiveCity(item city.CityItem) error
+	Pass(tile TileItem) (error, TileItem)
+	ReceiveCity(item CityItem) error
 	Dig(dig int) error
 	ConvertDig(spade int) error
 	TurnEnd() error
@@ -64,23 +63,25 @@ type Faction struct {
 	MaxPrist          int              `json:"maxPrist"`
 	Science           []int            `json:"science"`
 	Key               int              `json:"key"`
-	RoundTile         *TileItem        `json:"roundTile"`
 	Action            bool             `json:"action"`
 	MaxBridge         int              `json:"maxBridge"`
 	ExtraBuild        int              `json:"extraBuild"`
 	VP                int              `json:"vp"`
 	City              int              `json:"city"`
+	CityBuildingList  []Position       `json:"cityBuildingList"`
+	Cities            []CityItem       `json:"cities"`
 	IsPass            bool             `json:"-"`
+	FirstBuilding     Building         `json:"-"`
 }
 
-func NewFaction(name string, ename string, color color.Color) *Faction {
+func NewFaction(name string, ename string, factionTile TileItem, colorTile TileItem) *Faction {
 	var item Faction
 
 	item.Name = name
 	item.Ename = ename
-	item.Color = color
+	item.Color = colorTile.Color
 
-	log.Printf("color = %v\n", color.ToString())
+	log.Printf("color = %v\n", item.Color.ToString())
 
 	item.Resource.Coin = 15
 	item.Resource.Worker = 4
@@ -96,10 +97,14 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.Key = 0
 	item.Action = false
 	item.ExtraBuild = 0
-	item.RoundTile = &TileItem{}
 	item.IsPass = false
+	item.FirstBuilding = D
 
+	item.Cities = make([]CityItem, 0)
 	item.Tiles = make([]TileItem, 0)
+	item.Tiles = append(item.Tiles, colorTile)
+	item.Tiles = append(item.Tiles, factionTile)
+
 	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
 	item.Building = [6]int{0, 0, 0, 0, 0, 0}
 	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
@@ -136,11 +141,23 @@ func NewFaction(name string, ename string, color color.Color) *Faction {
 	item.Resource.Book = 100
 	item.Resource.Power = [3]int{0, 0, 12}
 
+	if colorTile.Type == TileColorGray {
+		item.Incomes[D][0] = Price{Worker: 1, Coin: 2}
+		item.Incomes[TP][1] = Price{Coin: 3, Power: 1}
+	} else if colorTile.Type == TileColorBrown {
+		item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 1}
+	}
+
 	return &item
 }
 
 func (p *Faction) GetShipDistance() int {
-	return p.Ship + p.RoundTile.Ship + 1
+	ship := 0
+	for _, v := range p.Tiles {
+		ship += v.Ship
+	}
+	log.Println("ship", ship)
+	return p.Ship + ship
 }
 
 func (p *Faction) GetWorkerForSpade() int {
@@ -225,15 +242,27 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.Resource.Prist = p.MaxPrist
 	}
 
+	p.Ship += receive.ShipUpgrade
+
+	if p.Ship > p.MaxShip {
+		p.Ship = p.MaxShip
+	}
+
+	p.VP += receive.TpVP * p.Building[TP]
+	p.VP += receive.TeVP * p.Building[TE]
+	p.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
+
 	if receive.Spade > 0 {
 		p.ExtraBuild = 1
 	}
 
-	log.Println("receive", receive.TpVP, p.Building[TP])
-
-	p.VP += receive.TpVP * p.Building[TP]
-
 	p.ReceivePower(receive.Power, false)
+}
+
+func (p *Faction) FirstIncome() {
+	for _, v := range p.Tiles {
+		p.ReceiveResource(v.Once)
+	}
 }
 
 func (p *Faction) Income() {
@@ -247,7 +276,6 @@ func (p *Faction) Income() {
 		}
 	}
 
-	p.ReceiveResource(p.RoundTile.Receive)
 	for _, v := range p.Tiles {
 		p.ReceiveResource(v.Receive)
 	}
@@ -378,9 +406,6 @@ func (p *Faction) UsePower(value int) {
 
 func (p *Faction) Print() {
 	extraShip := ""
-	if p.RoundTile.Ship > 0 {
-		extraShip = fmt.Sprintf("+%v", p.RoundTile.Ship)
-	}
 
 	log.Printf("%v: %v C, %v W, %v/%v P, %v B, %v/%v/%v pw, dig level: %v/%v, ship level: %v%v/%v\n",
 		p.Ename,
@@ -500,11 +525,55 @@ func (p *Faction) Build(x int, y int, needSpade int) error {
 	p.Building[D]++
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: D})
 
+	p.ReceiveDVP()
+
 	p.Action = true
 
 	p.Print()
 
 	return nil
+}
+
+func (p *Faction) ReceiveDVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.D
+	}
+}
+
+func (p *Faction) ReceiveTpVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.TP
+	}
+}
+
+func (p *Faction) ReceiveTeVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.TE
+	}
+}
+
+func (p *Faction) ReceiveShsaVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.SHSA
+	}
+}
+
+func (p *Faction) ReceiveEdgeVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.Edge
+	}
+}
+
+func (p *Faction) ReceiveRiverVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.River
+	}
+}
+
+func (p *Faction) ReceivePristVP() {
+	for _, v := range p.Tiles {
+		p.VP += v.Build.Prist
+	}
 }
 
 func (p *Faction) Upgrade(x int, y int, target Building) error {
@@ -559,6 +628,12 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 		p.Resource.SchoolTile++
 	}
 
+	if target == TP {
+		p.ReceiveTpVP()
+	} else if target == SH || target == SA {
+		p.ReceiveShsaVP()
+	}
+
 	p.Action = true
 
 	p.Print()
@@ -571,6 +646,8 @@ func (p *Faction) SendScholar() error {
 	p.MaxPrist--
 
 	p.Action = true
+
+	p.ReceivePristVP()
 
 	p.Print()
 
@@ -625,43 +702,61 @@ func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return nil
 }
 
-func (p *Faction) Pass(tile *TileItem) error {
-	p.PassIncome()
-
-	if p.RoundTile != nil {
-		p.RoundTile.Use = false
+func (p *Faction) Pass(tile TileItem) (error, TileItem) {
+	if p.Resource.Downgrade > 0 {
+		return errors.New("have to downgrade"), TileItem{}
 	}
 
-	p.RoundTile = tile
-	p.RoundTile.Use = false
-
-	p.Resource.Coin += p.RoundTile.Coin
-	p.RoundTile.Coin = 0
-
+	p.Resource.Science = Science{}
 	p.Resource.Spade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
 
-	p.ReceiveResource(p.RoundTile.Pass)
+	p.PassIncome()
 
 	for i, v := range p.Tiles {
+		if v.Type == TileRoundSchoolScienceCoin {
+			p.Resource.Science.Any += p.Building[TE]
+			v.Pass.Science.Any = 0
+		}
+
 		p.ReceiveResource(v.Pass)
 		p.Tiles[i].Use = false
+
+		if v.Type == TileRoundSchoolScienceCoin {
+			p.Resource.Science.Any += p.Building[TE]
+		}
 	}
 
-	p.IsPass = true
+	var ret TileItem
 
+	for i, v := range p.Tiles {
+		if v.Category == TileRound {
+			ret = v
+			p.Tiles = append(p.Tiles[:i], p.Tiles[i+1:]...)
+			break
+		}
+	}
+
+	p.Resource.Coin += tile.Coin
+	tile.Coin = 0
+
+	p.Tiles = append(p.Tiles, tile)
+
+	p.IsPass = true
 	p.Action = true
 
 	p.Print()
 
-	return nil
+	return nil, ret
 }
 
 func (p *Faction) PassIncome() {
 }
 
-func (p *Faction) ReceiveCity(item city.CityItem) error {
+func (p *Faction) ReceiveCity(item CityItem) error {
+	p.Cities = append(p.Cities, item)
+
 	p.ReceiveResource(item.Receive)
 	p.Resource.City--
 	p.City++
@@ -698,7 +793,6 @@ func (p *Faction) ConvertDig(spade int) error {
 func (p *Faction) TurnEnd() error {
 	p.Action = false
 	p.Resource.Spade = 0
-	p.Resource.Science = Science{}
 
 	return nil
 }
@@ -719,6 +813,10 @@ func (p *Faction) PalaceTile(tile TileItem) error {
 
 	p.Resource.PalaceTile--
 
+	if tile.Type == TilePalace6PowerCity {
+		p.TownPower--
+	}
+
 	return nil
 }
 
@@ -732,6 +830,7 @@ func (p *Faction) SchoolTile(tile TileItem) error {
 			return errors.New("already")
 		}
 	}
+
 	p.Tiles = append(p.Tiles, tile)
 
 	p.ReceiveResource(tile.Once)
@@ -741,30 +840,36 @@ func (p *Faction) SchoolTile(tile TileItem) error {
 	return nil
 }
 
+func (p *Faction) RoundTile(tile TileItem) error {
+	for _, v := range p.Tiles {
+		if v.Type == tile.Type {
+			return errors.New("already")
+		}
+	}
+
+	p.Tiles = append(p.Tiles, tile)
+
+	p.ReceiveResource(tile.Once)
+
+	return nil
+}
+
 func (p *Faction) TileAction(category TileCategory, pos int) error {
 	var tile *TileItem
 
-	if category == TileRound {
-		if p.RoundTile.Type != TileType(pos) {
-			return errors.New("not found")
+	find := -1
+	for i, v := range p.Tiles {
+		if v.Category == category && v.Type == TileType(pos) {
+			find = i
+			break
 		}
-
-		tile = p.RoundTile
-	} else {
-		find := -1
-		for i, v := range p.Tiles {
-			if v.Category == category && v.Type == TileType(pos) {
-				find = i
-				break
-			}
-		}
-
-		if find == -1 {
-			return errors.New("not found")
-		}
-
-		tile = &p.Tiles[find]
 	}
+
+	if find == -1 {
+		return errors.New("not found")
+	}
+
+	tile = &p.Tiles[find]
 
 	if tile.Use == true {
 		return errors.New("already")

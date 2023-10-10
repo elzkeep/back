@@ -1,5 +1,7 @@
 package resources
 
+import "aoi/game/color"
+
 type TileCategory int
 
 const (
@@ -7,6 +9,8 @@ const (
 	TileSchool
 	TileInnovation
 	TileRound
+	TileFaction
+	TileColor
 )
 
 type TileType int
@@ -21,6 +25,7 @@ const (
 	TilePalaceSchoolVp
 	TilePalace6PowerCity
 	TilePalaceJump
+	TilePalacePower
 	TilePalaceCity
 	TilePalaceDVp
 	TilePalaceTpVp
@@ -29,7 +34,7 @@ const (
 	TilePalaceTpBuild
 	TilePalaceVp
 
-	TileRoundSideVP
+	TileRoundEdgeVP
 	TileRoundPristVP
 	TileRoundTpVP
 	TileRoundShVP
@@ -43,7 +48,7 @@ const (
 	TileSchoolWorker
 	TileSchoolSpade
 	TileSchoolPrist
-	TileSchoolSideVP
+	TileSchoolEdgeVP
 	TileSchoolCoin
 	TileSchoolAnnex
 	TileSchoolNeutral
@@ -52,6 +57,27 @@ const (
 	TileSchoolPower
 	TileSchoolPassCity
 	TileSchoolPassPrist
+
+	TileFactionBlessed
+	TileFactionFelines
+	TileFactionGoblins
+	TileFactionIllusionists
+	TileFactionInventors
+	TileFactionLizards
+	TileFactionMoles
+	TileFactionMonks
+	TileFactionNavigators
+	TileFactionOmar
+	TileFactionPhilosophers
+	TileFactionPsychics
+
+	TileColorYellow
+	TileColorGreen
+	TileColorBlue
+	TileColorGray
+	TileColorBrown
+	TileColorBlack
+	TileColorRed
 )
 
 type TileItem struct {
@@ -66,6 +92,7 @@ type TileItem struct {
 	Use      bool         `json:"use"`
 	Ship     int          `json:"ship"`
 	Coin     int          `json:"coin"`
+	Color    color.Color  `json:"color"`
 }
 
 type Tile struct {

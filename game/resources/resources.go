@@ -13,6 +13,34 @@ type Science struct {
 	Medicine    int `json:"medicine"`
 }
 
+func (p *Science) IsEmpty() bool {
+	if p.Any != 0 {
+		return false
+	}
+
+	if p.Single != 0 {
+		return false
+	}
+
+	if p.Banking != 0 {
+		return false
+	}
+
+	if p.Law != 0 {
+		return false
+	}
+
+	if p.Engineering != 0 {
+		return false
+	}
+
+	if p.Medicine != 0 {
+		return false
+	}
+
+	return true
+}
+
 type BuildVP struct {
 	D          int `json:"d"`
 	TP         int `json:"tp"`
@@ -29,22 +57,23 @@ type BuildVP struct {
 }
 
 type Price struct {
-	Coin      int     `json:"coin"`
-	Worker    int     `json:"worker"`
-	Prist     int     `json:"prist"`
-	Power     int     `json:"power"`
-	Spade     int     `json:"spade"`
-	Bridge    int     `json:"bridge"`
-	Book      int     `json:"book"`
-	TpUpgrade int     `json:"tpUpgrade"`
-	TpVP      int     `json:"tpVp"`
-	City      int     `json:"city"`
-	Science   Science `json:"science"`
-	VP        int     `json:"vp"`
-	Downgrade int     `json:"downgrade"`
-	Tile      int     `json:"tile"`
-	ShVP      int     `json:"shVp"`
-	TeVP      int     `json:"teVp"`
+	Coin        int     `json:"coin"`
+	Worker      int     `json:"worker"`
+	Prist       int     `json:"prist"`
+	Power       int     `json:"power"`
+	Spade       int     `json:"spade"`
+	Bridge      int     `json:"bridge"`
+	Book        int     `json:"book"`
+	TpUpgrade   int     `json:"tpUpgrade"`
+	TpVP        int     `json:"tpVp"`
+	City        int     `json:"city"`
+	Science     Science `json:"science"`
+	VP          int     `json:"vp"`
+	Downgrade   int     `json:"downgrade"`
+	Tile        int     `json:"tile"`
+	ShVP        int     `json:"shVp"`
+	TeVP        int     `json:"teVp"`
+	ShipUpgrade int     `json:"shipUpgrade"`
 }
 
 type Resource struct {

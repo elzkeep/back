@@ -19,6 +19,7 @@ type Map struct {
 	Height     int                        `json:"height"`
 	Data       [][]Mapitem                `json:"data"`
 	BridgeList []resources.BridgePosition `json:"bridge"`
+	CityList   []resources.Position       `json:"city"`
 }
 
 func NewMap() *Map {
@@ -253,6 +254,38 @@ func (p *Map) GetDistance(x1 int, y1 int, x2 int, y2 int) int {
 	return distance
 }
 
+func (p *Map) IsRiverside(x int, y int) bool {
+	items := resources.GetGroundPosition(x, y)
+
+	for _, v := range items {
+		if p.GetType(v.X, v.Y) == color.River {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *Map) IsEdge(x int, y int) bool {
+	if p.GetType(x-1, y) == color.None {
+		return true
+	}
+
+	if p.GetType(x+1, y) == color.None {
+		return true
+	}
+
+	if p.GetType(x, y-1) == color.None {
+		return true
+	}
+
+	if p.GetType(x, y+1) == color.None {
+		return true
+	}
+
+	return false
+}
+
 func (p *Map) CheckBuild(x int, y int, colorval color.Color, spade int) error {
 	typeval := p.GetType(x, y)
 	owner := p.GetOwner(x, y)
@@ -398,6 +431,7 @@ func (p *Map) Bridge(user color.Color, x1 int, y1 int, x2 int, y2 int) error {
 }
 
 func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
+	log.Println("distance", distance)
 	positions := resources.GetGroundPosition(x, y)
 
 	for _, position := range positions {
@@ -426,7 +460,7 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 		}
 	}
 
-	return p.FindRiver(user, x, y, 1, distance)
+	return p.FindRiver(user, x, y, 1, distance+1)
 }
 
 func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistance int) bool {
@@ -454,25 +488,28 @@ func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistanc
 	return false
 }
 
-func (p *Map) CheckCity(user color.Color, x int, y int) bool {
+func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.Position {
+	log.Println("CheckCity")
+
 	lists := p.GetBuildingList(user, x, y, make([]resources.Position, 0))
 
 	items := resources.Unique(lists)
 
 	total := 0
 	for _, v := range items {
+		for _, v2 := range p.CityList {
+			if v.X == v2.X && v.Y == v2.Y {
+				return make([]resources.Position, 0)
+			}
+		}
+
 		total += v.Building.Power()
 	}
 
-	log.Println("+++++++++++++++++++++++++++++++++")
-	log.Println("total :", total)
-	log.Println(items)
-	log.Println("---------------------------------")
-
-	if total >= 7 {
-		return true
+	if total >= power {
+		return items
 	} else {
-		return false
+		return make([]resources.Position, 0)
 	}
 }
 
@@ -522,4 +559,8 @@ func (p *Map) GetBuildingList(user color.Color, x int, y int, lists []resources.
 	// 파워 합계
 	// 연결된 것중 이미 마을이면 마울 불가능
 
+}
+
+func (p *Map) AddCityBuildingList(list []resources.Position) {
+	p.CityList = append(p.CityList, list...)
 }
