@@ -3,6 +3,7 @@ package factions
 import (
 	"aoi/game/action"
 	"aoi/game/resources"
+	"log"
 )
 
 type Monks struct {
@@ -39,6 +40,7 @@ func (p *Monks) AdvanceSpade() error {
 }
 
 func (p *Monks) FirstBuild(x int, y int) {
+	log.Println("monks firstbuild")
 	p.Faction.FirstBuild(x, y)
 }
 

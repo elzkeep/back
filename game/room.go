@@ -24,7 +24,7 @@ func Make(id int64) {
 
 	g.BuildStart()
 	g.FirstBuild(0, 3, 4)
-	g.FirstBuild(0, 4, 11)
+	//g.FirstBuild(0, 4, 11)
 	g.GetRoundTile(0, 0)
 	/*
 		log.Println(g.FirstBuild(0, 3, 4))

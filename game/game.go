@@ -117,15 +117,28 @@ func (p *Game) IsNormalTurn(user int) bool {
 func (p *Game) BuildStart() {
 	p.RoundTiles.Init(len(p.Factions))
 
-	for i, _ := range p.Factions {
+	for i, v := range p.Factions {
+		faction := v.GetInstance()
+		if faction.FirstBuilding == resources.SA {
+			continue
+		}
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
 	}
 
-	for i, _ := range p.Factions {
+	for i, v := range p.Factions {
+		faction := v.GetInstance()
+		if faction.FirstBuilding == resources.SA {
+			continue
+		}
 		p.Turn = append(p.Turn, Turn{User: len(p.Factions) - i - 1, Type: NormalTurn})
 	}
 
-	log.Println(p.Turn)
+	for i, v := range p.Factions {
+		faction := v.GetInstance()
+		if faction.FirstBuilding == resources.SA {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+	}
 }
 
 func (p *Game) Start() {
