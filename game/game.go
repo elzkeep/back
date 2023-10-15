@@ -269,7 +269,7 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 	return nil
 }
 
-func (p *Game) Build(user int, x int, y int) error {
+func (p *Game) Build(user int, x int, y int, building resources.Building) error {
 	if p.Round < 1 {
 		log.Println("round error")
 		return errors.New("round error")
@@ -281,8 +281,19 @@ func (p *Game) Build(user int, x int, y int) error {
 	}
 
 	faction := p.Factions[user].GetInstance()
+	if faction.Action {
+		if faction.Resource.Building == resources.None && faction.ExtraBuild == 0 {
+			return errors.New("Already completed the action")
+		}
+	}
 
 	flag := p.Map.CheckDistance(faction.Color, faction.GetShipDistance(), x, y)
+
+	if faction.Resource.Building == resources.TP {
+		if p.Map.GetType(x, y) == faction.Color {
+			flag = true
+		}
+	}
 
 	log.Println("flag", flag)
 	if flag == false {
@@ -303,21 +314,21 @@ func (p *Game) Build(user int, x int, y int) error {
 		needSpade = 0
 	}
 
-	err = faction.Build(x, y, needSpade)
+	err = faction.Build(x, y, needSpade, building)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	if p.Map.IsRiverside(x, y) {
+	if p.Map.IsRiverside(x, y) && building == resources.D {
 		faction.ReceiveRiverVP()
 	}
 
-	if p.Map.IsEdge(x, y) {
+	if p.Map.IsEdge(x, y) && building == resources.D {
 		faction.ReceiveEdgeVP()
 	}
 
-	p.Map.Build(x, y, faction.Color, resources.D)
+	p.Map.Build(x, y, faction.Color, building)
 
 	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
 
@@ -909,7 +920,7 @@ func (p *Game) PalaceTile(user int, pos int) error {
 		return errors.New("not found tile")
 	}
 
-	tile := p.PalaceTiles.Items[pos]
+	tile := p.PalaceTiles.GetTile(pos)
 
 	if tile.Use == true {
 		return errors.New("already select")

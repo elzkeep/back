@@ -1,5 +1,7 @@
 package resources
 
+import "log"
+
 type PalaceTile struct {
 	Items []TileItem `json:"items"`
 }
@@ -29,7 +31,7 @@ func (p *PalaceTile) Init(count int) {
 		TileItem{Category: TilePalace, Type: TilePalaceTpVp, Name: "6 coin", Action: Price{Coin: 3, Book: 1}, Build: BuildVP{TP: 3}, Use: false},
 		TileItem{Category: TilePalace, Type: TilePalaceRiverCity, Name: "6 coin", Receive: Price{Power: 6, ShipUpgrade: 2}, Use: false},
 		TileItem{Category: TilePalace, Type: TilePalaceBridge, Name: "6 coin", Receive: Price{Power: 6}, Once: Price{Book: 2, Spade: 2, Bridge: 2}, Use: false},
-		TileItem{Category: TilePalace, Type: TilePalaceTpBuild, Name: "2 power 1 book", Receive: Price{Power: 2, Book: 1}, Use: false},
+		TileItem{Category: TilePalace, Type: TilePalaceTpBuild, Name: "tp build", Receive: Price{Power: 2, Book: 1}, Once: Price{Building: TP}, Use: false},
 	}
 
 	p.Items = items
@@ -44,8 +46,9 @@ func (p *PalaceTile) Init(count int) {
 	*/
 }
 
-func (p *PalaceTile) GetTile(pos TileType) *TileItem {
-	return &p.Items[pos]
+func (p *PalaceTile) GetTile(pos int) TileItem {
+	log.Println(p.Items[pos].Name)
+	return p.Items[pos]
 }
 
 func (p *PalaceTile) Setup(pos int) {

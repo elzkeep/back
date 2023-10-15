@@ -41,8 +41,8 @@ func (p *Felines) FirstBuild(x int, y int) {
 	p.Faction.FirstBuild(x, y)
 }
 
-func (p *Felines) Build(x int, y int, needSpade int) error {
-	return p.Faction.Build(x, y, needSpade)
+func (p *Felines) Build(x int, y int, needSpade int, building resources.Building) error {
+	return p.Faction.Build(x, y, needSpade, building)
 }
 
 func (p *Felines) Upgrade(x int, y int, target resources.Building) error {

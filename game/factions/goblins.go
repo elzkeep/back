@@ -41,8 +41,8 @@ func (p *Goblins) FirstBuild(x int, y int) {
 	p.Faction.FirstBuild(x, y)
 }
 
-func (p *Goblins) Build(x int, y int, needSpade int) error {
-	return p.Faction.Build(x, y, needSpade)
+func (p *Goblins) Build(x int, y int, needSpade int, building resources.Building) error {
+	return p.Faction.Build(x, y, needSpade, building)
 }
 
 func (p *Goblins) Upgrade(x int, y int, target resources.Building) error {

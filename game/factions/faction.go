@@ -20,7 +20,7 @@ type FactionInterface interface {
 	PassIncome()
 
 	FirstBuild(x int, y int)
-	Build(x int, y int, needSpade int) error
+	Build(x int, y int, needSpade int, building Building) error
 	Upgrade(x int, y int, target Building) error
 	AdvanceShip() error
 	AdvanceSpade() error
@@ -86,6 +86,7 @@ func NewFaction(name string, ename string, factionTile TileItem, colorTile TileI
 	item.Resource.Coin = 15
 	item.Resource.Worker = 4
 	item.Resource.Power = [3]int{2, 4, 0}
+	item.Resource.Building = None
 	item.VP = 20
 	item.Spade = 0
 	item.MaxSpade = 2
@@ -233,6 +234,11 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.Resource.TpUpgrade += receive.TpUpgrade
 
 	p.Resource.SchoolTile += receive.Tile
+
+	p.Resource.Building = receive.Building
+	if p.Resource.Building != None {
+		log.Println("p.Resource.Building", p.Resource.Building)
+	}
 
 	if p.Resource.Bridge > p.MaxBridge {
 		p.Resource.Bridge = p.MaxBridge
@@ -488,10 +494,16 @@ func (p *Faction) FirstBuild(x int, y int) {
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: D})
 }
 
-func (p *Faction) Build(x int, y int, needSpade int) error {
+func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	if p.Action {
 		if p.ExtraBuild == 0 {
-			return errors.New("Already completed the action")
+			if p.Resource.Building == None {
+				return errors.New("Already completed the action")
+			} else {
+				if p.Resource.Building != building {
+					return errors.New("not match building")
+				}
+			}
 		} else {
 			p.ExtraBuild--
 		}
@@ -520,12 +532,15 @@ func (p *Faction) Build(x int, y int, needSpade int) error {
 		p.Resource.Spade = 0
 	}
 
-	p.UsePrice(p.Price[D])
+	if building == D {
+		p.UsePrice(p.Price[D])
+		p.Building[D]++
+		p.ReceiveDVP()
+	}
 
-	p.Building[D]++
-	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: D})
+	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
-	p.ReceiveDVP()
+	p.Resource.Building = None
 
 	p.Action = true
 

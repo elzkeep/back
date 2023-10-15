@@ -4,18 +4,18 @@ var _factionTiles []TileItem
 
 func init() {
 	_factionTiles = []TileItem{
-		TileItem{Category: TileFaction, Type: TileFactionBlessed, Name: "side VP", Once: Price{Science: Science{Banking: 1, Law: 1, Engineering: 1, Medicine: 1}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionFelines, Name: "P VP", Once: Price{Science: Science{Banking: 1, Medicine: 1}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionGoblins, Name: "TP VP", Once: Price{Science: Science{Banking: 1, Engineering: 1}, Worker: 1}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionIllusionists, Name: "SH/SA VP", Once: Price{Science: Science{Medicine: 2}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionInventors, Name: "spd", Once: Price{Tile: 1}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionLizards, Name: "bridge", Once: Price{Science: Science{Any: 2}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionMoles, Name: "1 science", Once: Price{Science: Science{Engineering: 2}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionMonks, Name: "te science", Once: Price{Science: Science{Law: 1}}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionNavigators, Name: "4PW", Once: Price{Science: Science{Law: 3}}, Build: BuildVP{River: 2}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionOmar, Name: "6C", Once: Price{Science: Science{Banking: 1, Engineering: 1}}, Receive: Price{Coin: 2, Power: 2}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionPhilosophers, Name: "6C", Once: Price{Science: Science{Banking: 2}}, Action: Price{Book: 1}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionPsychics, Name: "6C", Once: Price{Science: Science{Banking: 1, Medicine: 1}, Worker: 1}, Action: Price{Power: 5}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionBlessed, Name: "Blessed", Once: Price{Science: Science{Banking: 1, Law: 1, Engineering: 1, Medicine: 1}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionFelines, Name: "Felines", Once: Price{Science: Science{Banking: 1, Medicine: 1}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionGoblins, Name: "Goblins", Once: Price{Science: Science{Banking: 1, Engineering: 1}, Worker: 1}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionIllusionists, Name: "Illusionists", Once: Price{Science: Science{Medicine: 2}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionInventors, Name: "Inventors", Once: Price{Tile: 1}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionLizards, Name: "Lizards", Once: Price{Science: Science{Any: 2}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionMoles, Name: "Moles", Once: Price{Science: Science{Engineering: 2}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionMonks, Name: "Monks", Once: Price{Science: Science{Law: 1}}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionNavigators, Name: "Navigators", Once: Price{Science: Science{Law: 3}}, Build: BuildVP{River: 2}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionOmar, Name: "Omar", Once: Price{Science: Science{Banking: 1, Engineering: 1}}, Receive: Price{Coin: 2, Power: 2}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionPhilosophers, Name: "Philosophers", Once: Price{Science: Science{Banking: 2}}, Action: Price{Book: 1}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionPsychics, Name: "Psychics", Once: Price{Science: Science{Banking: 1, Medicine: 1}, Worker: 1}, Action: Price{Power: 5}, Use: false},
 	}
 
 	/*
@@ -28,7 +28,7 @@ func init() {
 }
 
 func GetFactionTile(value TileType) TileItem {
-	pos := int(value) - int(TileSchoolPassPrist)
+	pos := int(value) - int(TileSchoolPassPrist) - 1
 
 	return _factionTiles[pos]
 }

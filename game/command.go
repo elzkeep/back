@@ -74,18 +74,16 @@ func Command(p *Game, str string) error {
 	if cmd == "build" {
 		x, y := ConvertPosition(strs[2])
 
-		log.Println(x, y)
-
 		if p.Round == BuildRound {
 			err = p.FirstBuild(user, x, y)
 		} else {
-			err = p.Build(user, x, y)
+			target := ConvertBuilding(strs[3])
+
+			err = p.Build(user, x, y, target)
 		}
 	} else if cmd == "dig" {
 		x, y := ConvertPosition(strs[2])
 		dig := global.Atoi(strs[3])
-
-		log.Println(x, y)
 
 		err = p.Dig(user, x, y, dig)
 	} else if cmd == "upgrade" {
@@ -130,7 +128,6 @@ func Command(p *Game, str string) error {
 			pos := global.Atoi(strs[2][6:]) + int(resources.TileRoundCoin)
 
 			pos += int(resources.TileRoundCoin)
-			log.Println("pos", pos)
 			err = p.TileAction(user, resources.TileSchool, pos)
 		} else if action == "IN" {
 			pos := global.Atoi(strs[2][10:]) - 1
@@ -175,12 +172,11 @@ func Command(p *Game, str string) error {
 		p.TurnEnd(user)
 	}
 
-	if err == nil {
-		//log.Println("TURN END ==========================")
-		//p.TurnEnd(user)
+	if err != nil {
+		log.Println(err)
 	}
 
 	p.Map.Index++
-	log.Println(err)
+
 	return err
 }

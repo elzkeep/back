@@ -41,8 +41,8 @@ func (p *Blessed) FirstBuild(x int, y int) {
 	p.Faction.FirstBuild(x, y)
 }
 
-func (p *Blessed) Build(x int, y int, needSpade int) error {
-	return p.Faction.Build(x, y, needSpade)
+func (p *Blessed) Build(x int, y int, needSpade int, building resources.Building) error {
+	return p.Faction.Build(x, y, needSpade, building)
 }
 
 func (p *Blessed) Upgrade(x int, y int, target resources.Building) error {
