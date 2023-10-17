@@ -61,16 +61,12 @@ func (p *Psychics) PowerAction(item action.PowerActionItem) error {
 	return p.Faction.PowerAction(item)
 }
 
-func (p *Psychics) Book(item action.BookActionItem) error {
-	return p.Faction.Book(item)
+func (p *Psychics) Book(item action.BookActionItem, book resources.Book) error {
+	return p.Faction.Book(item, book)
 }
 
 func (p *Psychics) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return p.Faction.Bridge(x1, y1, x2, y2)
-}
-
-func (p *Psychics) PassIncome() {
-	p.Faction.PassIncome()
 }
 
 func (p *Psychics) ReceiveCity(item resources.CityItem) error {

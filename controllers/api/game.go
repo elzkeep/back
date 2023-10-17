@@ -45,9 +45,10 @@ func (c *GameController) Command(id int64, cmd string) {
 
 	ret := game.Command(g, cmd)
 
-	log.Println("command ret")
-	log.Println("-------------------------")
-	log.Println(ret)
-	log.Println("-------------------------")
+	if ret != nil {
+		log.Println("-------------------------")
+		log.Println(ret)
+		log.Println("-------------------------")
+	}
 	//c.Set("item", ret)
 }

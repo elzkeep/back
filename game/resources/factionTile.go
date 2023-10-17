@@ -14,7 +14,7 @@ func init() {
 		TileItem{Category: TileFaction, Type: TileFactionMonks, Name: "Monks", Once: Price{Science: Science{Law: 1}}, Use: false},
 		TileItem{Category: TileFaction, Type: TileFactionNavigators, Name: "Navigators", Once: Price{Science: Science{Law: 3}}, Build: BuildVP{River: 2}, Use: false},
 		TileItem{Category: TileFaction, Type: TileFactionOmar, Name: "Omar", Once: Price{Science: Science{Banking: 1, Engineering: 1}}, Receive: Price{Coin: 2, Power: 2}, Use: false},
-		TileItem{Category: TileFaction, Type: TileFactionPhilosophers, Name: "Philosophers", Once: Price{Science: Science{Banking: 2}}, Action: Price{Book: 1}, Use: false},
+		TileItem{Category: TileFaction, Type: TileFactionPhilosophers, Name: "Philosophers", Once: Price{Science: Science{Banking: 2}}, Action: Price{Book: Book{Any: 1}}, Use: false},
 		TileItem{Category: TileFaction, Type: TileFactionPsychics, Name: "Psychics", Once: Price{Science: Science{Banking: 1, Medicine: 1}, Worker: 1}, Action: Price{Power: 5}, Use: false},
 	}
 

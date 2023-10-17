@@ -53,14 +53,39 @@ func ConvertScience(str string) ScienceType {
 	return Banking
 }
 
-/*
+func ConvertBook(str string) resources.Book {
+	var book resources.Book
+	temp := strings.Split(str, " ")
 
-	PowerAction(item action.PowerActionItem) error
-	Book(item action.BookActionItem) error
-	Bridge(x1 int, y1 int, x2 int, y2 int) error
-	Pass(tile *RoundTileItem) error
-	ReceiveCity(item city.CityItem) error
-*/
+	for i := 0; i < len(temp)/2; i++ {
+		name := temp[i*2]
+		count := global.Atoi(temp[i*2+1])
+
+		if name == "banking" {
+			book.Banking += count
+		} else if name == "law" {
+			book.Law += count
+		} else if name == "engineering" {
+			book.Engineering += count
+		} else if name == "medicine" {
+			book.Medicine += count
+		}
+	}
+
+	return book
+}
+
+func ConvertBookType(str string) resources.BookType {
+	if str == "banking" {
+		return resources.BookBanking
+	} else if str == "law" {
+		return resources.BookLaw
+	} else if str == "engineering" {
+		return resources.BookEngineering
+	}
+
+	return resources.BookMedicine
+}
 
 func Command(p *Game, str string) error {
 	log.Println("Command", str)
@@ -107,6 +132,10 @@ func Command(p *Game, str string) error {
 		target := ConvertScience(strs[2])
 		level := global.Atoi(strs[3])
 		err = p.Science(user, target, level)
+	} else if cmd == "book" {
+		target := ConvertBookType(strs[2])
+		level := global.Atoi(strs[3])
+		err = p.Book(user, target, level)
 	} else if cmd == "action" {
 		action := strs[2][:2]
 
@@ -114,7 +143,10 @@ func Command(p *Game, str string) error {
 			pos := global.Atoi(strs[2][3:]) - 1
 
 			if pos >= len(p.PowerActions.Items) {
-				err = p.BookAction(user, pos-len(p.PowerActions.Items))
+				temp := strings.Split(str, "book ")
+				book := ConvertBook(temp[1])
+
+				err = p.BookAction(user, pos-len(p.PowerActions.Items), book)
 			} else {
 				err = p.PowerAction(user, pos)
 			}
@@ -123,6 +155,7 @@ func Command(p *Game, str string) error {
 			err = p.TileAction(user, resources.TilePalace, pos)
 		} else if action == "RO" {
 			pos := global.Atoi(strs[2][5:]) + int(resources.TilePalaceVp)
+			log.Println("ROUND", pos)
 			err = p.TileAction(user, resources.TileRound, pos)
 		} else if action == "SC" {
 			pos := global.Atoi(strs[2][6:]) + int(resources.TileRoundCoin)
@@ -170,10 +203,6 @@ func Command(p *Game, str string) error {
 		p.City(user, resources.CityType(pos))
 	} else if cmd == "save" {
 		p.TurnEnd(user)
-	}
-
-	if err != nil {
-		log.Println(err)
 	}
 
 	p.Map.Index++

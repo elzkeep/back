@@ -61,16 +61,12 @@ func (p *Navigators) PowerAction(item action.PowerActionItem) error {
 	return p.Faction.PowerAction(item)
 }
 
-func (p *Navigators) Book(item action.BookActionItem) error {
-	return p.Faction.Book(item)
+func (p *Navigators) Book(item action.BookActionItem, book resources.Book) error {
+	return p.Faction.Book(item, book)
 }
 
 func (p *Navigators) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return p.Faction.Bridge(x1, y1, x2, y2)
-}
-
-func (p *Navigators) PassIncome() {
-	p.Faction.PassIncome()
 }
 
 func (p *Navigators) ReceiveCity(item resources.CityItem) error {

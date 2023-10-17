@@ -9,7 +9,7 @@ var _colorTiles []TileItem
 
 func init() {
 	_colorTiles = []TileItem{
-		TileItem{Category: TileColor, Type: TileColorRed, Color: color.Red, Name: "Red", Once: Price{Book: 1, Worker: 1}, Use: false},
+		TileItem{Category: TileColor, Type: TileColorRed, Color: color.Red, Name: "Red", Once: Price{Book: Book{Any: 1}, Worker: 1}, Use: false},
 		TileItem{Category: TileColor, Type: TileColorYellow, Color: color.Yellow, Name: "Yellow", Once: Price{Spade: 1}, Use: false},
 		TileItem{Category: TileColor, Type: TileColorBrown, Color: color.Brown, Name: "Brown", Use: false},
 		TileItem{Category: TileColor, Type: TileColorBlack, Color: color.Black, Name: "Black", Once: Price{Power: 2, Prist: 1}, Use: false},

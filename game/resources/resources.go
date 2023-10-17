@@ -2,6 +2,7 @@ package resources
 
 import (
 	"errors"
+	"log"
 )
 
 type Science struct {
@@ -11,6 +12,39 @@ type Science struct {
 	Law         int `json:"law"`
 	Engineering int `json:"engineering"`
 	Medicine    int `json:"medicine"`
+}
+
+type BookType int
+
+const (
+	BookBanking BookType = iota
+	BookLaw
+	BookEngineering
+	BookMedicine
+)
+
+type Book struct {
+	Any         int `json:"any"`
+	Banking     int `json:"banking"`
+	Law         int `json:"law"`
+	Engineering int `json:"engineering"`
+	Medicine    int `json:"medicine"`
+}
+
+func (p *Book) Count() int {
+	return p.Any + p.Banking + p.Law + p.Engineering + p.Medicine
+}
+
+func (p *Book) IsEmpty() bool {
+	if p.Any+p.Banking+p.Law+p.Engineering+p.Medicine == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p *Book) Print() {
+	log.Printf("Any: %v, Banking: %v, Law: %v, Engineering: %v, Medicine: %v\n", p.Any, p.Banking, p.Law, p.Engineering, p.Medicine)
 }
 
 func (p *Science) IsEmpty() bool {
@@ -63,7 +97,7 @@ type Price struct {
 	Power       int      `json:"power"`
 	Spade       int      `json:"spade"`
 	Bridge      int      `json:"bridge"`
-	Book        int      `json:"book"`
+	Book        Book     `json:"book"`
 	TpUpgrade   int      `json:"tpUpgrade"`
 	TpVP        int      `json:"tpVp"`
 	City        int      `json:"city"`
@@ -84,7 +118,7 @@ type Resource struct {
 	Power      [3]int   `json:"power"`
 	Spade      int      `json:"spade"`
 	Bridge     int      `json:"bridge"`
-	Book       int      `json:"book"`
+	Book       Book     `json:"book"`
 	TpUpgrade  int      `json:"tpUpgrade"`
 	TpVP       int      `json:"tpVp"`
 	City       int      `json:"city"`
@@ -119,7 +153,7 @@ func CheckResource(have Resource, need Price) error {
 		return errors.New("not enough bridge")
 	}
 
-	if have.Book < need.Book {
+	if have.Book.Count() < need.Book.Count() {
 		return errors.New("not enough book")
 	}
 

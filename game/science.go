@@ -41,7 +41,7 @@ func (p *Science) AddUser(user color.Color, value []int) {
 	}
 }
 
-func (p *Science) Send(user *factions.Faction, pos ScienceType) {
+func (p *Science) Send(user *factions.Faction, pos ScienceType) int {
 	step := 2
 
 	count := len(p.Count[pos])
@@ -55,26 +55,28 @@ func (p *Science) Send(user *factions.Faction, pos ScienceType) {
 		p.Count[pos] = append(p.Count[pos], user.Color)
 	}
 
-	p.Action(user, pos, step)
+	return p.Action(user, pos, step)
 }
 
-func (p *Science) Supploy(user *factions.Faction, pos ScienceType) {
-	p.Action(user, pos, 1)
+func (p *Science) Supploy(user *factions.Faction, pos ScienceType) int {
+	return p.Action(user, pos, 1)
 }
 
-func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) {
+func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) int {
 	if step == 0 {
-		return
+		return 0
 	}
 
 	if p.Value[pos][user.Color] >= 12 {
-		return
+		return 0
 	}
+
+	inc := 0
 
 	for i := 0; i < step; i++ {
 		if p.Value[pos][user.Color] == 7 {
 			if user.Key == 0 {
-				return
+				return inc
 			}
 			user.Key--
 
@@ -98,7 +100,11 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) {
 		} else if value == 12 {
 			user.ReceivePower(3, false)
 		}
+
+		inc++
 	}
+
+	return inc
 }
 
 func (p *Science) Receive(user *factions.Faction, resource resources.Price) {

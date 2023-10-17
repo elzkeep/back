@@ -17,7 +17,6 @@ type FactionInterface interface {
 	Print()
 	FirstIncome()
 	Income()
-	PassIncome()
 
 	FirstBuild(x int, y int)
 	Build(x int, y int, needSpade int, building Building) error
@@ -27,7 +26,7 @@ type FactionInterface interface {
 	SendScholar() error
 	SupployScholar() error
 	PowerAction(item action.PowerActionItem) error
-	Book(item action.BookActionItem) error
+	Book(item action.BookActionItem, book Book) error
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
 	Pass(tile TileItem) (error, TileItem)
 	ReceiveCity(item CityItem) error
@@ -80,8 +79,6 @@ func NewFaction(name string, ename string, factionTile TileItem, colorTile TileI
 	item.Name = name
 	item.Ename = ename
 	item.Color = colorTile.Color
-
-	log.Printf("color = %v\n", item.Color.ToString())
 
 	item.Resource.Coin = 15
 	item.Resource.Worker = 4
@@ -139,7 +136,8 @@ func NewFaction(name string, ename string, factionTile TileItem, colorTile TileI
 	item.Resource.Coin = 100
 	item.Resource.Worker = 100
 	item.Resource.Prist = 7
-	item.Resource.Book = 100
+	item.Resource.Book = Book{Banking: 2, Law: 3, Engineering: 2, Medicine: 3}
+
 	item.Resource.Power = [3]int{0, 0, 12}
 
 	if colorTile.Type == TileColorGray {
@@ -157,7 +155,7 @@ func (p *Faction) GetShipDistance() int {
 	for _, v := range p.Tiles {
 		ship += v.Ship
 	}
-	log.Println("ship", ship)
+
 	return p.Ship + ship
 }
 
@@ -220,8 +218,13 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.Resource.Coin += receive.Coin
 	p.Resource.Worker += receive.Worker
 	p.Resource.Prist += receive.Prist
-	p.Resource.Book += receive.Book
 	p.Resource.Spade += receive.Spade
+
+	p.Resource.Book.Any += receive.Book.Any
+	p.Resource.Book.Banking += receive.Book.Banking
+	p.Resource.Book.Law += receive.Book.Law
+	p.Resource.Book.Engineering += receive.Book.Engineering
+	p.Resource.Book.Medicine += receive.Book.Medicine
 
 	p.Resource.Science.Any += receive.Science.Any
 	p.Resource.Science.Single += receive.Science.Single
@@ -236,9 +239,6 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.Resource.SchoolTile += receive.Tile
 
 	p.Resource.Building = receive.Building
-	if p.Resource.Building != None {
-		log.Println("p.Resource.Building", p.Resource.Building)
-	}
 
 	if p.Resource.Bridge > p.MaxBridge {
 		p.Resource.Bridge = p.MaxBridge
@@ -413,12 +413,12 @@ func (p *Faction) UsePower(value int) {
 func (p *Faction) Print() {
 	extraShip := ""
 
-	log.Printf("%v: %v C, %v W, %v/%v P, %v B, %v/%v/%v pw, dig level: %v/%v, ship level: %v%v/%v\n",
+	log.Printf("%v: %v C, %v W, %v/%v P, %v/%v/%v/%v B, %v/%v/%v pw, dig level: %v/%v, ship level: %v%v/%v\n",
 		p.Ename,
 		p.Resource.Coin,
 		p.Resource.Worker,
 		p.Resource.Prist, p.MaxPrist,
-		p.Resource.Book,
+		p.Resource.Book.Banking, p.Resource.Book.Law, p.Resource.Book.Engineering, p.Resource.Book.Medicine,
 		p.Resource.Power[0], p.Resource.Power[1], p.Resource.Power[2],
 		p.Spade, p.MaxSpade, p.Ship, extraShip, p.MaxShip)
 }
@@ -466,7 +466,6 @@ func (p *Faction) AdvanceShip() error {
 }
 
 func (p *Faction) AdvanceSpade() error {
-	log.Println("Advance Spade:")
 	if p.Spade == p.MaxSpade {
 		return errors.New("max spade")
 	}
@@ -474,7 +473,6 @@ func (p *Faction) AdvanceSpade() error {
 	err := CheckResource(p.Resource, p.AdvanceSpadePrice)
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -490,8 +488,8 @@ func (p *Faction) AdvanceSpade() error {
 }
 
 func (p *Faction) FirstBuild(x int, y int) {
-	p.Building[D]++
-	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: D})
+	p.Building[p.FirstBuilding]++
+	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: p.FirstBuilding})
 }
 
 func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
@@ -509,21 +507,20 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 		}
 	}
 
-	if p.MaxBuilding[D] <= p.Building[D] {
+	if p.MaxBuilding[building] <= p.Building[building] {
 		return errors.New("full building")
 	}
 
-	err := CheckResource(p.Resource, p.Price[D])
-	if err != nil {
-		log.Println(err)
-		return err
+	if building == D {
+		err := CheckResource(p.Resource, p.Price[D])
+		if err != nil {
+			return err
+		}
 	}
 
 	if p.Resource.Worker < p.GetWorkerForSpade()*(needSpade-p.Resource.Spade)+p.Price[D].Worker {
 		return errors.New("not enough spade")
 	}
-
-	log.Println(p.Resource.Spade, needSpade)
 
 	if p.Resource.Spade >= needSpade {
 		p.Resource.Spade -= needSpade
@@ -534,9 +531,10 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 
 	if building == D {
 		p.UsePrice(p.Price[D])
-		p.Building[D]++
 		p.ReceiveDVP()
 	}
+
+	p.Building[building]++
 
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
@@ -607,25 +605,21 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 		return errors.New("not found building")
 	}
 
-	log.Println("max", p.MaxBuilding[target])
-	log.Println("current", p.Building[target])
 	if p.MaxBuilding[target] <= p.Building[target] {
-		log.Println("this this")
 		return errors.New("full building")
 	}
 
-	log.Println("nonono")
-
-	err := CheckResource(p.Resource, p.Price[target])
-	if err != nil {
-		log.Println(err)
-		return err
+	if target == TP && p.Resource.TpUpgrade > 0 {
+	} else {
+		err := CheckResource(p.Resource, p.Price[target])
+		if err != nil {
+			return err
+		}
+		p.UsePrice(p.Price[target])
 	}
 
 	p.Building[current]--
 	p.Building[target]++
-
-	p.UsePrice(p.Price[target])
 
 	for i, item := range p.BuildingList {
 		if item.X == x && item.Y == y {
@@ -690,8 +684,19 @@ func (p *Faction) PowerAction(item action.PowerActionItem) error {
 	return nil
 }
 
-func (p *Faction) Book(item action.BookActionItem) error {
-	p.Resource.Book -= item.Book
+func (p *Faction) Book(item action.BookActionItem, book Book) error {
+	if p.Resource.Book.Banking < book.Banking ||
+		p.Resource.Book.Law < book.Law ||
+		p.Resource.Book.Engineering < book.Engineering ||
+		p.Resource.Book.Medicine < book.Medicine {
+		return errors.New("not enough book")
+	}
+
+	p.Resource.Book.Banking -= book.Banking
+	p.Resource.Book.Law -= book.Law
+	p.Resource.Book.Engineering -= book.Engineering
+	p.Resource.Book.Medicine -= book.Medicine
+
 	p.ReceiveResource(item.Receive)
 
 	p.Action = true
@@ -703,7 +708,6 @@ func (p *Faction) Book(item action.BookActionItem) error {
 
 func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	if p.Resource.Bridge == 0 {
-		log.Println("not have bridge")
 		return errors.New("not have bridge")
 	}
 
@@ -726,8 +730,6 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 	p.Resource.Spade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
-
-	p.PassIncome()
 
 	for i, v := range p.Tiles {
 		if v.Type == TileRoundSchoolScienceCoin {
@@ -764,9 +766,6 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 	p.Print()
 
 	return nil, ret
-}
-
-func (p *Faction) PassIncome() {
 }
 
 func (p *Faction) ReceiveCity(item CityItem) error {
