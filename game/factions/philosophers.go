@@ -6,11 +6,11 @@ import (
 )
 
 type Philosophers struct {
-	Faction *Faction
+	Faction
 }
 
 func (p *Philosophers) Init(tile resources.TileItem) {
-	p.Faction = NewFaction("Philosophers", "Philosophers", resources.GetFactionTile(resources.TileFactionPhilosophers), tile)
+	p.InitFaction("Philosophers", "Philosophers", resources.GetFactionTile(resources.TileFactionPhilosophers), tile)
 }
 
 func (p *Philosophers) Income() {
@@ -26,7 +26,7 @@ func (p *Philosophers) Print() {
 }
 
 func (p *Philosophers) GetInstance() *Faction {
-	return p.Faction
+	return &p.Faction
 }
 
 func (p *Philosophers) AdvanceShip() error {

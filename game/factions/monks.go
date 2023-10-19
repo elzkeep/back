@@ -7,12 +7,12 @@ import (
 )
 
 type Monks struct {
-	Faction *Faction
+	Faction
 }
 
 func (p *Monks) Init(tile resources.TileItem) {
-	p.Faction = NewFaction("Monks", "Monks", resources.GetFactionTile(resources.TileFactionMonks), tile)
-	p.Faction.FirstBuilding = resources.SA
+	p.InitFaction("Monks", "Monks", resources.GetFactionTile(resources.TileFactionMonks), tile)
+	p.FirstBuilding = resources.SA
 }
 
 func (p *Monks) Income() {
@@ -28,7 +28,7 @@ func (p *Monks) Print() {
 }
 
 func (p *Monks) GetInstance() *Faction {
-	return p.Faction
+	return &p.Faction
 }
 
 func (p *Monks) AdvanceShip() error {

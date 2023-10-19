@@ -6,11 +6,11 @@ import (
 )
 
 type Omar struct {
-	Faction *Faction
+	Faction
 }
 
 func (p *Omar) Init(tile resources.TileItem) {
-	p.Faction = NewFaction("Omar", "Omar", resources.GetFactionTile(resources.TileFactionOmar), tile)
+	p.InitFaction("Omar", "Omar", resources.GetFactionTile(resources.TileFactionOmar), tile)
 }
 
 func (p *Omar) Income() {
@@ -26,7 +26,7 @@ func (p *Omar) Print() {
 }
 
 func (p *Omar) GetInstance() *Faction {
-	return p.Faction
+	return &p.Faction
 }
 
 func (p *Omar) AdvanceShip() error {

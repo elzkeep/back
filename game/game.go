@@ -361,7 +361,7 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 	}
 
 	log.Println("build success")
-	faction.FirstBuild(x, y)
+	p.Factions[user].FirstBuild(x, y)
 
 	p.Map.Build(x, y, faction.Color, faction.FirstBuilding)
 
