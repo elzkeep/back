@@ -38,18 +38,18 @@ func NewSchoolTile() *SchoolTile {
 
 func (p *SchoolTile) Init(count int) {
 	items := []TileItem{
-		TileItem{Category: TileSchool, Type: TileSchoolWorker, Name: "2W", Receive: Price{Worker: 1, Science: Science{Any: 1}}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolSpade, Name: "prist vp", Once: Price{Spade: 2}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolPrist, Name: "tp vp", Build: BuildVP{Prist: 2}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolEdgeVP, Name: "sh/sa vp", Build: BuildVP{Edge: 3}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolCoin, Name: "1 spade", Receive: Price{Coin: 2, VP: 3}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolAnnex, Name: "1 bridge", Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolNeutral, Name: "1 science", Receive: Price{Power: 2, Coin: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolWorker, Name: "Worker", Receive: Price{Worker: 1, Science: Science{Any: 1}}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolSpade, Name: "Spade", Once: Price{Spade: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolPrist, Name: "Prist", Build: BuildVP{Prist: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolEdgeVP, Name: "EdgeVP", Build: BuildVP{Edge: 3}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolCoin, Name: "Coin", Receive: Price{Coin: 2, VP: 3}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolAnnex, Name: "Annex", Once: Price{Annex: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolNeutral, Name: "1 science", Receive: Price{Power: 2, Coin: 2}, Once: Price{Building: WHITE_TP}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolBook, Name: "1 science", Receive: Price{Power: 1, Book: Book{Any: 1}}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolVP, Name: "te science", Once: Price{Coin: 2, Worker: 1, VP: 5}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolPower, Name: "6 coin", Action: Price{Power: 4}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolPassCity, Name: "6 coin", Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolPassPrist, Name: "6 coin", Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolPassCity, Name: "6 coin", Pass: Price{CityVP: 2}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolPassPrist, Name: "6 coin", Pass: Price{ScienceVP: 1}, Use: false},
 	}
 
 	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })

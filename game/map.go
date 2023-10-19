@@ -18,6 +18,7 @@ type Map struct {
 	Height     int                        `json:"height"`
 	Data       [][]Mapitem                `json:"data"`
 	BridgeList []resources.BridgePosition `json:"bridge"`
+	AnnexList  []resources.Position       `json:"annex"`
 	CityList   []resources.Position       `json:"city"`
 }
 
@@ -25,6 +26,7 @@ func NewMap() *Map {
 	var item Map
 
 	item.BridgeList = make([]resources.BridgePosition, 0)
+	item.AnnexList = make([]resources.Position, 0)
 	item.Width = 9
 	item.Height = 13
 	item.Type = 2
@@ -500,6 +502,19 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 			}
 		}
 
+		for _, a := range p.AnnexList {
+			if v.X != a.X && v.Y != a.Y {
+				continue
+			}
+
+			if a.Color != user {
+				continue
+			}
+
+			total++
+			count++
+		}
+
 		total += v.Building.Power()
 	}
 
@@ -553,4 +568,24 @@ func (p *Map) GetBuildingList(user color.Color, x int, y int, lists []resources.
 
 func (p *Map) AddCityBuildingList(list []resources.Position) {
 	p.CityList = append(p.CityList, list...)
+}
+
+func (p *Map) CheckAnnex(user color.Color, x int, y int) error {
+	if p.GetOwner(x, y) != user {
+		return errors.New("not owner")
+	}
+
+	for _, v := range p.AnnexList {
+		if x == v.X && y == v.Y {
+			return errors.New("already")
+		}
+	}
+
+	return nil
+}
+
+func (p *Map) Annex(user color.Color, x int, y int) error {
+	p.AnnexList = append(p.AnnexList, resources.Position{X: x, Y: y, Color: user})
+
+	return nil
 }

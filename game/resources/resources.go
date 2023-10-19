@@ -109,6 +109,9 @@ type Price struct {
 	TeVP        int      `json:"teVp"`
 	ShipUpgrade int      `json:"shipUpgrade"`
 	Building    Building `json:"building"`
+	Annex       int      `json:"annex"`
+	CityVP      int      `json:"cityVp"`
+	ScienceVP   int      `json:"scienceVp"`
 }
 
 type Resource struct {
@@ -130,6 +133,7 @@ type Resource struct {
 	ShVP       int      `json:"shVp"`
 	TeVP       int      `json:"teVp"`
 	Building   Building `json:"building"`
+	Annex      int      `json:"annex"`
 }
 
 func CheckResource(have Resource, need Price) error {

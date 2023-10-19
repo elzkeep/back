@@ -187,25 +187,25 @@ func Command(p *Game, str string) error {
 	} else if cmd == "palacetile" {
 		pos := global.Atoi(strs[2])
 
-		p.PalaceTile(user, pos)
+		err = p.PalaceTile(user, pos)
 	} else if cmd == "schooltile" {
 		science := ConvertScience(strs[2])
 		level := 3 - global.Atoi(strs[3])
 
-		p.SchoolTile(user, int(science), level)
+		err = p.SchoolTile(user, int(science), level)
 	} else if cmd == "bridge" {
 		x, y := ConvertPosition(strs[2])
 		x2, y2 := ConvertPosition(strs[3])
 
-		p.Bridge(user, x, y, x2, y2)
+		err = p.Bridge(user, x, y, x2, y2)
 	} else if cmd == "city" {
 		pos := global.Atoi(strs[2]) - 1
 
-		p.City(user, resources.CityType(pos))
+		err = p.City(user, resources.CityType(pos))
 	} else if cmd == "burn" {
 		count := global.Atoi(strs[2]) - 1
 
-		p.Burn(user, count)
+		err = p.Burn(user, count)
 	} else if cmd == "convert" {
 		category := strs[2]
 		source := resources.Price{}
@@ -245,7 +245,11 @@ func Command(p *Game, str string) error {
 			target.Coin = targetCount
 		}
 
-		p.Convert(user, source, target)
+		err = p.Convert(user, source, target)
+	} else if cmd == "annex" {
+		x, y := ConvertPosition(strs[2])
+
+		err = p.Annex(user, x, y)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	}

@@ -3,6 +3,7 @@ package factions
 import (
 	"aoi/game/action"
 	"aoi/game/color"
+	"aoi/game/resources"
 	. "aoi/game/resources"
 	"errors"
 
@@ -49,6 +50,7 @@ type Faction struct {
 	BuildingPower     [6]int           `json:"buildingPower"`
 	BuildingList      []Position       `json:"buildingList"`
 	BridgeList        []BridgePosition `json:"bridgeList"`
+	AnnexList         []Position       `json:"AnnexList"`
 	Price             [6]Price         `json:"price"`
 	AdvanceShipPrice  Price            `json:"advanceShipPrice"`
 	AdvanceSpadePrice Price            `json:"advanceSpadePrice"`
@@ -132,6 +134,7 @@ func NewFaction(name string, ename string, factionTile TileItem, colorTile TileI
 
 	item.BuildingList = make([]Position, 0)
 	item.BridgeList = make([]BridgePosition, 0)
+	item.AnnexList = make([]Position, 0)
 
 	item.Resource.Coin = 100
 	item.Resource.Worker = 100
@@ -229,6 +232,8 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.Resource.Science.Any += receive.Science.Any
 	p.Resource.Science.Single += receive.Science.Single
 
+	p.Resource.Annex += receive.Annex
+
 	p.Resource.City += receive.City
 	p.VP += receive.VP
 
@@ -257,8 +262,19 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.VP += receive.TpVP * p.Building[TP]
 	p.VP += receive.TeVP * p.Building[TE]
 	p.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
+	p.VP += receive.CityVP * p.City
 
-	if receive.Spade > 0 {
+	if receive.ScienceVP > 0 {
+		min := 999
+		for _, v := range p.Science {
+			if v < min {
+				min = v
+			}
+		}
+		p.VP += min
+	}
+
+	if receive.Spade > 0 || p.Resource.Building != resources.None {
 		p.ExtraBuild = 1
 	}
 
@@ -850,6 +866,24 @@ func (p *Faction) Convert(source Price, target Price) error {
 
 	p.UsePrice(source)
 	p.ReceiveResource(target)
+
+	return nil
+}
+
+func (p *Faction) Annex(x int, y int) error {
+	if p.Action == true {
+		return errors.New("already action end")
+	}
+
+	if p.Resource.Annex == 0 {
+		return errors.New("not have annex")
+	}
+
+	p.Resource.Annex--
+
+	p.AnnexList = append(p.AnnexList, Position{X: x, Y: y})
+
+	p.Print()
 
 	return nil
 }

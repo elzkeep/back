@@ -1,10 +1,13 @@
 package resources
 
+import "aoi/game/color"
+
 type Position struct {
-	X        int      `json:"x"`
-	Y        int      `json:"y"`
-	Building Building `json:"building"`
-	City     bool     `json:"city"`
+	X        int         `json:"x"`
+	Y        int         `json:"y"`
+	Color    color.Color `json:"color"`
+	Building Building    `json:"building"`
+	City     bool        `json:"city"`
 }
 
 func GetGroundPosition(x int, y int) []Position {

@@ -1342,3 +1342,44 @@ func (p *Game) Convert(user int, source resources.Price, target resources.Price)
 	faction := p.Factions[user].GetInstance()
 	return faction.Convert(source, target)
 }
+
+func (p *Game) Annex(user int, x int, y int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+
+	err := p.Map.CheckAnnex(faction.Color, x, y)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = faction.Annex(x, y)
+	if err != nil {
+		return err
+	}
+
+	p.Map.Annex(faction.Color, x, y)
+
+	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+
+	if len(lists) > 0 {
+		faction.CityBuildingList = lists
+		faction.Resource.City++
+	}
+
+	return nil
+}
