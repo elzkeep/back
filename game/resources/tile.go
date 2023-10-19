@@ -78,6 +78,22 @@ const (
 	TileColorBrown
 	TileColorBlack
 	TileColorRed
+
+	TileInnovationKind
+	TileInnovationCount
+	TileInnovationSchool
+	TileInnovationCity
+	TileInnovationScience
+	TileInnovationCluster
+	TileInnovationD
+	TileInnovationUpgrade
+	TileInnovationBridge
+	TileInnovationFreeD
+	TileInnovationFreeTP
+	TileInnovationFreeSchool
+	TileInnovationFreeSA
+	TileInnovationFreeSH
+	TileInnovationFreeMT
 )
 
 type TileItem struct {

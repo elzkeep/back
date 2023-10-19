@@ -44,7 +44,7 @@ func (p *SchoolTile) Init(count int) {
 		TileItem{Category: TileSchool, Type: TileSchoolEdgeVP, Name: "EdgeVP", Build: BuildVP{Edge: 3}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolCoin, Name: "Coin", Receive: Price{Coin: 2, VP: 3}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolAnnex, Name: "Annex", Once: Price{Annex: 2}, Use: false},
-		TileItem{Category: TileSchool, Type: TileSchoolNeutral, Name: "1 science", Receive: Price{Power: 2, Coin: 2}, Once: Price{Building: WHITE_TP}, Use: false},
+		TileItem{Category: TileSchool, Type: TileSchoolNeutral, Name: "1 science", Receive: Price{Power: 2, Coin: 2}, Once: Price{Building: WHITE_TOWER}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolBook, Name: "1 science", Receive: Price{Power: 1, Book: Book{Any: 1}}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolVP, Name: "te science", Once: Price{Coin: 2, Worker: 1, VP: 5}, Use: false},
 		TileItem{Category: TileSchool, Type: TileSchoolPower, Name: "6 coin", Action: Price{Power: 4}, Use: false},

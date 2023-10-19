@@ -337,6 +337,13 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.Ship = p.MaxShip
 	}
 
+	p.Spade += receive.SpadeUpgrade
+
+	if p.Spade > p.MaxSpade {
+		p.Spade = p.MaxSpade
+	}
+
+	p.VP += receive.DVP * p.Building[D]
 	p.VP += receive.TpVP * p.Building[TP]
 	p.VP += receive.TeVP * p.Building[TE]
 	p.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
