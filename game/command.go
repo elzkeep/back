@@ -3,6 +3,7 @@ package game
 import (
 	"aoi/game/resources"
 	"aoi/global"
+	"fmt"
 	"log"
 	"strings"
 )
@@ -201,6 +202,50 @@ func Command(p *Game, str string) error {
 		pos := global.Atoi(strs[2]) - 1
 
 		p.City(user, resources.CityType(pos))
+	} else if cmd == "burn" {
+		count := global.Atoi(strs[2]) - 1
+
+		p.Burn(user, count)
+	} else if cmd == "convert" {
+		category := strs[2]
+		source := resources.Price{}
+		target := resources.Price{}
+
+		pos := 0
+
+		if category == "book" {
+			book := ConvertBook(fmt.Sprintf("%v %v", strs[3], strs[4]))
+			source.Book = book
+
+			pos = 6
+		} else {
+			count := global.Atoi(strs[3])
+
+			if category == "power" {
+				source.Power = count
+			} else if category == "prist" {
+				source.Prist = count
+			} else if category == "worker" {
+				source.Worker = count
+			}
+
+			pos = 5
+		}
+
+		targetCategory := strs[pos]
+		targetCount := global.Atoi(strs[pos+1])
+
+		if targetCategory == "book" {
+			target.Book.Any = targetCount
+		} else if targetCategory == "prist" {
+			target.Prist = targetCount
+		} else if targetCategory == "worker" {
+			target.Worker = targetCount
+		} else if targetCategory == "coin" {
+			target.Coin = targetCount
+		}
+
+		p.Convert(user, source, target)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	}

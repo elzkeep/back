@@ -316,6 +316,30 @@ func (p *Game) IsScienceTurn() bool {
 	return true
 }
 
+func (p *Game) IsSpadeTurn() bool {
+	if len(p.Turn) == 0 {
+		return false
+	}
+
+	if p.Turn[0].Type != SpadeTurn {
+		return false
+	}
+
+	return true
+}
+
+func (p *Game) IsBookTurn() bool {
+	if len(p.Turn) == 0 {
+		return false
+	}
+
+	if p.Turn[0].Type != BookTurn {
+		return false
+	}
+
+	return true
+}
+
 func (p *Game) FirstBuild(user int, x int, y int) error {
 	if p.Round != BuildRound {
 		log.Println("round error : FirstBuild")
@@ -524,9 +548,14 @@ func (p *Game) PowerAction(user int, pos int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -557,9 +586,14 @@ func (p *Game) BookAction(user int, pos int, book resources.Book) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -595,9 +629,14 @@ func (p *Game) AdvanceShip(user int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -624,9 +663,14 @@ func (p *Game) AdvanceSpade(user int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -653,12 +697,15 @@ func (p *Game) SendScholar(user int, pos ScienceType) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
 	}
 
-	log.Println("pos", pos)
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
 
 	faction := p.Factions[user].GetInstance()
 	if faction.Action {
@@ -685,9 +732,14 @@ func (p *Game) SupployScholar(user int, pos ScienceType) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -715,9 +767,14 @@ func (p *Game) Pass(user int, pos int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -748,9 +805,14 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() && !p.IsSpadeTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -815,6 +877,11 @@ func (p *Game) GetRoundTile(user int, pos int) error {
 		return errors.New("It's not a turn")
 	}
 
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
 	faction := p.Factions[user].GetInstance()
 	tile := p.RoundTiles.Pass(pos)
 	log.Println("tile name", tile.Name)
@@ -831,9 +898,14 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	/*
@@ -976,6 +1048,11 @@ func (p *Game) City(user int, city resources.CityType) error {
 		return errors.New("It's not a turn")
 	}
 
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
 	faction := p.Factions[user].GetInstance()
 	if faction.Resource.City == 0 {
 		log.Println("have not city")
@@ -1010,6 +1087,11 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() && !p.IsScienceTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -1052,6 +1134,11 @@ func (p *Game) Book(user int, pos resources.BookType, count int) error {
 		return errors.New("It's not a turn")
 	}
 
+	if !p.IsNormalTurn() && !p.IsBookTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
 	faction := p.Factions[user].GetInstance()
 	if faction.Resource.Book.Any == 0 {
 		log.Println("have not book")
@@ -1086,6 +1173,11 @@ func (p *Game) ConvertDig(user int, spade int) error {
 		return errors.New("It's not a turn")
 	}
 
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
 	faction := p.Factions[user].GetInstance()
 	faction.ConvertDig(spade)
 	return nil
@@ -1100,6 +1192,11 @@ func (p *Game) PalaceTile(user int, pos int) error {
 	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	log.Println("palace", len(p.PalaceTiles.Items), pos)
@@ -1129,9 +1226,14 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 		return errors.New("round error")
 	}
 
-	if !p.IsTurn(user) || p.IsPowerTurn() {
+	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	faction := p.Factions[user].GetInstance()
@@ -1157,6 +1259,11 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 	if !p.IsTurn(user) {
 		log.Println("It's not a turn", p.Turn, user)
 		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
 	}
 
 	if p.SchoolTiles.Items[science][level].Count == 0 {
@@ -1194,4 +1301,44 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 	p.SchoolTiles.Items[science][level].Count--
 
 	return nil
+}
+
+func (p *Game) Burn(user int, count int) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+	return faction.Burn(count)
+}
+
+func (p *Game) Convert(user int, source resources.Price, target resources.Price) error {
+	if p.Round < 1 {
+		log.Println("round error")
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		log.Println("It's not a turn", p.Turn, user)
+		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		log.Println("It's not a normal turn")
+		return errors.New("It's not a normal turn")
+	}
+
+	faction := p.Factions[user].GetInstance()
+	return faction.Convert(source, target)
 }

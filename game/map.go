@@ -482,6 +482,9 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 	items := resources.Unique(lists)
 
 	total := 0
+	count := len(items)
+	needCount := 4
+
 	for _, v := range items {
 		for _, v2 := range p.CityList {
 			if v.X == v2.X && v.Y == v2.Y {
@@ -489,10 +492,18 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 			}
 		}
 
+		if v.Building == resources.WHITE_D {
+			needCount = 2
+		} else if v.Building == resources.SA || v.Building == resources.WHITE_SA {
+			if needCount > 3 {
+				needCount = 3
+			}
+		}
+
 		total += v.Building.Power()
 	}
 
-	if total >= power {
+	if total >= power && count >= needCount {
 		return items
 	} else {
 		return make([]resources.Position, 0)
@@ -538,13 +549,6 @@ func (p *Map) GetBuildingList(user color.Color, x int, y int, lists []resources.
 	}
 
 	return lists
-	// 주위 6개 좌표에서 내것
-	// 연결된 다리
-	//
-	// 목록에 대해서 겹지는 것 제외
-	// 파워 합계
-	// 연결된 것중 이미 마을이면 마울 불가능
-
 }
 
 func (p *Map) AddCityBuildingList(list []resources.Position) {

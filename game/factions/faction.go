@@ -299,116 +299,40 @@ func (p *Faction) Income() {
 	p.IsPass = false
 }
 
-func (p *Faction) Burn(count int) bool {
+func (p *Faction) Burn(count int) error {
 	if p.Resource.Power[1] < count*2 {
-		return false
+		return errors.New("not enough power")
 	}
 
 	p.Resource.Power[1] -= count * 2
 	p.Resource.Power[2] += count
 
-	return true
+	return nil
 }
 
-func (p *Faction) UsePower(value int) {
+func (p *Faction) ConvertPower(convert Price) error {
+	need := convert.Coin + convert.Worker*3 + convert.Prist*5 + convert.Book.Any*5
+
+	err := p.UsePower(need)
+	if err != nil {
+		return err
+	}
+
+	p.ReceiveResource(convert)
+
+	return nil
+}
+
+func (p *Faction) UsePower(value int) error {
 	if p.Resource.Power[2] < value {
-		if p.Burn(value) == false {
-			return
-		}
+		return errors.New("not enough power")
 	}
 
 	p.Resource.Power[0] += value
 	p.Resource.Power[2] -= value
+
+	return nil
 }
-
-/*
-
-	getTile(pos: int) {
-		var tile = _research.tiles[pos]
-		p.tiles.push(clone(tile))
-
-
-		var item = tile.receive
-
-		if (item != null) {
-			if ('worker' in item)
-				p.resource.worker += item.worker
-			if ('coin' in item)
-				p.resource.coin += item.coin
-			if ('knowledge' in item)
-				p.resource.knowledge += item.knowledge
-			if ('qic' in item)
-				p.resource.qic += item.qic
-			if ('power' in item)
-				p.receivePower(item.power)
-			if ('token' in item)
-				p.resource.power[1] += item.token
-			if ('point' in item)
-				p.point += item.point
-			if ('gaiaPoint' in item)
-				p.gaiaPoint += item.gaiaPoint
-			if ('buildingPower' in item) {
-				for (var i = 0 i < item.buildingPower.length i++) {
-					p.buildingPower[i] += item.buildingPower[i]
-				}
-			}
-		}
-
-		p.onResourceChange()
-	}
-
-
-	getTokenCount(): int {
-		return p.resource.power[1] + p.resource.power[2] + p.resource.power[3]
-	}
-
-	getTransTokenCount(): int {
-		var value = [0, 6, 6, 4, 3, 3]
-
-		return value[p.research[ResearchType.FORMER]]
-	}
-
-	removeToken(value) {
-		var remain = value
-
-		for (var i = 1 i <= 3 i++) {
-			if (remain <= p.resource.power[i]) {
-				p.resource.power[i] -= remain
-				break
-			}
-
-			remain -= p.resource.power[i]
-			p.resource.power[i] = 0
-		}
-
-		p.onResourceChange()
-	}
-
-	transforming(x, y): boolean {
-		var need = p.getTransTokenCount()
-		if (p.resource.former <= 0 || p.getTokenCount() < need)
-			return false
-
-		p.resource.former--
-		p.removeToken(need)
-		p.resource.power[0] += need
-
-		p.onResourceChange()
-
-		return true
-	}
-
-	newRound() {
-		p.receiveIncome()
-
-		var value = p.resource.power[0]
-		p.resource.power[1] += value
-		p.resource.power[0] = 0
-
-		p.onResourceChange()
-	}
-}
-*/
 
 func (p *Faction) Print() {
 	extraShip := ""
@@ -429,6 +353,11 @@ func (p *Faction) UsePrice(need Price) {
 	p.Resource.Prist -= need.Prist
 	p.Resource.Spade -= need.Spade
 	p.Resource.Bridge -= need.Bridge
+
+	p.Resource.Book.Banking -= need.Book.Banking
+	p.Resource.Book.Law -= need.Book.Law
+	p.Resource.Book.Engineering -= need.Book.Engineering
+	p.Resource.Book.Medicine -= need.Book.Medicine
 
 	if p.Resource.Power[2] >= need.Power {
 		p.Resource.Power[2] -= need.Power
@@ -674,7 +603,11 @@ func (p *Faction) SupployScholar() error {
 }
 
 func (p *Faction) PowerAction(item action.PowerActionItem) error {
-	p.UsePower(item.Power)
+	err := p.UsePower(item.Power)
+	if err != nil {
+		return err
+	}
+
 	p.ReceiveResource(item.Receive)
 
 	p.Action = true
@@ -892,5 +825,31 @@ func (p *Faction) TileAction(category TileCategory, pos int) error {
 	p.ReceiveResource(tile.Action)
 
 	tile.Use = true
+	return nil
+}
+
+func (p *Faction) Convert(source Price, target Price) error {
+	if source.Prist > 0 {
+		if p.Resource.Prist < source.Prist || source.Prist < target.Worker+target.Coin {
+			return errors.New("not enough prist")
+		}
+	} else if source.Worker > 0 {
+		if p.Resource.Worker < source.Worker || source.Worker < target.Coin {
+			return errors.New("not enough prist")
+		}
+	} else if source.Book.Count() > 0 {
+		if p.Resource.Book.Count() < source.Book.Count() || source.Book.Count() < target.Coin {
+			return errors.New("not enough prist")
+		}
+	} else if source.Power > 0 {
+		need := target.Coin + target.Worker*3 + target.Prist*5 + target.Book.Any*5
+		if p.Resource.Power[2] < source.Power || source.Power < need {
+			return errors.New("not enough power")
+		}
+	}
+
+	p.UsePrice(source)
+	p.ReceiveResource(target)
+
 	return nil
 }
