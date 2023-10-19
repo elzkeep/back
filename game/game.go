@@ -151,22 +151,23 @@ func (p *Game) Start() {
 
 	for i, _ := range p.Factions {
 		user := p.TurnOrder[i]
-		faction := p.Factions[user].GetInstance()
+		faction := p.Factions[user]
+		f := faction.GetInstance()
 		faction.Income()
 
-		p.Sciences.RoundBonus(faction)
+		p.Sciences.RoundBonus(faction.GetInstance())
 
 		roundBonus := p.RoundBonuss.Get(p.Round)
 
 		count := 0
 		if roundBonus.Science.Banking > 0 {
-			count = faction.Science[0] / roundBonus.Science.Banking
+			count = faction.GetScience(0) / roundBonus.Science.Banking
 		} else if roundBonus.Science.Law > 0 {
-			count = faction.Science[1] / roundBonus.Science.Law
+			count = faction.GetScience(1) / roundBonus.Science.Law
 		} else if roundBonus.Science.Engineering > 0 {
-			count = faction.Science[2] / roundBonus.Science.Engineering
+			count = faction.GetScience(2) / roundBonus.Science.Engineering
 		} else if roundBonus.Science.Medicine > 0 {
-			count = faction.Science[3] / roundBonus.Science.Medicine
+			count = faction.GetScience(3) / roundBonus.Science.Medicine
 		}
 
 		roundBonus.Receive.Prist *= count
@@ -176,7 +177,7 @@ func (p *Game) Start() {
 		roundBonus.Receive.Coin *= count
 		roundBonus.Receive.Worker *= count
 
-		faction.ReceiveResource(roundBonus.Receive)
+		f.ReceiveResource(roundBonus.Receive)
 	}
 
 	for i, _ := range p.Factions {
@@ -229,7 +230,7 @@ func (p *Game) Start() {
 
 func (p *Game) TurnEnd(user int) {
 	log.Println("TurnEnd")
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
 	faction.TurnEnd()
 
 	turnType := p.Turn[0].Type
@@ -245,7 +246,7 @@ func (p *Game) TurnEnd(user int) {
 	if p.Round > 0 {
 		if user >= 0 {
 			if turnType == NormalTurn {
-				if !faction.IsPass {
+				if !faction.GetInstance().IsPass {
 					p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
 				}
 			}
@@ -351,19 +352,19 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 		return errors.New("It's not a turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
 
 	color := p.Map.GetType(x, y)
-
-	if color != faction.Color {
-		log.Printf("color error : map = %v, faction = %v\n", color.ToString(), faction.Color.ToString())
+	f := faction.GetInstance()
+	if color != f.Color {
+		log.Printf("color error : map = %v, faction = %v\n", color.ToString(), f.Color.ToString())
 		return errors.New("It's not a user's land")
 	}
 
 	log.Println("build success")
-	p.Factions[user].FirstBuild(x, y)
+	faction.FirstBuild(x, y)
 
-	p.Map.Build(x, y, faction.Color, faction.FirstBuilding)
+	p.Map.Build(x, y, f.Color, f.FirstBuilding)
 
 	p.TurnEnd(user)
 
@@ -386,17 +387,18 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
-		if faction.Resource.Building == resources.None && faction.ExtraBuild == 0 {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
+		if f.Resource.Building == resources.None && f.ExtraBuild == 0 {
 			return errors.New("Already completed the action")
 		}
 	}
 
-	flag := p.Map.CheckDistance(faction.Color, faction.GetShipDistance(), x, y)
+	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(), x, y)
 
-	if faction.Resource.Building == resources.TP {
-		if p.Map.GetType(x, y) == faction.Color {
+	if f.Resource.Building == resources.TP {
+		if p.Map.GetType(x, y) == f.Color {
 			flag = true
 		}
 	}
@@ -407,7 +409,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return errors.New("ship distance error")
 	}
 
-	err := p.Map.CheckBuild(x, y, faction.Color, faction.GetSpadeCount())
+	err := p.Map.CheckBuild(x, y, f.Color, f.GetSpadeCount())
 
 	if err != nil {
 		log.Println("map check build error")
@@ -415,7 +417,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return err
 	}
 
-	needSpade := p.Map.GetNeedSpade(x, y, faction.Color)
+	needSpade := p.Map.GetNeedSpade(x, y, f.Color)
 	if needSpade < 0 {
 		needSpade = 0
 	}
@@ -426,42 +428,42 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return err
 	}
 
-	p.Map.Build(x, y, faction.Color, building)
+	p.Map.Build(x, y, f.Color, building)
 
-	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+	lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
 
 	if len(lists) > 0 {
-		faction.CityBuildingList = lists
-		faction.Resource.City++
+		f.CityBuildingList = lists
+		f.Resource.City++
 	}
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
 	if p.Map.IsRiverside(x, y) && building == resources.D {
-		faction.ReceiveRiverVP()
+		f.ReceiveRiverVP()
 	}
 
 	if p.Map.IsEdge(x, y) && building == resources.D {
-		faction.ReceiveEdgeVP()
+		f.ReceiveEdgeVP()
 
 		if p.Round == 6 {
-			faction.ReceiveResource(resources.Price{VP: buildVP.Edge})
+			f.ReceiveResource(resources.Price{VP: buildVP.Edge})
 		}
 	}
 
 	if building == resources.D {
-		faction.ReceiveResource(resources.Price{VP: buildVP.D})
+		f.ReceiveResource(resources.Price{VP: buildVP.D})
 	} else if building == resources.TP {
-		faction.ReceiveResource(resources.Price{VP: buildVP.TP})
+		f.ReceiveResource(resources.Price{VP: buildVP.TP})
 	}
 
 	if p.Round == 6 {
 		buildVP = p.RoundBonuss.FinalRound.Build
 
 		if building == resources.D {
-			faction.ReceiveResource(resources.Price{VP: buildVP.D})
+			f.ReceiveResource(resources.Price{VP: buildVP.D})
 		} else if building == resources.TP {
-			faction.ReceiveResource(resources.Price{VP: buildVP.TP})
+			f.ReceiveResource(resources.Price{VP: buildVP.TP})
 		}
 	}
 
@@ -488,14 +490,15 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
-		if faction.Resource.TpUpgrade == 0 || target != resources.TP {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
+		if f.Resource.TpUpgrade == 0 || target != resources.TP {
 			return errors.New("Already completed the action")
 		}
 	}
 
-	if p.Map.GetOwner(x, y) != faction.Color {
+	if p.Map.GetOwner(x, y) != f.Color {
 		log.Println("not owner")
 		return errors.New("not owner")
 	}
@@ -508,32 +511,32 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 
 	p.Map.SetBuilding(x, y, target)
 
-	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+	lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
 
 	if len(lists) > 0 {
-		faction.CityBuildingList = lists
-		faction.Resource.City++
+		f.CityBuildingList = lists
+		f.Resource.City++
 	}
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
 	if target == resources.TP {
-		faction.ReceiveResource(resources.Price{VP: buildVP.TP})
+		f.ReceiveResource(resources.Price{VP: buildVP.TP})
 	} else if target == resources.TE {
-		faction.ReceiveResource(resources.Price{VP: buildVP.TE})
+		f.ReceiveResource(resources.Price{VP: buildVP.TE})
 	} else if target == resources.SA || target == resources.SH {
-		faction.ReceiveResource(resources.Price{VP: buildVP.SHSA})
+		f.ReceiveResource(resources.Price{VP: buildVP.SHSA})
 	}
 
 	if p.Round == 6 {
 		buildVP = p.RoundBonuss.FinalRound.Build
 
 		if target == resources.TP {
-			faction.ReceiveResource(resources.Price{VP: buildVP.TP})
+			f.ReceiveResource(resources.Price{VP: buildVP.TP})
 		} else if target == resources.TE {
-			faction.ReceiveResource(resources.Price{VP: buildVP.TE})
+			f.ReceiveResource(resources.Price{VP: buildVP.TE})
 		} else if target == resources.SA || target == resources.SH {
-			faction.ReceiveResource(resources.Price{VP: buildVP.SHSA})
+			f.ReceiveResource(resources.Price{VP: buildVP.SHSA})
 		}
 	}
 
@@ -558,8 +561,9 @@ func (p *Game) PowerAction(user int, pos int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
@@ -568,14 +572,29 @@ func (p *Game) PowerAction(user int, pos int) error {
 		return errors.New("already")
 	}
 
-	have := faction.GetHavePowerCount()
+	have := f.GetHavePowerCount()
 	if have < p.PowerActions.GetNeedPower(pos) {
 		log.Println("not enough power")
 		return errors.New("not enough power")
 	}
 
 	item := p.PowerActions.Action(pos)
-	faction.PowerAction(item)
+	err := faction.PowerAction(item)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range f.Tiles {
+		if v.Type == resources.TileFactionIllusionists {
+			vp := 3
+
+			if len(p.Factions) == 5 {
+				vp = 4
+			}
+
+			f.ReceiveResource(resources.Price{VP: vp})
+		}
+	}
 
 	return nil
 }
@@ -596,8 +615,9 @@ func (p *Game) BookAction(user int, pos int, book resources.Book) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
@@ -611,7 +631,7 @@ func (p *Game) BookAction(user int, pos int, book resources.Book) error {
 		return errors.New("already")
 	}
 
-	have := faction.Resource.Book.Count()
+	have := f.Resource.Book.Count()
 	if have < p.BookActions.GetNeedBook(pos) {
 		log.Println("not enough book")
 		return errors.New("not enough book")
@@ -639,8 +659,9 @@ func (p *Game) AdvanceShip(user int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
@@ -652,7 +673,7 @@ func (p *Game) AdvanceShip(user int) error {
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
-	faction.ReceiveResource(resources.Price{VP: buildVP.Advance})
+	f.ReceiveResource(resources.Price{VP: buildVP.Advance})
 
 	return nil
 }
@@ -673,8 +694,9 @@ func (p *Game) AdvanceSpade(user int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
@@ -686,7 +708,7 @@ func (p *Game) AdvanceSpade(user int) error {
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
-	faction.ReceiveResource(resources.Price{VP: buildVP.Advance})
+	f.ReceiveResource(resources.Price{VP: buildVP.Advance})
 
 	return nil
 }
@@ -707,21 +729,22 @@ func (p *Game) SendScholar(user int, pos ScienceType) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
-	if faction.Resource.Prist == 0 {
+	if f.Resource.Prist == 0 {
 		return errors.New("not enough prist")
 	}
 
-	inc := p.Sciences.Send(faction, pos)
+	inc := p.Sciences.Send(f, pos)
 
 	faction.SendScholar()
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
-	faction.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 
 	return nil
 }
@@ -742,21 +765,22 @@ func (p *Game) SupployScholar(user int, pos ScienceType) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
-	if faction.Resource.Prist == 0 {
+	if f.Resource.Prist == 0 {
 		return errors.New("not enough prist")
 	}
 
-	inc := p.Sciences.Supploy(faction, pos)
+	inc := p.Sciences.Supploy(f, pos)
 
 	faction.SupployScholar()
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
-	faction.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 
 	return nil
 }
@@ -777,7 +801,7 @@ func (p *Game) Pass(user int, pos int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
 	roundTile := p.RoundTiles.Pass(pos)
 	err, tile := faction.Pass(roundTile)
 
@@ -815,19 +839,20 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
+	f := faction.GetInstance()
 
 	if p.Map.GetType(x, y) == color.River {
 		log.Println("can't spade")
 		return errors.New("can't spade")
 	}
 
-	if faction.Resource.Spade < dig {
+	if f.Resource.Spade < dig {
 		log.Println("not have spade")
 		return errors.New("not have spade")
 	}
 
-	needSpade := p.Map.GetNeedSpade(x, y, faction.Color)
+	needSpade := p.Map.GetNeedSpade(x, y, f.Color)
 	if needSpade == 0 {
 		log.Println("need not spade")
 		return errors.New("need not spade")
@@ -836,12 +861,12 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	spade := 0
 	var change color.Color
 	if dig >= needSpade {
-		change = faction.Color
+		change = f.Color
 		spade = needSpade
 	} else {
 		target := p.Map.GetType(x, y)
 
-		diff := faction.Color - target
+		diff := f.Color - target
 
 		change := 0
 		if diff > 0 {
@@ -861,7 +886,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
-	faction.ReceiveResource(resources.Price{VP: buildVP.Spade * spade})
+	f.ReceiveResource(resources.Price{VP: buildVP.Spade * spade})
 
 	return nil
 }
@@ -882,7 +907,7 @@ func (p *Game) GetRoundTile(user int, pos int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
 	tile := p.RoundTiles.Pass(pos)
 	log.Println("tile name", tile.Name)
 	faction.RoundTile(tile)
@@ -961,9 +986,10 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 		return errors.New("Locations that cannot be built")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
+	f := faction.GetInstance()
 
-	err := p.Map.CheckBridge(faction.Color, x1, y1, x2, y2)
+	err := p.Map.CheckBridge(f.Color, x1, y1, x2, y2)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -974,7 +1000,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 		return err
 	}
 
-	p.Map.Bridge(faction.Color, x1, y1, x2, y2)
+	p.Map.Bridge(f.Color, x1, y1, x2, y2)
 
 	return nil
 }
@@ -989,12 +1015,13 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 			continue
 		}
 
-		faction := v.GetInstance()
+		faction := v
+		f := faction.GetInstance()
 
 		for _, position := range positions {
 			owner := p.Map.GetOwner(x+position.X, y+position.Y)
 
-			if owner == faction.Color {
+			if owner == f.Color {
 				powers[i] += p.Map.GetPower(x+position.X, y+position.Y)
 			}
 		}
@@ -1028,8 +1055,9 @@ func (p *Game) PowerConfirm(user int, confirm bool) error {
 	}
 
 	if confirm == true {
-		faction := p.Factions[user].GetInstance()
-		faction.ReceivePower(p.Turn[0].Power, true)
+		faction := p.Factions[user]
+		f := faction.GetInstance()
+		f.ReceivePower(p.Turn[0].Power, true)
 	}
 
 	p.TurnEnd(user)
@@ -1053,8 +1081,10 @@ func (p *Game) City(user int, city resources.CityType) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Resource.City == 0 {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Resource.City == 0 {
 		log.Println("have not city")
 		return errors.New("have not city")
 	}
@@ -1066,14 +1096,14 @@ func (p *Game) City(user int, city resources.CityType) error {
 
 	tile := p.Cities.Use(city)
 	faction.ReceiveCity(tile)
-	p.Sciences.Receive(faction, tile.Receive)
+	p.Sciences.Receive(f, tile.Receive)
 
-	p.Map.AddCityBuildingList(faction.CityBuildingList)
-	faction.CityBuildingList = make([]resources.Position, 0)
+	p.Map.AddCityBuildingList(f.CityBuildingList)
+	f.CityBuildingList = make([]resources.Position, 0)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
-	faction.ReceiveResource(resources.Price{VP: buildVP.City})
+	f.ReceiveResource(resources.Price{VP: buildVP.City})
 
 	return nil
 }
@@ -1094,31 +1124,33 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Resource.Science.Any == 0 && faction.Resource.Science.Single == 0 {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Resource.Science.Any == 0 && f.Resource.Science.Single == 0 {
 		log.Println("have not science")
 		return errors.New("have not science")
 	}
 
 	if level > 1 {
-		if faction.Resource.Science.Single < level {
+		if f.Resource.Science.Single < level {
 			log.Println("not enough science")
 			return errors.New("not enough science")
 		}
 
-		faction.Resource.Science.Single -= level
+		f.Resource.Science.Single -= level
 	} else {
-		if faction.Resource.Science.Single > 0 {
-			faction.Resource.Science.Single -= level
+		if f.Resource.Science.Single > 0 {
+			f.Resource.Science.Single -= level
 		} else {
-			faction.Resource.Science.Any -= level
+			f.Resource.Science.Any -= level
 		}
 	}
 
-	inc := p.Sciences.Action(faction, pos, level)
+	inc := p.Sciences.Action(f, pos, level)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
-	faction.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 
 	return nil
 }
@@ -1139,8 +1171,10 @@ func (p *Game) Book(user int, pos resources.BookType, count int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Resource.Book.Any == 0 {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Resource.Book.Any == 0 {
 		log.Println("have not book")
 		return errors.New("have not book")
 	}
@@ -1156,8 +1190,8 @@ func (p *Game) Book(user int, pos resources.BookType, count int) error {
 		book.Medicine = count
 	}
 
-	faction.ReceiveResource(resources.Price{Book: book})
-	faction.Resource.Book.Any -= count
+	f.ReceiveResource(resources.Price{Book: book})
+	f.Resource.Book.Any -= count
 
 	return nil
 }
@@ -1178,8 +1212,9 @@ func (p *Game) ConvertDig(user int, spade int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	faction.ConvertDig(spade)
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	f.ConvertDig(spade)
 	return nil
 }
 
@@ -1211,7 +1246,7 @@ func (p *Game) PalaceTile(user int, pos int) error {
 		return errors.New("already select")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
 	err := faction.PalaceTile(tile)
 
 	if err == nil {
@@ -1236,8 +1271,10 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	if faction.Action {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Action {
 		return errors.New("Already completed the action")
 	}
 
@@ -1273,8 +1310,9 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 
 	tile := p.SchoolTiles.Items[science][level].Tile
 
-	faction := p.Factions[user].GetInstance()
-	err := faction.SchoolTile(tile)
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	err := faction.SchoolTile(tile, science)
 
 	if err != nil {
 		log.Println(err)
@@ -1292,11 +1330,11 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 		book.Medicine = level
 	}
 
-	faction.ReceiveResource(resources.Price{Book: book})
-	inc := p.Sciences.Action(faction, ScienceType(science), 3-level)
+	f.ReceiveResource(resources.Price{Book: book})
+	inc := p.Sciences.Action(f, ScienceType(science), 3-level)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
-	faction.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 
 	p.SchoolTiles.Items[science][level].Count--
 
@@ -1319,8 +1357,9 @@ func (p *Game) Burn(user int, count int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	return faction.Burn(count)
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	return f.Burn(count)
 }
 
 func (p *Game) Convert(user int, source resources.Price, target resources.Price) error {
@@ -1339,8 +1378,9 @@ func (p *Game) Convert(user int, source resources.Price, target resources.Price)
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
-	return faction.Convert(source, target)
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	return f.Convert(source, target)
 }
 
 func (p *Game) Annex(user int, x int, y int) error {
@@ -1359,26 +1399,27 @@ func (p *Game) Annex(user int, x int, y int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user].GetInstance()
+	faction := p.Factions[user]
+	f := faction.GetInstance()
 
-	err := p.Map.CheckAnnex(faction.Color, x, y)
+	err := p.Map.CheckAnnex(f.Color, x, y)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = faction.Annex(x, y)
+	err = f.Annex(x, y)
 	if err != nil {
 		return err
 	}
 
-	p.Map.Annex(faction.Color, x, y)
+	p.Map.Annex(f.Color, x, y)
 
-	lists := p.Map.CheckCity(faction.Color, x, y, faction.TownPower)
+	lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
 
 	if len(lists) > 0 {
-		faction.CityBuildingList = lists
-		faction.Resource.City++
+		f.CityBuildingList = lists
+		f.Resource.City++
 	}
 
 	return nil

@@ -18,6 +18,7 @@ type FactionInterface interface {
 	Print()
 	FirstIncome()
 	Income()
+	GetScience(pos int) int
 
 	FirstBuild(x int, y int)
 	Build(x int, y int, needSpade int, building Building) error
@@ -32,10 +33,10 @@ type FactionInterface interface {
 	Pass(tile TileItem) (error, TileItem)
 	ReceiveCity(item CityItem) error
 	Dig(dig int) error
-	ConvertDig(spade int) error
 	TurnEnd() error
 	PalaceTile(tile TileItem) error
-	SchoolTile(tile TileItem) error
+	SchoolTile(tile TileItem, science int) error
+	RoundTile(tile TileItem) error
 	TileAction(category TileCategory, pos int) error
 }
 
@@ -170,7 +171,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Ship = 0
 	item.MaxShip = 3
 	item.MaxPrist = 7
-	item.Science = []int{0, 0, 2, 0}
+	item.Science = []int{0, 0, 0, 0}
 	item.MaxBridge = 3
 	item.Key = 0
 	item.Action = false
@@ -294,6 +295,7 @@ func (p *Faction) GetHavePowerCount() int {
 }
 
 func (p *Faction) ReceiveResource(receive Price) {
+	log.Println("Faction ReceiveResource")
 	p.Resource.Coin += receive.Coin
 	p.Resource.Worker += receive.Worker
 	p.Resource.Prist += receive.Prist
@@ -859,7 +861,7 @@ func (p *Faction) PalaceTile(tile TileItem) error {
 	return nil
 }
 
-func (p *Faction) SchoolTile(tile TileItem) error {
+func (p *Faction) SchoolTile(tile TileItem, science int) error {
 	if p.Resource.SchoolTile == 0 {
 		return errors.New("not have school tile")
 	}
@@ -917,6 +919,9 @@ func (p *Faction) TileAction(category TileCategory, pos int) error {
 	p.ReceiveResource(tile.Action)
 
 	tile.Use = true
+
+	p.Action = true
+
 	return nil
 }
 
@@ -962,4 +967,9 @@ func (p *Faction) Annex(x int, y int) error {
 	p.Print()
 
 	return nil
+}
+
+func (p *Faction) GetScience(pos int) int {
+	log.Println("Faction GetScience")
+	return p.Science[pos]
 }
