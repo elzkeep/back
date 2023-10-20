@@ -5,6 +5,8 @@ import (
 	"aoi/game/color"
 	"aoi/game/factions"
 	"aoi/game/resources"
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"log"
 	"math/rand"
@@ -36,6 +38,8 @@ type Game struct {
 	TurnOrder    []int                 `json:"turnOrder"`
 	Users        []int64               `json:"users"`
 	Count        int                   `json:"count"`
+	History      []Game                `json:"-"`
+	Command      []string              `json:"-"`
 }
 
 type TurnType int
@@ -78,10 +82,12 @@ func NewGame() *Game {
 
 	item.Turn = make([]Turn, 0)
 	item.PowerTurn = make([]Turn, 0)
-
 	item.PassOrder = make([]int, 0)
-	item.PassOrder = make([]int, 0)
+	item.TurnOrder = make([]int, 0)
 	item.Users = make([]int64, 0)
+
+	item.History = make([]Game, 0)
+
 	item.Count = 0
 
 	item.Round = InitRound
@@ -92,7 +98,6 @@ func NewGame() *Game {
 func (p *Game) InitGame() {
 	p.PalaceTiles.Init(p.Count)
 	p.SchoolTiles.Init(p.Count)
-
 }
 
 func (p *Game) AddUser(user int64) {
@@ -1379,6 +1384,42 @@ func (p *Game) Annex(user int, x int, y int) error {
 	if len(lists) > 0 {
 		f.CityBuildingList = lists
 		f.Resource.City++
+	}
+
+	return nil
+}
+
+func (p *Game) Copy() Game {
+	var b bytes.Buffer
+	var result Game
+
+	e := gob.NewEncoder(&b)
+	d := gob.NewDecoder(&b)
+
+	e.Encode(p)
+	d.Decode(&result)
+	return result
+}
+
+func (p *Game) ClearHistory() {
+	p.History = make([]Game, 0)
+}
+
+func (p *Game) AddHistory(str string) {
+	game := p.Copy()
+
+	p.History = append(p.History, game)
+	p.Command = append(p.Command, str)
+}
+
+func (p *Game) Undo(user int) error {
+	if !p.IsTurn(user) {
+		return errors.New("It's not a turn")
+	}
+
+	if len(p.History) > 0 {
+		p = &p.History[len(p.History)-1]
+		p.Command = p.Command[:len(p.Command)-1]
 	}
 
 	return nil

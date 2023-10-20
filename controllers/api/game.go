@@ -118,14 +118,11 @@ func (c *GameController) Map(id int64) {
 
 // @Post()
 func (c *GameController) Command(id int64, cmd string) {
+	user := c.Session.Id
+
 	g := game.Get(id)
 
-	if g == nil {
-		game.Make(id)
-		g = game.Get(id)
-	}
-
-	ret := game.Command(g, cmd)
+	ret := game.Command(g, id, user, cmd)
 
 	if ret != nil {
 		log.Println("-------------------------")

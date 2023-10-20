@@ -3,6 +3,7 @@ package game
 import (
 	"aoi/game/resources"
 	"aoi/global"
+	"aoi/models"
 	"fmt"
 	"log"
 	"strings"
@@ -88,7 +89,7 @@ func ConvertBookType(str string) resources.BookType {
 	return resources.BookMedicine
 }
 
-func Command(p *Game, str string) error {
+func Command(p *Game, gameid int64, id int64, str string) error {
 	log.Println("Command", str)
 	strs := strings.Split(str, " ")
 
@@ -252,9 +253,36 @@ func Command(p *Game, str string) error {
 		err = p.Annex(user, x, y)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
+	} else if cmd == "undo" {
+		p.Undo(user)
 	}
 
 	p.Map.Index++
+
+	if err == nil {
+		if cmd == "undo" {
+		} else if cmd == "save" {
+			conn := models.NewConnection()
+			defer conn.Close()
+
+			gamehistoryManager := models.NewGamehistoryManager(conn)
+
+			date := global.GetCurrentDatetime()
+			for _, v := range p.Command {
+				var item models.Gamehistory
+				item.Command = v
+				item.User = id
+				item.Game = gameid
+				item.Date = date
+
+				gamehistoryManager.Insert(&item)
+			}
+
+			p.ClearHistory()
+		} else {
+			p.AddHistory(str)
+		}
+	}
 
 	return err
 }
