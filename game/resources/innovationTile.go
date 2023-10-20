@@ -20,30 +20,30 @@ func NewInnovationTile() *InnovationTile {
 
 func (p *InnovationTile) Init(count int) {
 	items := []TileItem{
-		TileItem{Category: TileInnovation, Type: TileInnovationKind, Name: "2W", Once: Price{VP: 10}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationCount, Name: "prist vp", Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationSchool, Name: "tp vp", Once: Price{TeVP: 5}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationCity, Name: "sh/sa vp", Once: Price{CityVP: 5}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationScience, Name: "1 spade", Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationCluster, Name: "1 bridge", Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationD, Name: "1 science", Once: Price{DVP: 2}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationUpgrade, Name: "te science", Once: Price{Prist: 1, SpadeUpgrade: 1, ShipUpgrade: 1}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationBridge, Name: "4 power", Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeD, Name: "4 power", Receive: Price{Worker: 3}, Once: Price{Building: WHITE_D}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeTP, Name: "6 coin", Receive: Price{Coin: 5}, Once: Price{Building: WHITE_TP}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeSchool, Name: "6 coin", Once: Price{Tile: 1, Building: WHITE_TE}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeSA, Name: "6 coin", Receive: Price{VP: 2}, Once: Price{Building: WHITE_SA}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeSH, Name: "6 coin", Receive: Price{Power: 4}, Once: Price{Building: WHITE_SH, Token: 2}, Use: false},
-		TileItem{Category: TileInnovation, Type: TileInnovationFreeMT, Name: "6 coin", Once: Price{VP: 7, Building: WHITE_MT}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationKind, Name: "2W", Once: Price{VP: 10}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationCount, Name: "prist vp", Use: false},
+		{Category: TileInnovation, Type: TileInnovationSchool, Name: "tp vp", Once: Price{TeVP: 5}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationCity, Name: "sh/sa vp", Once: Price{CityVP: 5}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationScience, Name: "1 spade", Use: false},
+		{Category: TileInnovation, Type: TileInnovationCluster, Name: "1 bridge", Use: false},
+		{Category: TileInnovation, Type: TileInnovationD, Name: "1 science", Once: Price{DVP: 2}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationUpgrade, Name: "te science", Once: Price{Prist: 1, SpadeUpgrade: 1, ShipUpgrade: 1}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationBridge, Name: "4 power", Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeD, Name: "4 power", Receive: Price{Worker: 3}, Once: Price{Building: WHITE_D}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeTP, Name: "6 coin", Receive: Price{Coin: 5}, Once: Price{Building: WHITE_TP}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSchool, Name: "6 coin", Once: Price{Tile: 1, Building: WHITE_TE}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSA, Name: "6 coin", Receive: Price{VP: 2}, Once: Price{Building: WHITE_SA}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSH, Name: "6 coin", Receive: Price{Power: 4}, Once: Price{Building: WHITE_SH, Token: 2}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeMT, Name: "6 coin", Once: Price{VP: 7, Building: WHITE_MT}, Use: false},
 	}
 
 	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
 	counts := [][]int{
-		[]int{1, 1, 1, 1, 1, 1},
-		[]int{2, 2, 2, 2},
-		[]int{2, 2, 2, 2, 1, 1},
-		[]int{3, 3, 3, 3, 3, 3},
+		{1, 1, 1, 1, 1, 1},
+		{2, 2, 2, 2},
+		{2, 2, 2, 2, 1, 1},
+		{3, 3, 3, 3, 3, 3},
 	}
 
 	pos := 0

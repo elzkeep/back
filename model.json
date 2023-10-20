@@ -37,13 +37,29 @@
           "column": "user"
         }
       ]  
-    },    
+    },
+    {
+      "name": "game",             
+      "map": [        
+        {
+          "name": "status",
+          "data": ["", "ready:준비중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
+        }
+      ]            
+    },
     {
       "name": "smsauth",             
       "method" : [
         "GetByHpNumber",
         "DeleteByHp"
       ]      
-    }
+    },
+    {
+      "name": "gameuser",             
+      "method" : [
+        "CountByGame",
+        "CountByGameUser"        
+      ]      
+    }    
   ]   
 }

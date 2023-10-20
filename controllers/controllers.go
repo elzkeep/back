@@ -5,6 +5,7 @@ import (
 	"aoi/global"
 	"aoi/models"
 	"path"
+	"sync"
 
 	"database/sql"
 	"fmt"
@@ -38,6 +39,7 @@ type Controller struct {
 
 	Page     int
 	Pagesize int
+	Mutex    sync.Mutex
 }
 
 func NewController(g *fiber.Ctx) *Controller {
@@ -47,6 +49,7 @@ func NewController(g *fiber.Ctx) *Controller {
 }
 
 func (c *Controller) Init(g *fiber.Ctx) {
+	c.Mutex = sync.Mutex{}
 	c.Context = g
 	c.Vars = make(jet.VarMap)
 	c.Result = make(map[string]interface{})
@@ -67,6 +70,14 @@ func (c *Controller) Init(g *fiber.Ctx) {
 	c.Date = global.GetDate(t)
 
 	c.Set("_t", t.UnixNano())
+}
+
+func (c *Controller) Lock() {
+	c.Mutex.Lock()
+}
+
+func (c *Controller) Unlock() {
+	c.Mutex.Unlock()
 }
 
 func (c *Controller) Error(err string) {
