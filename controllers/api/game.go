@@ -109,8 +109,8 @@ func (c *GameController) Map(id int64) {
 	g := game.Get(id)
 
 	if g == nil {
-		game.Make(id)
-		g = game.Get(id)
+		c.Set("code", "not found game")
+		return
 	}
 
 	c.Set("item", g.Map)
@@ -121,6 +121,11 @@ func (c *GameController) Command(id int64, cmd string) {
 	user := c.Session.Id
 
 	g := game.Get(id)
+
+	if g == nil {
+		c.Set("code", "not found game")
+		return
+	}
 
 	ret := game.Command(g, id, user, cmd)
 

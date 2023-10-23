@@ -36,6 +36,7 @@ type FactionInterface interface {
 	TurnEnd() error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
+	InnovationTile(tile TileItem) error
 	RoundTile(tile TileItem) error
 	TileAction(category TileCategory, pos int) error
 }
@@ -979,4 +980,27 @@ func (p *Faction) Annex(x int, y int) error {
 func (p *Faction) GetScience(pos int) int {
 	log.Println("Faction GetScience")
 	return p.Science[pos]
+}
+
+func (p *Faction) InnovationTile(tile TileItem, price Price) error {
+	for _, v := range p.Tiles {
+		if v.Type == tile.Type {
+			return errors.New("already")
+		}
+	}
+
+	if p.Building[SH] == 0 {
+		if p.Resource.Coin < 5 {
+			return errors.New("not enough coin")
+		}
+
+		tile.Once.Coin += 5
+	}
+
+	p.Tiles = append(p.Tiles, tile)
+
+	p.ReceiveResource(tile.Once)
+	p.UsePrice(price)
+
+	return nil
 }

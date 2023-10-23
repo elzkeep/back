@@ -4,6 +4,7 @@ import "math/rand"
 
 type InnovationTile struct {
 	Items [][]TileItem `json:"items"`
+	Price []Price      `json:"price"`
 }
 
 func NewInnovationTile() *InnovationTile {
@@ -19,6 +20,15 @@ func NewInnovationTile() *InnovationTile {
 }
 
 func (p *InnovationTile) Init(count int) {
+	p.Price = []Price{
+		{Book: Book{Any: 3, Banking: 2}},
+		{Book: Book{Any: 3, Law: 2}},
+		{Book: Book{Any: 3, Engineering: 2}},
+		{Book: Book{Any: 3, Medicine: 2}},
+		{Book: Book{Any: 1, Banking: 2, Law: 2}},
+		{Book: Book{Any: 1, Engineering: 2, Medicine: 2}},
+	}
+
 	items := []TileItem{
 		{Category: TileInnovation, Type: TileInnovationKind, Name: "2W", Once: Price{VP: 10}, Use: false},
 		{Category: TileInnovation, Type: TileInnovationCount, Name: "prist vp", Use: false},

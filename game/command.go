@@ -4,6 +4,7 @@ import (
 	"aoi/game/resources"
 	"aoi/global"
 	"aoi/models"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -94,6 +95,11 @@ func Command(p *Game, gameid int64, id int64, str string) error {
 	strs := strings.Split(str, " ")
 
 	user := global.Atoi(strs[0])
+
+	if p.CheckUser(id, user) == false {
+		return errors.New("not found user")
+	}
+
 	cmd := strs[1]
 
 	var err error

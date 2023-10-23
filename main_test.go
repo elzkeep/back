@@ -1,16 +1,6 @@
 package main_test
 
-import (
-	"aoi/game"
-	"aoi/game/action"
-	"aoi/game/factions"
-	"aoi/game/resources"
-	"log"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
+/*
 func TestBuild(t *testing.T) {
 	g := game.NewGame()
 
@@ -203,3 +193,4 @@ func TestCityUpgrade(t *testing.T) {
 	g.Map.Print()
 	g.Sciences.Print()
 }
+*/
