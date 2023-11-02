@@ -302,7 +302,7 @@ func (p *GametileManager) ReadRow(rows *sql.Rows) *Gametile {
     }
 }
 
-func (p *GametileManager) ReadRows(rows *sql.Rows) *[]Gametile {
+func (p *GametileManager) ReadRows(rows *sql.Rows) []Gametile {
     var items []Gametile
 
     for rows.Next() {
@@ -338,7 +338,7 @@ func (p *GametileManager) ReadRows(rows *sql.Rows) *[]Gametile {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *GametileManager) Get(id int64) *Gametile {
@@ -421,10 +421,10 @@ func (p *GametileManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GametileManager) Find(args []interface{}) *[]Gametile {
+func (p *GametileManager) Find(args []interface{}) []Gametile {
     if p.Conn == nil && p.Tx == nil {
         var items []Gametile
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -522,7 +522,7 @@ func (p *GametileManager) Find(args []interface{}) *[]Gametile {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Gametile
-        return &items
+        return items
     }
 
     defer rows.Close()

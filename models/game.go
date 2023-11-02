@@ -319,7 +319,7 @@ func (p *GameManager) ReadRow(rows *sql.Rows) *Game {
     }
 }
 
-func (p *GameManager) ReadRows(rows *sql.Rows) *[]Game {
+func (p *GameManager) ReadRows(rows *sql.Rows) []Game {
     var items []Game
 
     for rows.Next() {
@@ -357,7 +357,7 @@ func (p *GameManager) ReadRows(rows *sql.Rows) *[]Game {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *GameManager) Get(id int64) *Game {
@@ -440,10 +440,10 @@ func (p *GameManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GameManager) Find(args []interface{}) *[]Game {
+func (p *GameManager) Find(args []interface{}) []Game {
     if p.Conn == nil && p.Tx == nil {
         var items []Game
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -541,7 +541,7 @@ func (p *GameManager) Find(args []interface{}) *[]Game {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Game
-        return &items
+        return items
     }
 
     defer rows.Close()

@@ -288,7 +288,7 @@ func (p *GameuserManager) ReadRow(rows *sql.Rows) *Gameuser {
     }
 }
 
-func (p *GameuserManager) ReadRows(rows *sql.Rows) *[]Gameuser {
+func (p *GameuserManager) ReadRows(rows *sql.Rows) []Gameuser {
     var items []Gameuser
 
     for rows.Next() {
@@ -322,7 +322,7 @@ func (p *GameuserManager) ReadRows(rows *sql.Rows) *[]Gameuser {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *GameuserManager) Get(id int64) *Gameuser {
@@ -405,10 +405,10 @@ func (p *GameuserManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GameuserManager) Find(args []interface{}) *[]Gameuser {
+func (p *GameuserManager) Find(args []interface{}) []Gameuser {
     if p.Conn == nil && p.Tx == nil {
         var items []Gameuser
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -506,7 +506,7 @@ func (p *GameuserManager) Find(args []interface{}) *[]Gameuser {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Gameuser
-        return &items
+        return items
     }
 
     defer rows.Close()
@@ -514,6 +514,17 @@ func (p *GameuserManager) Find(args []interface{}) *[]Gameuser {
     return p.ReadRows(rows)
 }
 
+
+func (p *GameuserManager) FindByGame(game int64, args ...interface{}) []Gameuser {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
 
 func (p *GameuserManager) CountByGame(game int64, args ...interface{}) int {
     rets := make([]interface{}, 0)

@@ -2,13 +2,19 @@ package resources
 
 import (
 	"aoi/game/color"
-	"math/rand"
+	"aoi/models"
 )
 
-var _colorTiles []TileItem
+type ColorTile struct {
+	Items []TileItem `json:"items"`
+}
 
-func init() {
-	items := []TileItem{
+func NewColorTile(id int64) *ColorTile {
+	var item ColorTile
+
+	item.Items = make([]TileItem, 0)
+
+	tiles := []TileItem{
 		{Category: TileColor, Type: TileColorRed, Color: color.Red, Name: "Red", Once: Price{Book: Book{Any: 1}, Worker: 1}, Use: false},
 		{Category: TileColor, Type: TileColorYellow, Color: color.Yellow, Name: "Yellow", Once: Price{Spade: 1}, Use: false},
 		{Category: TileColor, Type: TileColorBrown, Color: color.Brown, Name: "Brown", Use: false},
@@ -18,13 +24,29 @@ func init() {
 		{Category: TileColor, Type: TileColorGray, Color: color.Gray, Name: "Gray", Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	_colorTiles = items
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TileColor), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items = append(item.Items, tile)
+			}
+		}
+	}
+
+	return &item
 }
 
-func GetColorTile(value color.Color) TileItem {
+func (p *ColorTile) GetColorTile(value color.Color) TileItem {
 	pos := int(value) - 2
 
-	return _colorTiles[pos]
+	return p.Items[pos]
 }

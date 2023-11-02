@@ -11,6 +11,8 @@ const (
 	TileRound
 	TileFaction
 	TileColor
+	TileRoundBonus
+	TileBookAction
 )
 
 type TileType int
@@ -122,13 +124,3 @@ func NewTile() *Tile {
 
 	return &item
 }
-
-/*
-func (p *Tile) GetTile(pos TileType) *TileItem {
-	return &p.Items[pos]
-}
-
-func (p *Tile) Setup(pos int) {
-	p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
-}
-*/

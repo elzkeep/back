@@ -165,6 +165,23 @@ func (c *GameuserController) Deletebatch(item *[]models.Gameuser) {
 
 
 
+func (c *GameuserController) FindByGame(game int64) []models.Gameuser {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+    
+    item := _manager.FindByGame(game)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
 func (c *GameuserController) CountByGame(game int64) int {
     
     conn := c.NewConnection()

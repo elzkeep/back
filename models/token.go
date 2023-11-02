@@ -288,7 +288,7 @@ func (p *TokenManager) ReadRow(rows *sql.Rows) *Token {
     }
 }
 
-func (p *TokenManager) ReadRows(rows *sql.Rows) *[]Token {
+func (p *TokenManager) ReadRows(rows *sql.Rows) []Token {
     var items []Token
 
     for rows.Next() {
@@ -322,7 +322,7 @@ func (p *TokenManager) ReadRows(rows *sql.Rows) *[]Token {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *TokenManager) Get(id int64) *Token {
@@ -405,10 +405,10 @@ func (p *TokenManager) Count(args []interface{}) int {
     }
 }
 
-func (p *TokenManager) Find(args []interface{}) *[]Token {
+func (p *TokenManager) Find(args []interface{}) []Token {
     if p.Conn == nil && p.Tx == nil {
         var items []Token
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -506,7 +506,7 @@ func (p *TokenManager) Find(args []interface{}) *[]Token {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Token
-        return &items
+        return items
     }
 
     defer rows.Close()
@@ -522,8 +522,8 @@ func (p *TokenManager) GetByUser(user int64, args ...interface{}) *Token {
     
     items := p.Find(args)
 
-    if items != nil && len(*items) > 0 {
-        return &(*items)[0]
+    if len(items) > 0 {
+        return &items[0]
     } else {
         return nil
     }

@@ -274,7 +274,7 @@ func (p *SmsauthManager) ReadRow(rows *sql.Rows) *Smsauth {
     }
 }
 
-func (p *SmsauthManager) ReadRows(rows *sql.Rows) *[]Smsauth {
+func (p *SmsauthManager) ReadRows(rows *sql.Rows) []Smsauth {
     var items []Smsauth
 
     for rows.Next() {
@@ -306,7 +306,7 @@ func (p *SmsauthManager) ReadRows(rows *sql.Rows) *[]Smsauth {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *SmsauthManager) Get(id int64) *Smsauth {
@@ -389,10 +389,10 @@ func (p *SmsauthManager) Count(args []interface{}) int {
     }
 }
 
-func (p *SmsauthManager) Find(args []interface{}) *[]Smsauth {
+func (p *SmsauthManager) Find(args []interface{}) []Smsauth {
     if p.Conn == nil && p.Tx == nil {
         var items []Smsauth
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -490,7 +490,7 @@ func (p *SmsauthManager) Find(args []interface{}) *[]Smsauth {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Smsauth
-        return &items
+        return items
     }
 
     defer rows.Close()
@@ -509,8 +509,8 @@ func (p *SmsauthManager) GetByHpNumber(hp string, number string, args ...interfa
     
     items := p.Find(args)
 
-    if items != nil && len(*items) > 0 {
-        return &(*items)[0]
+    if len(items) > 0 {
+        return &items[0]
     } else {
         return nil
     }

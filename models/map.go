@@ -288,7 +288,7 @@ func (p *MapManager) ReadRow(rows *sql.Rows) *Map {
     }
 }
 
-func (p *MapManager) ReadRows(rows *sql.Rows) *[]Map {
+func (p *MapManager) ReadRows(rows *sql.Rows) []Map {
     var items []Map
 
     for rows.Next() {
@@ -322,7 +322,7 @@ func (p *MapManager) ReadRows(rows *sql.Rows) *[]Map {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *MapManager) Get(id int64) *Map {
@@ -405,10 +405,10 @@ func (p *MapManager) Count(args []interface{}) int {
     }
 }
 
-func (p *MapManager) Find(args []interface{}) *[]Map {
+func (p *MapManager) Find(args []interface{}) []Map {
     if p.Conn == nil && p.Tx == nil {
         var items []Map
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -506,7 +506,7 @@ func (p *MapManager) Find(args []interface{}) *[]Map {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Map
-        return &items
+        return items
     }
 
     defer rows.Close()

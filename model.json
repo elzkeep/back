@@ -4,7 +4,7 @@
   "user": "yuhki",
   "server": "crud.netb.co.kr",
   "password": "dkTkfl123!",
-  "auth": "none",
+  "auth": "jwt",
   "adminLevel": "3",  
   "table": [
     {
@@ -43,7 +43,7 @@
       "map": [        
         {
           "name": "status",
-          "data": ["", "ready:준비중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
+          "data": ["", "ready:대기중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
         }
       ]            
     },
@@ -57,6 +57,7 @@
     {
       "name": "gameuser",             
       "method" : [
+        "FindByGame",
         "CountByGame",
         "CountByGameUser"        
       ]      

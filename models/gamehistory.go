@@ -288,7 +288,7 @@ func (p *GamehistoryManager) ReadRow(rows *sql.Rows) *Gamehistory {
     }
 }
 
-func (p *GamehistoryManager) ReadRows(rows *sql.Rows) *[]Gamehistory {
+func (p *GamehistoryManager) ReadRows(rows *sql.Rows) []Gamehistory {
     var items []Gamehistory
 
     for rows.Next() {
@@ -322,7 +322,7 @@ func (p *GamehistoryManager) ReadRows(rows *sql.Rows) *[]Gamehistory {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *GamehistoryManager) Get(id int64) *Gamehistory {
@@ -405,10 +405,10 @@ func (p *GamehistoryManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GamehistoryManager) Find(args []interface{}) *[]Gamehistory {
+func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
     if p.Conn == nil && p.Tx == nil {
         var items []Gamehistory
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -506,7 +506,7 @@ func (p *GamehistoryManager) Find(args []interface{}) *[]Gamehistory {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []Gamehistory
-        return &items
+        return items
     }
 
     defer rows.Close()

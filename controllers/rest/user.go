@@ -218,7 +218,7 @@ func (c *UserController) CountByEmail(email string) int {
 }
 
 
-func (c *UserController) FindByLevel(level user.Level) *[]models.User {
+func (c *UserController) FindByLevel(level user.Level) []models.User {
     
     conn := c.NewConnection()
 

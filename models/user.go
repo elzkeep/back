@@ -348,7 +348,7 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
     }
 }
 
-func (p *UserManager) ReadRows(rows *sql.Rows) *[]User {
+func (p *UserManager) ReadRows(rows *sql.Rows) []User {
     var items []User
 
     for rows.Next() {
@@ -390,7 +390,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) *[]User {
     }
 
 
-     return &items
+     return items
 }
 
 func (p *UserManager) Get(id int64) *User {
@@ -473,10 +473,10 @@ func (p *UserManager) Count(args []interface{}) int {
     }
 }
 
-func (p *UserManager) Find(args []interface{}) *[]User {
+func (p *UserManager) Find(args []interface{}) []User {
     if p.Conn == nil && p.Tx == nil {
         var items []User
-        return &items
+        return items
     }
 
     var params []interface{}
@@ -574,7 +574,7 @@ func (p *UserManager) Find(args []interface{}) *[]User {
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
         var items []User
-        return &items
+        return items
     }
 
     defer rows.Close()
@@ -590,8 +590,8 @@ func (p *UserManager) GetByEmail(email string, args ...interface{}) *User {
     
     items := p.Find(args)
 
-    if items != nil && len(*items) > 0 {
-        return &(*items)[0]
+    if len(items) > 0 {
+        return &items[0]
     } else {
         return nil
     }
@@ -608,7 +608,7 @@ func (p *UserManager) CountByEmail(email string, args ...interface{}) int {
     return p.Count(rets)
 }
 
-func (p *UserManager) FindByLevel(level user.Level, args ...interface{}) *[]User {
+func (p *UserManager) FindByLevel(level user.Level, args ...interface{}) []User {
     rets := make([]interface{}, 0)
     rets = append(rets, args...)
 

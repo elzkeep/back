@@ -77,86 +77,6 @@ type Faction struct {
 	FirstBuilding     Building         `json:"-"`
 }
 
-/*
-func NewFaction(name string, ename string, factionTile TileItem, colorTile TileItem) *Faction {
-	var item Faction
-
-	item.Name = name
-	item.Ename = ename
-	item.Color = colorTile.Color
-
-	item.Resource.Coin = 15
-	item.Resource.Worker = 4
-	item.Resource.Power = [3]int{2, 4, 0}
-	item.Resource.Building = None
-	item.VP = 20
-	item.Spade = 0
-	item.MaxSpade = 2
-	item.Ship = 0
-	item.MaxShip = 3
-	item.MaxPrist = 7
-	item.Science = []int{0, 0, 2, 0}
-	item.MaxBridge = 3
-	item.Key = 0
-	item.Action = false
-	item.ExtraBuild = 0
-	item.IsPass = false
-	item.FirstBuilding = D
-
-	item.Cities = make([]CityItem, 0)
-	item.Tiles = make([]TileItem, 0)
-	item.Tiles = append(item.Tiles, colorTile)
-	item.Tiles = append(item.Tiles, factionTile)
-
-	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
-	item.Building = [6]int{0, 0, 0, 0, 0, 0}
-	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
-	item.Price = [6]Price{
-		Price{Worker: 0, Coin: 0},
-		Price{Worker: 1, Coin: 2},
-		Price{Worker: 2, Coin: 3},
-		Price{Worker: 3, Coin: 5},
-		Price{Worker: 4, Coin: 6},
-		Price{Worker: 6, Coin: 6},
-	}
-
-	item.AdvanceShipPrice = Price{Prist: 1, Coin: 4}
-	item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 5}
-
-	item.Incomes = [][]Price{
-		[]Price{Price{}},
-		[]Price{Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}},
-		[]Price{Price{}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 2}, Price{Coin: 2, Power: 2}},
-		[]Price{Price{}, Price{Prist: 1}, Price{Prist: 1}, Price{Prist: 1}},
-		[]Price{Price{}, Price{Power: 4}},
-		[]Price{Price{}, Price{Prist: 1}},
-	}
-
-	item.Point = 10
-	item.TownPower = 7
-
-	item.BuildingList = make([]Position, 0)
-	item.BridgeList = make([]BridgePosition, 0)
-	item.AnnexList = make([]Position, 0)
-
-	item.Resource.Coin = 100
-	item.Resource.Worker = 100
-	item.Resource.Prist = 7
-	item.Resource.Book = Book{Banking: 2, Law: 3, Engineering: 2, Medicine: 3}
-
-	item.Resource.Power = [3]int{0, 0, 12}
-
-	if colorTile.Type == TileColorGray {
-		item.Incomes[D][0] = Price{Worker: 1, Coin: 2}
-		item.Incomes[TP][1] = Price{Coin: 3, Power: 1}
-	} else if colorTile.Type == TileColorBrown {
-		item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 1}
-	}
-
-	return &item
-}
-*/
-
 func (item *Faction) InitFaction(name string, ename string, factionTile TileItem, colorTile TileItem) {
 	item.Name = name
 	item.Ename = ename
@@ -189,24 +109,31 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Building = [6]int{0, 0, 0, 0, 0, 0}
 	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
 	item.Price = [6]Price{
-		Price{Worker: 0, Coin: 0},
-		Price{Worker: 1, Coin: 2},
-		Price{Worker: 2, Coin: 3},
-		Price{Worker: 3, Coin: 5},
-		Price{Worker: 4, Coin: 6},
-		Price{Worker: 6, Coin: 6},
+		{Worker: 0, Coin: 0},
+		{Worker: 1, Coin: 2},
+		{Worker: 2, Coin: 3},
+		{Worker: 3, Coin: 5},
+		{Worker: 4, Coin: 6},
+		{Worker: 6, Coin: 6},
 	}
 
 	item.AdvanceShipPrice = Price{Prist: 1, Coin: 4}
 	item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 5}
 
 	item.Incomes = [][]Price{
-		[]Price{Price{}},
-		[]Price{Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}},
-		[]Price{Price{}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 2}, Price{Coin: 2, Power: 2}},
-		[]Price{Price{}, Price{Prist: 1}, Price{Prist: 1}, Price{Prist: 1}},
-		[]Price{Price{}, Price{Power: 4}},
-		[]Price{Price{}, Price{Prist: 1}},
+		{Price{}},
+		{Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}},
+		{Price{}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 2}, Price{Coin: 2, Power: 2}},
+		{Price{}, Price{Prist: 1}, Price{Prist: 1}, Price{Prist: 1}},
+		{Price{}, Price{Power: 4}},
+		{Price{}, Price{Prist: 1}},
+	}
+
+	if colorTile.Color == color.Gray {
+		item.Incomes[D][0] = Price{Worker: 1, Coin: 2}
+		item.Incomes[TP][1] = Price{Coin: 3, Power: 1}
+	} else if colorTile.Color == color.Brown {
+		item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 1}
 	}
 
 	item.Point = 10
@@ -364,6 +291,7 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.ExtraBuild = 1
 	}
 
+	p.Resource.Power[2] += receive.Token
 	p.ReceivePower(receive.Power, false)
 }
 
@@ -983,9 +911,25 @@ func (p *Faction) GetScience(pos int) int {
 }
 
 func (p *Faction) InnovationTile(tile TileItem, price Price) error {
+	count := 0
+
 	for _, v := range p.Tiles {
+		if v.Category == TileInnovation {
+			count++
+		}
+
 		if v.Type == tile.Type {
 			return errors.New("already")
+		}
+	}
+
+	if count >= 3 {
+		return errors.New("full")
+	} else if count == 2 {
+		price.Book.Any += 2
+	} else if count == 1 {
+		if p.Color != color.Red {
+			price.Book.Any += 1
 		}
 	}
 

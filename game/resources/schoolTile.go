@@ -1,6 +1,6 @@
 package resources
 
-import "math/rand"
+import "aoi/models"
 
 type SchoolTileType int
 
@@ -20,7 +20,7 @@ type SchoolTileItem struct {
 	Tile  TileItem `json:"tile"`
 }
 
-func NewSchoolTile() *SchoolTile {
+func NewSchoolTile(id int64, count int) *SchoolTile {
 	var item SchoolTile
 
 	item.Items = make([][]SchoolTileItem, 0)
@@ -33,11 +33,7 @@ func NewSchoolTile() *SchoolTile {
 		item.Items = append(item.Items, items)
 	}
 
-	return &item
-}
-
-func (p *SchoolTile) Init(count int) {
-	items := []TileItem{
+	tiles := []TileItem{
 		{Category: TileSchool, Type: TileSchoolWorker, Name: "Worker", Receive: Price{Worker: 1, Science: Science{Any: 1}}, Use: false},
 		{Category: TileSchool, Type: TileSchoolSpade, Name: "Spade", Once: Price{Spade: 2}, Use: false},
 		{Category: TileSchool, Type: TileSchoolPrist, Name: "Prist", Build: BuildVP{Prist: 2}, Use: false},
@@ -52,16 +48,33 @@ func (p *SchoolTile) Init(count int) {
 		{Category: TileSchool, Type: TileSchoolPassPrist, Name: "6 coin", Pass: Price{ScienceVP: 1}, Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	pos := 0
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 3; j++ {
-			p.Items[i][j].Tile = items[pos]
-			p.Items[i][j].Count = count
-			pos++
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TileSchool), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	i := 0
+	j := 0
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items[i][j].Tile = tile
+				item.Items[i][j].Count = count
+				j++
+				if j == 3 {
+					i++
+					j = 0
+				}
+			}
 		}
 	}
+
+	return &item
 }
 
 func (p *SchoolTile) GetTile(pos SchoolTileType, level int) SchoolTileItem {

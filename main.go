@@ -2,7 +2,7 @@ package main
 
 import (
 	"aoi/config"
-	"aoi/game/resources"
+	"aoi/game"
 	"aoi/models"
 	"aoi/services"
 
@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	log.Println(int(resources.D))
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: false,
 		FullTimestamp: true,
@@ -20,6 +19,8 @@ func main() {
 	log.Info("Server Start")
 
 	models.InitCache()
+
+	game.Init()
 
 	services.Cron()
 	//services.Fcm()

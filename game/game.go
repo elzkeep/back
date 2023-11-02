@@ -5,6 +5,8 @@ import (
 	"aoi/game/color"
 	"aoi/game/factions"
 	"aoi/game/resources"
+	"aoi/models"
+	"aoi/models/game"
 	"bytes"
 	"encoding/gob"
 	"errors"
@@ -20,26 +22,29 @@ const (
 )
 
 type Game struct {
+	Id       int64                       `json:"id"`
 	Map      *Map                        `json:"map"`
 	Sciences *Science                    `json:"sciences"`
 	Factions []factions.FactionInterface `json:"factions"`
 
-	PowerActions *action.PowerAction   `json:"powerActions"`
-	BookActions  *action.BookAction    `json:"bookActions"`
-	RoundTiles   *resources.RoundTile  `json:"roundTiles"`
-	RoundBonuss  *RoundBonus           `json:"roundBonuss"`
-	PalaceTiles  *resources.PalaceTile `json:"palaceTiles"`
-	SchoolTiles  *resources.SchoolTile `json:"schoolTiles"`
-	Cities       *City                 `json:"cities"`
-	Turn         []Turn                `json:"turn"`
-	PowerTurn    []Turn                `json:"powerTurn"`
-	Round        int                   `json:"round"`
-	PassOrder    []int                 `json:"PassOrder"`
-	TurnOrder    []int                 `json:"turnOrder"`
-	Users        []int64               `json:"users"`
-	Count        int                   `json:"count"`
-	History      []Game                `json:"-"`
-	Command      []string              `json:"-"`
+	PowerActions *action.PowerAction    `json:"powerActions"`
+	BookActions  *action.BookAction     `json:"bookActions"`
+	RoundTiles   *resources.RoundTile   `json:"roundTiles"`
+	RoundBonuss  *RoundBonus            `json:"roundBonuss"`
+	PalaceTiles  *resources.PalaceTile  `json:"palaceTiles"`
+	SchoolTiles  *resources.SchoolTile  `json:"schoolTiles"`
+	FactionTiles *resources.FactionTile `json:"factionTiles"`
+	ColorTiles   *resources.ColorTile   `json:"colorTiles"`
+	Cities       *City                  `json:"cities"`
+	Turn         []Turn                 `json:"turn"`
+	PowerTurn    []Turn                 `json:"powerTurn"`
+	Round        int                    `json:"round"`
+	PassOrder    []int                  `json:"PassOrder"`
+	TurnOrder    []int                  `json:"turnOrder"`
+	Users        []int64                `json:"users"`
+	Count        int                    `json:"count"`
+	History      []Game                 `json:"-"`
+	Command      []string               `json:"-"`
 }
 
 type TurnType int
@@ -53,11 +58,11 @@ const (
 )
 
 type Turn struct {
-	User    int
-	Type    TurnType
-	From    int
-	Power   int
-	Science resources.Science
+	User    int               `json:"user"`
+	Type    TurnType          `json:"type"`
+	From    int               `json:"from"`
+	Power   int               `json:"power"`
+	Science resources.Science `json:"science"`
 }
 
 func (p *Turn) Print() {
@@ -65,14 +70,17 @@ func (p *Turn) Print() {
 	log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
 }
 
-func NewGame() *Game {
+func NewGame(id int64, count int) *Game {
 	var item Game
+	item.Id = id
 	item.PowerActions = action.NewPowerAction()
-	item.BookActions = action.NewBookAction()
-	item.RoundTiles = resources.NewRoundTile()
-	item.RoundBonuss = NewRoundBonus()
-	item.PalaceTiles = resources.NewPalaceTile()
-	item.SchoolTiles = resources.NewSchoolTile()
+	item.BookActions = action.NewBookAction(id)
+	item.RoundTiles = resources.NewRoundTile(id)
+	item.RoundBonuss = NewRoundBonus(id)
+	item.PalaceTiles = resources.NewPalaceTile(id)
+	item.SchoolTiles = resources.NewSchoolTile(id, count)
+	item.FactionTiles = resources.NewFactionTile(id)
+	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
 
 	item.Map = NewMap()
@@ -87,7 +95,7 @@ func NewGame() *Game {
 
 	item.History = make([]Game, 0)
 
-	item.Count = 0
+	item.Count = count
 
 	item.Round = InitRound
 
@@ -114,14 +122,39 @@ func (p *Game) AddUser(user int64) {
 	if len(p.Users) == p.Count {
 		rand.Shuffle(len(p.Users), func(i, j int) { p.Users[i], p.Users[j] = p.Users[j], p.Users[i] })
 
-		p.PalaceTiles.Init(p.Count)
-		p.SchoolTiles.Init(p.Count)
+		db := models.NewConnection()
+		defer db.Close()
 
-		p.Round = FactionRound
+		conn, _ := db.Begin()
+		defer conn.Rollback()
 
-		for i := 0; i < p.Count; i++ {
-			p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
+		gameManager := models.NewGameManager(conn)
+		gameuserManager := models.NewGameuserManager(conn)
+
+		gameManager.UpdateStatus(int(game.StatusFaction), p.Id)
+
+		items := gameuserManager.FindByGame(p.Id)
+
+		for i, v2 := range p.Users {
+			for _, v := range items {
+				if v.User == v2 {
+					v.Order = i + 1
+					gameuserManager.Update(&v)
+				}
+			}
 		}
+
+		conn.Commit()
+
+		p.CompleteAddUser()
+	}
+}
+
+func (p *Game) CompleteAddUser() {
+	p.Round = FactionRound
+
+	for i := 0; i < p.Count; i++ {
+		p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
 	}
 }
 
@@ -147,8 +180,6 @@ func (p *Game) IsTurn(user int) bool {
 }
 
 func (p *Game) BuildStart() {
-	p.RoundTiles.Init(len(p.Factions))
-
 	for i, v := range p.Factions {
 		faction := v.GetInstance()
 		if faction.FirstBuilding == resources.SA {

@@ -1,24 +1,20 @@
 package resources
 
 import (
+	"aoi/models"
 	"log"
-	"math/rand"
 )
 
 type PalaceTile struct {
 	Items []TileItem `json:"items"`
 }
 
-func NewPalaceTile() *PalaceTile {
+func NewPalaceTile(id int64) *PalaceTile {
 	var item PalaceTile
 
 	item.Items = make([]TileItem, 0)
 
-	return &item
-}
-
-func (p *PalaceTile) Init(count int) {
-	items := []TileItem{
+	tiles := []TileItem{
 		{Category: TilePalace, Type: TilePalaceWorker, Name: "2W", Receive: Price{Power: 5}, Action: Price{Worker: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceSpade, Name: "prist vp", Action: Price{Spade: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceDowngrade, Name: "tp vp", Receive: Price{Power: 2}, Action: Price{Downgrade: 1, Worker: 1, VP: 3}, Use: false},
@@ -37,13 +33,25 @@ func (p *PalaceTile) Init(count int) {
 		{Category: TilePalace, Type: TilePalaceTpBuild, Name: "tp build", Receive: Price{Power: 2, Book: Book{Any: 1}}, Once: Price{Building: TP}, Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	for i := 0; i < count+1; i++ {
-		p.Items = append(p.Items, items[i])
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TilePalace), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items = append(item.Items, tile)
+			}
+		}
 	}
 
-	p.Items = append(p.Items, TileItem{Category: TilePalace, Type: TilePalaceVp, Name: "6 coin", Receive: Price{Power: 2}, Once: Price{VP: 10}, Use: false})
+	return &item
 }
 
 func (p *PalaceTile) GetTile(pos int) TileItem {

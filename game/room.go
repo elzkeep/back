@@ -1,38 +1,360 @@
 package game
 
-var rooms map[int64]*Game
+import (
+	"aoi/game/action"
+	"aoi/game/resources"
+	"aoi/models"
+	"aoi/models/game"
+	"errors"
+	"math/rand"
+	"sync"
+)
+
+var _rooms map[int64]*Game
+var _mutex sync.Mutex
 
 func init() {
-	rooms = make(map[int64]*Game, 0)
+	_mutex = sync.Mutex{}
+	_rooms = make(map[int64]*Game, 0)
 }
 
-func Make(id int64) {
-	g := NewGame()
+func Init() {
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	rooms[id] = g
+	gameManager := models.NewGameManager(conn)
+	gameuserManager := models.NewGameuserManager(conn)
 
-	//g.AddFaction(&factions.Monks{}, resources.GetColorTile(color.Yellow))
-	//g.AddFaction(&factions.Lizards{})
+	games := gameManager.Find(nil)
 
-	//g.InitGame(3)
+	for _, v := range games {
+		g := NewGame(v.Id, v.Count)
+		_rooms[v.Id] = g
 
-	//g.BuildStart()
-	//g.FirstBuild(0, 3, 4)
-	//g.FirstBuild(0, 4, 11)
-	//g.GetRoundTile(0, 0)
-	/*
-		log.Println(g.FirstBuild(0, 3, 4))
-		g.TurnEnd(0)
+		gameusers := gameuserManager.Find([]interface{}{
+			models.Where{Column: "game", Value: v.Id, Compare: "="},
+			models.Ordering("gu_order"),
+		})
 
-		log.Println(g.GetRoundTile(0, 0))
-		g.TurnEnd(0)
-	*/
-	/*
-		log.Println(g.AdvanceShip(0))
-		g.TurnEnd(0)
-	*/
+		for _, gameuser := range gameusers {
+			g.Users = append(g.Users, gameuser.User)
+		}
+
+		if v.Status == game.StatusFaction {
+			g.CompleteAddUser()
+		}
+	}
+}
+
+func Make(user int64, item *models.Game) {
+	db := models.NewConnection()
+	defer db.Close()
+
+	conn, _ := db.Begin()
+	defer conn.Rollback()
+
+	gameManager := models.NewGameManager(conn)
+	gameuserManager := models.NewGameuserManager(conn)
+	gametileManager := models.NewGametileManager(conn)
+
+	item.Status = game.StatusReady
+	gameManager.Insert(item)
+
+	id := gameManager.GetIdentity()
+
+	var gameuser models.Gameuser
+	gameuser.User = user
+	gameuser.Game = id
+
+	gameuserManager.Insert(&gameuser)
+
+	{
+		items := []int{
+			int(resources.TileFactionBlessed),
+			int(resources.TileFactionFelines),
+			int(resources.TileFactionGoblins),
+			int(resources.TileFactionIllusionists),
+			int(resources.TileFactionInventors),
+			int(resources.TileFactionLizards),
+			int(resources.TileFactionMoles),
+			int(resources.TileFactionMonks),
+			int(resources.TileFactionNavigators),
+			int(resources.TileFactionOmar),
+			int(resources.TileFactionPhilosophers),
+			int(resources.TileFactionPsychics),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for i, v := range items[:7] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileFaction)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
+	{
+		items := []int{
+			int(resources.TileColorRed),
+			int(resources.TileColorYellow),
+			int(resources.TileColorBrown),
+			int(resources.TileColorBlack),
+			int(resources.TileColorBlue),
+			int(resources.TileColorGreen),
+			int(resources.TileColorGray),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for i, v := range items {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileColor)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
+	{
+		items := []int{
+			int(resources.TileRoundEdgeVP),
+			int(resources.TileRoundPristVP),
+			int(resources.TileRoundTpVP),
+			int(resources.TileRoundShVP),
+			int(resources.TileRoundSpade),
+			int(resources.TileRoundBridge),
+			int(resources.TileRoundScienceCube),
+			int(resources.TileRoundSchoolScienceCoin),
+			int(resources.TileRoundPower),
+			int(resources.TileRoundCoin),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for i, v := range items[:7] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileRound)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
+	{
+		items := []int{
+			int(resources.TilePalaceWorker),
+			int(resources.TilePalaceSpade),
+			int(resources.TilePalaceDowngrade),
+			int(resources.TilePalaceTpUpgrade),
+			int(resources.TilePalaceSchoolTile),
+			int(resources.TilePalaceScience),
+			int(resources.TilePalaceSchoolVp),
+			int(resources.TilePalace6PowerCity),
+			int(resources.TilePalaceJump),
+			int(resources.TilePalacePower),
+			int(resources.TilePalaceCity),
+			int(resources.TilePalaceDVp),
+			int(resources.TilePalaceTpVp),
+			int(resources.TilePalaceRiverCity),
+			int(resources.TilePalaceBridge),
+			int(resources.TilePalaceTpBuild),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for i, v := range items[:item.Count+1] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TilePalace)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+
+		var tile models.Gametile
+
+		tile.Type = int(resources.TilePalace)
+		tile.Number = int(resources.TilePalaceVp)
+		tile.Order = item.Count + 1 + 1
+		tile.Game = id
+
+		gametileManager.Insert(&tile)
+	}
+
+	{
+		items := []int{
+			int(resources.TileSchoolWorker),
+			int(resources.TileSchoolSpade),
+			int(resources.TileSchoolPrist),
+			int(resources.TileSchoolEdgeVP),
+			int(resources.TileSchoolCoin),
+			int(resources.TileSchoolAnnex),
+			int(resources.TileSchoolNeutral),
+			int(resources.TileSchoolBook),
+			int(resources.TileSchoolVP),
+			int(resources.TileSchoolPower),
+			int(resources.TileSchoolPassCity),
+			int(resources.TileSchoolPassPrist),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for i, v := range items {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileSchool)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
+	{
+		items := []int{
+			int(action.Power5),
+			int(action.Science),
+			int(action.Coin6),
+			int(action.TpUpgrade),
+			int(action.TpVP),
+			int(action.Spade3),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+		for i, v := range items[:3] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileBookAction)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
+	{
+		items := []int{
+			int(DVP),
+			int(DVP),
+			int(TpVP),
+			int(TpVP),
+			int(TeVP),
+			int(ShSaVP),
+			int(ShSaVP),
+			int(SpadeVP),
+			int(ScienceVP),
+			int(CityVP),
+			int(AdvanceVP),
+			int(InnovationVP),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+		for i, v := range items[:6] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileRoundBonus)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+
+		finalRound := []int{
+			int(DVP),
+			int(TpVP),
+			int(TeVP),
+			int(EdgeVP),
+		}
+
+		var tile models.Gametile
+
+		tile.Type = int(resources.TileRoundBonus)
+		tile.Number = finalRound[rand.Intn(len(finalRound))]
+		tile.Order = 6 + 1
+		tile.Game = id
+
+		gametileManager.Insert(&tile)
+	}
+
+	conn.Commit()
+
+	g := NewGame(id, item.Count)
+	_rooms[id] = g
+}
+
+func Lock() {
+	_mutex.Lock()
+}
+
+func Unlock() {
+	_mutex.Unlock()
+}
+
+func Join(user int64, id int64) error {
+	g := Get(id)
+
+	if g == nil {
+		return errors.New("not found game")
+	}
+
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gameManager := models.NewGameManager(conn)
+	gameuserManager := models.NewGameuserManager(conn)
+
+	Lock()
+
+	item := gameManager.Get(id)
+
+	if item.Status != game.StatusReady {
+		Unlock()
+		return errors.New("status error")
+	}
+
+	if gameuserManager.CountByGameUser(id, user) > 0 {
+		Unlock()
+		return errors.New("already")
+	}
+
+	count := gameuserManager.CountByGame(id)
+	if count >= item.Count {
+		Unlock()
+		return errors.New("full")
+	}
+
+	var gameuser models.Gameuser
+	gameuser.User = user
+	gameuser.Game = id
+
+	gameuserManager.Insert(&gameuser)
+	count++
+
+	g.AddUser(user)
+
+	if count == item.Count {
+		item.Status = game.StatusFaction
+		gameManager.Update(item)
+	}
+
+	Unlock()
+
+	return nil
 }
 
 func Get(id int64) *Game {
-	return rooms[id]
+	return _rooms[id]
 }

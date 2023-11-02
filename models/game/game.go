@@ -12,7 +12,7 @@ const (
     StatusEnd
 )
 
-var Statuss = []string{ "", "준비중", "종족선택중", "게임중", "게임종료" }
+var Statuss = []string{ "", "대기중", "종족선택중", "게임중", "게임종료" }
 
 
 

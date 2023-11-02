@@ -1,11 +1,19 @@
 package resources
 
-import "math/rand"
+import "aoi/models"
 
-var _factionTiles []TileItem
+type FactionTile struct {
+	Items []TileItem `json:"items"`
+}
 
-func init() {
-	items := []TileItem{
+var _factionTile []TileItem
+
+func NewFactionTile(id int64) *FactionTile {
+	var item FactionTile
+
+	item.Items = make([]TileItem, 0)
+
+	tiles := []TileItem{
 		{Category: TileFaction, Type: TileFactionBlessed, Name: "Blessed", Once: Price{Science: Science{Banking: 1, Law: 1, Engineering: 1, Medicine: 1}}, Use: false},
 		{Category: TileFaction, Type: TileFactionFelines, Name: "Felines", Once: Price{Science: Science{Banking: 1, Medicine: 1}}, Use: false},
 		{Category: TileFaction, Type: TileFactionGoblins, Name: "Goblins", Once: Price{Science: Science{Banking: 1, Engineering: 1}, Worker: 1}, Use: false},
@@ -20,13 +28,31 @@ func init() {
 		{Category: TileFaction, Type: TileFactionPsychics, Name: "Psychics", Once: Price{Science: Science{Banking: 1, Medicine: 1}, Worker: 1}, Action: Price{Power: 5}, Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	_factionTiles = items
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TileFaction), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items = append(item.Items, tile)
+			}
+		}
+	}
+
+	_factionTile = item.Items
+
+	return &item
 }
 
 func GetFactionTile(value TileType) TileItem {
 	pos := int(value) - int(TileSchoolPassPrist) - 1
 
-	return _factionTiles[pos]
+	return _factionTile[pos]
 }

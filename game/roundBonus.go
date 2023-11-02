@@ -2,7 +2,7 @@ package game
 
 import (
 	"aoi/game/resources"
-	"math/rand"
+	"aoi/models"
 )
 
 type RoundBonusType int
@@ -33,12 +33,12 @@ type RoundBonus struct {
 	FinalRound RoundBonusItem   `json:"final"`
 }
 
-func NewRoundBonus() *RoundBonus {
+func NewRoundBonus(id int64) *RoundBonus {
 	var item RoundBonus
 
 	item.Items = make([]RoundBonusItem, 0)
 
-	items := []RoundBonusItem{
+	tiles := []RoundBonusItem{
 		{Type: DVP, Name: "D >> 2", Build: resources.BuildVP{D: 2}, Science: resources.Science{Law: 3}, Receive: resources.Price{Prist: 1}},
 		{Type: DVP, Name: "D >> 2", Build: resources.BuildVP{D: 2}, Science: resources.Science{Banking: 3}, Receive: resources.Price{Power: 4}},
 		{Type: TpVP, Name: "TP >> 3", Build: resources.BuildVP{TP: 3}, Science: resources.Science{Law: 3}, Receive: resources.Price{Book: resources.Book{Any: 1}}},
@@ -53,12 +53,6 @@ func NewRoundBonus() *RoundBonus {
 		{Type: InnovationVP, Name: "INNOVATION >> 5", Build: resources.BuildVP{Innovation: 5}, Science: resources.Science{Law: 2}, Receive: resources.Price{Power: 3}},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
-
-	for i := 0; i < 6; i++ {
-		item.Items = append(item.Items, items[i])
-	}
-
 	finalRound := []RoundBonusItem{
 		{Type: DVP, Name: "D >> 2", Build: resources.BuildVP{D: 2}},
 		{Type: TpVP, Name: "TP >> 3", Build: resources.BuildVP{TP: 3}},
@@ -66,7 +60,30 @@ func NewRoundBonus() *RoundBonus {
 		{Type: EdgeVP, Name: "EDGE >> 3", Build: resources.BuildVP{Edge: 3}},
 	}
 
-	item.FinalRound = finalRound[rand.Intn(len(finalRound))]
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(resources.TileRoundBonus), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	for _, v := range items[:6] {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items = append(item.Items, tile)
+			}
+		}
+	}
+
+	for _, tile := range finalRound {
+		if items[6].Type == int(tile.Type) {
+			item.FinalRound = tile
+			break
+		}
+	}
 
 	return &item
 }

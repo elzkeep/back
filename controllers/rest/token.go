@@ -14,6 +14,19 @@ type TokenController struct {
 
 func (c *TokenController) Read(id int64) {
     
+    if c.Session == nil {
+        c.Result["code"] = "auth error"
+        return
+    }
+    if c.Session.Level < 3 { 
+    
+        if c.Session.Id == 0 {
+            c.Result["code"] = "auth error"
+            return
+        }    
+    
+    }
+    
     
 	conn := c.NewConnection()
 
@@ -21,11 +34,34 @@ func (c *TokenController) Read(id int64) {
 	item := manager.Get(id)
 
     
+    if c.Session.Level < 3 {
+    
+        if item.User != c.Session.Id {
+            c.Result["code"] = "auth error"
+            return
+        }
+    
+    }
+    
     
     c.Set("item", item)
 }
 
 func (c *TokenController) Index(page int, pagesize int) {
+    
+    if c.Session == nil {
+        c.Result["code"] = "auth error"
+        return
+    }
+
+    if c.Session.Level < 3 {
+    
+        if c.Session.Id == 0 {
+            c.Result["code"] = "auth error"
+            return
+        }
+    
+    }
     
     
 	conn := c.NewConnection()
@@ -60,6 +96,12 @@ func (c *TokenController) Index(page int, pagesize int) {
     }
     
 
+    
+    if c.Session.Level < 3 {
+    
+        args = append(args, models.Where{Column:"user", Value:c.Session.Id, Compare:"="})    
+    
+    }
     
     
     if page != 0 && pagesize != 0 {
@@ -100,6 +142,22 @@ func (c *TokenController) Index(page int, pagesize int) {
 
 func (c *TokenController) Insert(item *models.Token) {
     
+    if c.Session == nil {
+        item = nil
+        return
+    }
+
+    if c.Session.Level < 3 {
+    
+        if c.Session.Id == 0 {
+            item = nil
+            return
+        } else {
+            item.User = c.Session.Id
+        }    
+    
+    }
+    
     
 	conn := c.NewConnection()
     
@@ -119,6 +177,24 @@ func (c *TokenController) Insertbatch(item *[]models.Token) {
     rows := len(*item)
     
     
+    if c.Session == nil {
+        item = nil
+        return
+    }
+
+    if c.Session.Level < 3 {
+    
+        if c.Session.Id == 0 {
+            item = nil
+            return
+        } else {
+            for i := 0; i < rows; i++ {
+                (*item)[i].User = c.Session.Id
+            }
+        }    
+    
+    }
+    
     
 	conn := c.NewConnection()
     
@@ -131,6 +207,22 @@ func (c *TokenController) Insertbatch(item *[]models.Token) {
 
 func (c *TokenController) Update(item *models.Token) {
     
+    if c.Session == nil {
+        item = nil
+        return
+    }
+    
+    if c.Session.Level < 3 {
+    
+        if c.Session.Id == 0 {
+            item = nil
+            return
+        } else {
+            item.User = c.Session.Id
+        }    
+    
+    }
+    
     
 	conn := c.NewConnection()
 
@@ -140,16 +232,42 @@ func (c *TokenController) Update(item *models.Token) {
 
 func (c *TokenController) Delete(item *models.Token) {
     
+    if c.Session == nil {
+        item = nil
+        return
+    }
+    
     
     conn := c.NewConnection()
 
 	manager := models.NewTokenManager(conn)
 
     
+    n := manager.Get(item.Id)
+
+    if c.Session.Level < 3 {
+    
+        if c.Session.Id == 0 {
+            item = nil
+            return
+        } else {
+            if n.User != c.Session.Id {
+                item = nil
+                return
+            }
+        }    
+    
+    }
+    
 	manager.Delete(item.Id)
 }
 
 func (c *TokenController) Deletebatch(item *[]models.Token) {
+    
+    if c.Session == nil {
+        item = nil
+        return
+    }
     
     
     conn := c.NewConnection()
@@ -157,6 +275,22 @@ func (c *TokenController) Deletebatch(item *[]models.Token) {
 	manager := models.NewTokenManager(conn)
 
     for _, v := range *item {
+        
+        n := manager.Get(v.Id)
+
+        if c.Session.Level < 3 {
+        
+            if c.Session.Id == 0 {
+                item = nil
+                return
+            } else {
+                if n.User != c.Session.Id {
+                    item = nil
+                    return
+                }
+            }    
+        
+        }
         
     
 	    manager.Delete(v.Id)
@@ -166,6 +300,30 @@ func (c *TokenController) Deletebatch(item *[]models.Token) {
 
 
 func (c *TokenController) GetByUser(user int64) *models.Token {
+    
+    if c.Session == nil {
+        c.Result["code"] = "auth error"
+        
+        return nil
+        
+    }
+
+    if c.Session.Level < 3 {
+    
+    if c.Session.Id == 0 {
+        c.Result["code"] = "auth error"
+        
+        return nil
+        
+    } else {
+        
+        
+        user = c.Session.Id
+        
+        
+    }
+    
+    }
     
     conn := c.NewConnection()
 
@@ -185,6 +343,10 @@ func (c *TokenController) GetByUser(user int64) *models.Token {
 // @Put()
 func (c *TokenController) UpdateUser(user int64, id int64) {
     
+    if c.Session == nil {
+        return
+    }    
+    
     
 	conn := c.NewConnection()
 
@@ -195,6 +357,10 @@ func (c *TokenController) UpdateUser(user int64, id int64) {
 // @Put()
 func (c *TokenController) UpdateToken(token string, id int64) {
     
+    if c.Session == nil {
+        return
+    }    
+    
     
 	conn := c.NewConnection()
 
@@ -204,6 +370,10 @@ func (c *TokenController) UpdateToken(token string, id int64) {
 
 // @Put()
 func (c *TokenController) UpdateStatus(status int, id int64) {
+    
+    if c.Session == nil {
+        return
+    }    
     
     
 	conn := c.NewConnection()

@@ -1,24 +1,20 @@
 package resources
 
 import (
+	"aoi/models"
 	"log"
-	"math/rand"
 )
 
 type RoundTile struct {
 	Items []TileItem `json:"items"`
 }
 
-func NewRoundTile() *RoundTile {
+func NewRoundTile(id int64) *RoundTile {
 	var item RoundTile
 
 	item.Items = make([]TileItem, 0)
 
-	return &item
-}
-
-func (p *RoundTile) Init(count int) {
-	items := []TileItem{
+	tiles := []TileItem{
 		{Category: TileRound, Type: TileRoundEdgeVP, Name: "side VP", Build: BuildVP{River: 2}, Ship: 1, Use: false},
 		{Category: TileRound, Type: TileRoundPristVP, Name: "P VP", Receive: Price{Prist: 1}, Build: BuildVP{Prist: 2}, Use: false},
 		{Category: TileRound, Type: TileRoundTpVP, Name: "TP VP", Receive: Price{Power: 3}, Build: BuildVP{TP: 3}, Use: false},
@@ -31,15 +27,25 @@ func (p *RoundTile) Init(count int) {
 		{Category: TileRound, Type: TileRoundCoin, Name: "6C", Receive: Price{Coin: 6}, Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
 
-	/*
-		for i := 0; i < count+3; i++ {
-			p.Items = append(p.Items, items[i])
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TileRound), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				item.Items = append(item.Items, tile)
+			}
 		}
-	*/
+	}
 
-	p.Items = items
+	return &item
 }
 
 func (p *RoundTile) Start() {

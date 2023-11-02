@@ -36,7 +36,14 @@ func getArrayCommai(name string) []int {
 }
 
 func SetRouter(r *fiber.App) {
+
+    r.Get("/api/jwt", func(c *fiber.Ctx) error {
+		loginid := c.Query("loginid")
+        passwd := c.Query("passwd")
+        return c.JSON(JwtAuth(c, loginid, passwd))
+	})
 	apiGroup := r.Group("/api")
+	r.Use(JwtAuthRequired)
 	{
 
 		apiGroup.Get("/download/file/:id", func(c *fiber.Ctx) error {
@@ -720,6 +727,15 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameuser/find/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.FindByGame(game_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
