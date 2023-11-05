@@ -70,19 +70,12 @@ func Make(user int64, item *models.Game) {
 	defer conn.Rollback()
 
 	gameManager := models.NewGameManager(conn)
-	gameuserManager := models.NewGameuserManager(conn)
 	gametileManager := models.NewGametileManager(conn)
 
 	item.Status = game.StatusReady
 	gameManager.Insert(item)
 
 	id := gameManager.GetIdentity()
-
-	var gameuser models.Gameuser
-	gameuser.User = user
-	gameuser.Game = id
-
-	gameuserManager.Insert(&gameuser)
 
 	{
 		items := []int{
@@ -260,20 +253,24 @@ func Make(user int64, item *models.Game) {
 	}
 
 	{
-		items := []int{
-			int(DVP),
-			int(DVP),
-			int(TpVP),
-			int(TpVP),
-			int(TeVP),
-			int(ShSaVP),
-			int(ShSaVP),
-			int(SpadeVP),
-			int(ScienceVP),
-			int(CityVP),
-			int(AdvanceVP),
-			int(InnovationVP),
-		}
+		/*
+			items := []int{
+				int(DVP),
+				int(DVP),
+				int(TpVP),
+				int(TpVP),
+				int(TeVP),
+				int(ShSaVP),
+				int(ShSaVP),
+				int(SpadeVP),
+				int(ScienceVP),
+				int(CityVP),
+				int(AdvanceVP),
+				int(InnovationVP),
+			}
+		*/
+
+		items := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
@@ -288,12 +285,16 @@ func Make(user int64, item *models.Game) {
 			gametileManager.Insert(&tile)
 		}
 
-		finalRound := []int{
-			int(DVP),
-			int(TpVP),
-			int(TeVP),
-			int(EdgeVP),
-		}
+		/*
+			finalRound := []int{
+				int(DVP),
+				int(TpVP),
+				int(TeVP),
+				int(EdgeVP),
+			}
+		*/
+
+		finalRound := []int{0, 1, 2, 3}
 
 		var tile models.Gametile
 
@@ -309,6 +310,8 @@ func Make(user int64, item *models.Game) {
 
 	g := NewGame(id, item.Count)
 	_rooms[id] = g
+
+	Join(user, id)
 }
 
 func Lock() {
@@ -362,6 +365,7 @@ func Join(user int64, id int64) error {
 	items := gameuserManager.FindByGame(id)
 
 	if len(items) == item.Count {
+		log.Println("join complete")
 		gameManager.UpdateStatus(int(game.StatusFaction), id)
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
@@ -374,6 +378,8 @@ func Join(user int64, id int64) error {
 		}
 
 		g.CompleteAddUser()
+	} else {
+		log.Println("join not complete")
 	}
 
 	Unlock()

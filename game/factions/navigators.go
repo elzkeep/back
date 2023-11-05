@@ -83,8 +83,8 @@ func (p *Navigators) Dig(dig int) error {
 	return p.Faction.Dig(dig)
 }
 
-func (p *Navigators) TurnEnd() error {
-	return p.Faction.TurnEnd()
+func (p *Navigators) TurnEnd(round int) error {
+	return p.Faction.TurnEnd(round)
 }
 
 func (p *Navigators) PalaceTile(tile TileItem) error {

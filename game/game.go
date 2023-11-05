@@ -11,6 +11,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"log"
+	"strings"
 )
 
 const (
@@ -54,6 +55,7 @@ const (
 	ScienceTurn
 	SpadeTurn
 	BookTurn
+	TileTurn
 )
 
 type Turn struct {
@@ -65,8 +67,8 @@ type Turn struct {
 }
 
 func (p *Turn) Print() {
-	titles := []string{"Normal", "Power", "Science", "Spade", "Book"}
-	log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
+	//titles := []string{"Normal", "Power", "Science", "Spade", "Book"}
+	//log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
 }
 
 func NewGame(id int64, count int) *Game {
@@ -148,13 +150,12 @@ func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileIte
 
 func (p *Game) SelectFaction(user int, name string) {
 	pos := 0
+
 	for i, v := range p.FactionTiles.Items {
-		if v.Name == name {
+		if strings.ToLower(v.Name) == name {
 			pos = i
 		}
 	}
-
-	p.FactionTiles.Items[pos].Use = true
 
 	factionTile := p.FactionTiles.Items[pos]
 	colorTile := p.ColorTiles.Items[pos]
@@ -192,10 +193,15 @@ func (p *Game) SelectFaction(user int, name string) {
 
 	p.Factions = append(p.Factions, item)
 
-	faction := item.GetInstance()
+	f := item.GetInstance()
 
-	faction.RoundTile(roundTile)
-	p.Sciences.AddUser(faction.Color, faction.Science)
+	f.ReceiveResource(factionTile.Once)
+	f.ReceiveResource(colorTile.Once)
+
+	f.RoundTile(roundTile)
+	p.Sciences.AddUser(f.Color, f.Science)
+
+	p.FactionTiles.Items[pos].Use = true
 
 	p.PassOrder = append(p.PassOrder, user)
 }
@@ -242,12 +248,9 @@ func (p *Game) Start() {
 
 	p.Round++
 
-	log.Println("Start ==============")
-	log.Println(p.PassOrder)
 	p.TurnOrder = p.PassOrder
 	p.PassOrder = make([]int, 0)
 
-	log.Println(p.TurnOrder)
 	if p.Round >= 1 {
 		for i := range p.Factions {
 			user := p.TurnOrder[i]
@@ -332,7 +335,7 @@ func (p *Game) TurnEnd(user int) {
 	p.Turn = append(p.PowerTurn, p.Turn...)
 
 	faction := p.Factions[user]
-	faction.TurnEnd()
+	faction.TurnEnd(p.Round)
 
 	if p.Round > 0 {
 		if user >= 0 {
@@ -343,29 +346,29 @@ func (p *Game) TurnEnd(user int) {
 			}
 		}
 	} else {
-		log.Println("add passorder")
 		p.PassOrder = append(p.PassOrder, user)
 	}
 
 	if len(p.Turn) == 0 {
 		if p.Round == FactionRound {
+
 			p.Round = BuildRound
 
 			p.UpdateDBRound(int(game.StatusNormal))
 
 			p.BuildStart()
 		} else if p.Round == BuildRound {
-			for _, v := range p.Factions {
-				v.FirstIncome()
-			}
-
-			log.Println("start 1")
+			p.Round = 0
 			p.Start()
 		} else {
-			log.Println("turnend: passorder", p.PassOrder)
-			log.Println("start 2")
 			p.RoundEnd()
-			p.Start()
+
+			if p.Round == 6 {
+				p.Round++
+				p.EndGame()
+			} else {
+				p.Start()
+			}
 		}
 	}
 }
@@ -485,7 +488,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		}
 	}
 
-	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(), x, y)
+	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(true), x, y)
 
 	if f.Resource.Building == resources.TP {
 		if p.Map.GetType(x, y) == f.Color {
@@ -865,8 +868,6 @@ func (p *Game) Pass(user int, pos int) error {
 	p.RoundTiles.Add(tile)
 	p.PassOrder = append(p.PassOrder, user)
 
-	log.Println("pass: passOrder", p.PassOrder)
-
 	return nil
 }
 
@@ -900,6 +901,18 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	needSpade := p.Map.GetNeedSpade(x, y, f.Color)
 	if needSpade == 0 {
 		return errors.New("need not spade")
+	}
+
+	tile := true
+
+	if p.IsSpadeTurn() {
+		tile = false
+	}
+
+	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(tile), x, y)
+
+	if flag == false {
+		return errors.New("ship distance error")
 	}
 
 	spade := 0
@@ -971,13 +984,8 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 		return errors.New("It's not a normal turn")
 	}
 
-	/*
-			0, 0, 2, 0
-			1, 0, 0, 2
-			1, 0, 2, 2
-		    0, 0, 1, 1
-			2, 0, 1, 1
-	*/
+	faction := p.Factions[user]
+	f := faction.GetInstance()
 
 	flag := false
 
@@ -996,20 +1004,26 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 				y--
 			}
 
-			if p.Map.GetType(x1+1, y) == color.River && p.Map.GetType(x1+1, y+1) == color.River {
+			if f.Ename == "Moles" {
+				flag = true
+			} else if p.Map.GetType(x1+1, y) == color.River && p.Map.GetType(x1+1, y+1) == color.River {
 				flag = true
 			}
 		}
 	} else {
 		if x1%2 == 1 {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 2 {
-				if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
+				if f.Ename == "Moles" {
+					flag = true
+				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
 					flag = true
 				}
 			}
 		} else {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 1 {
-				if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
+				if f.Ename == "Moles" {
+					flag = true
+				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
 					flag = true
 				}
 			}
@@ -1020,9 +1034,6 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 	if flag == false {
 		return errors.New("Locations that cannot be built")
 	}
-
-	faction := p.Factions[user]
-	f := faction.GetInstance()
 
 	err := p.Map.CheckBridge(f.Color, x1, y1, x2, y2)
 	if err != nil {
@@ -1178,10 +1189,6 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 }
 
 func (p *Game) Book(user int, pos resources.BookType, count int) error {
-	if p.Round < 1 {
-		return errors.New("round error")
-	}
-
 	if !p.IsTurn(user) {
 		return errors.New("It's not a turn")
 	}
@@ -1287,6 +1294,7 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 
 	err := faction.TileAction(category, pos)
 	if err != nil {
+		log.Println("errrrrrrrrrrrrrrrr")
 		return err
 	}
 
@@ -1294,10 +1302,6 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 }
 
 func (p *Game) SchoolTile(user int, science int, level int) error {
-	if p.Round < 1 {
-		return errors.New("round error")
-	}
-
 	if !p.IsTurn(user) {
 		return errors.New("It's not a turn")
 	}
@@ -1334,8 +1338,10 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 	f.ReceiveResource(resources.Price{Book: book})
 	inc := p.Sciences.Action(f, ScienceType(science), 3-level)
 
-	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
-	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	if p.Round > 0 {
+		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+		f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
+	}
 
 	p.SchoolTiles.Items[science][level].Count--
 
@@ -1450,4 +1456,24 @@ func (p *Game) Undo(user int) error {
 	}
 
 	return nil
+}
+
+func (p *Game) EndGame() {
+	// 미션 점수
+	/*
+		for _, v := range p.Factions {
+			faction := v.GetInstance()
+			for i, d1 := range faction.BuildingList {
+				for j, d2 := range faction.BuildingList {
+					if d1.Equal(d2) {
+						continue
+					}
+
+					p.CheckDistance(user color.Color, distance int, x int, y int) bool {
+				}
+			}
+		}
+	*/
+	// 과학 점수
+	// 등수 계산
 }

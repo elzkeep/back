@@ -7,7 +7,6 @@ import (
 	. "aoi/game/resources"
 	"errors"
 
-	"log"
 	"math"
 )
 
@@ -33,7 +32,7 @@ type FactionInterface interface {
 	Pass(tile TileItem) (error, TileItem)
 	ReceiveCity(item CityItem) error
 	Dig(dig int) error
-	TurnEnd() error
+	TurnEnd(round int) error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
 	InnovationTile(tile TileItem, price Price) error
@@ -158,10 +157,12 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	}
 }
 
-func (p *Faction) GetShipDistance() int {
+func (p *Faction) GetShipDistance(tile bool) int {
 	ship := 0
-	for _, v := range p.Tiles {
-		ship += v.Ship
+	if tile == true {
+		for _, v := range p.Tiles {
+			ship += v.Ship
+		}
 	}
 
 	return p.Ship + ship
@@ -303,8 +304,6 @@ func (p *Faction) FirstIncome() {
 func (p *Faction) Income() {
 	power := 0
 
-	// 종족판
-
 	for i, v := range p.Incomes {
 		for j := 0; j <= p.Building[i]; j++ {
 			p.ReceiveResource(v[j])
@@ -410,7 +409,6 @@ func (p *Faction) AdvanceShip() error {
 	err := CheckResource(p.Resource, p.AdvanceShipPrice)
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -776,9 +774,12 @@ func (p *Faction) ConvertDig(spade int) error {
 	return nil
 }
 
-func (p *Faction) TurnEnd() error {
+func (p *Faction) TurnEnd(round int) error {
 	p.Action = false
-	p.Resource.Spade = 0
+
+	if round > 0 {
+		p.Resource.Spade = 0
+	}
 
 	return nil
 }
@@ -843,9 +844,25 @@ func (p *Faction) RoundTile(tile TileItem) error {
 func (p *Faction) TileAction(category TileCategory, pos int) error {
 	var tile *TileItem
 
+	tilePos := 0
+
+	if category == TilePalace {
+		tilePos = pos
+	} else if category == TileRound {
+		tilePos = int(TilePalaceVp) + pos
+	} else if category == TileSchool {
+		tilePos = int(TileRoundCoin) + pos
+	} else if category == TileFaction {
+		tilePos = int(TileSchoolPassPrist) + pos
+	} else if category == TileColor {
+		tilePos = int(TileFactionPsychics) + pos
+	} else if category == TileInnovation {
+		tilePos = int(TileColorRed) + pos
+	}
+
 	find := -1
 	for i, v := range p.Tiles {
-		if v.Category == category && v.Type == TileType(pos) {
+		if v.Category == category && v.Type == TileType(tilePos) {
 			find = i
 			break
 		}
@@ -915,7 +932,6 @@ func (p *Faction) Annex(x int, y int) error {
 }
 
 func (p *Faction) GetScience(pos int) int {
-	log.Println("Faction GetScience")
 	return p.Science[pos]
 }
 

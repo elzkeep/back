@@ -84,8 +84,8 @@ func (p *Psychics) Dig(dig int) error {
 	return p.Faction.Dig(dig)
 }
 
-func (p *Psychics) TurnEnd() error {
-	return p.Faction.TurnEnd()
+func (p *Psychics) TurnEnd(round int) error {
+	return p.Faction.TurnEnd(round)
 }
 
 func (p *Psychics) PalaceTile(tile TileItem) error {
@@ -107,11 +107,15 @@ func (p *Psychics) TileAction(category TileCategory, pos int) error {
 		return err
 	}
 
-	var tile *TileItem
+	if category != TileFaction {
+		return nil
+	}
+
+	tilePos := int(TileSchoolPassPrist) + pos
 
 	find := -1
 	for i, v := range p.Tiles {
-		if v.Category == category && v.Type == TileType(pos) {
+		if v.Category == category && v.Type == TileType(tilePos) {
 			find = i
 			break
 		}
@@ -120,6 +124,8 @@ func (p *Psychics) TileAction(category TileCategory, pos int) error {
 	if find == -1 {
 		return errors.New("not found")
 	}
+
+	var tile *TileItem
 
 	tile = &p.Tiles[find]
 

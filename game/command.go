@@ -172,6 +172,9 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		} else if action == "IN" {
 			pos := global.Atoi(strs[2][10:]) - 1
 			err = p.TileAction(user, resources.TileInnovation, pos)
+		} else if action == "FA" {
+			pos := global.Atoi(strs[2][7:])
+			err = p.TileAction(user, resources.TileFaction, pos)
 		}
 	} else if cmd == "pass" {
 		pos := global.Atoi(strs[2])

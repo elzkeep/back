@@ -83,8 +83,8 @@ func (p *Inventors) Dig(dig int) error {
 	return p.Faction.Dig(dig)
 }
 
-func (p *Inventors) TurnEnd() error {
-	return p.Faction.TurnEnd()
+func (p *Inventors) TurnEnd(round int) error {
+	return p.Faction.TurnEnd(round)
 }
 
 func (p *Inventors) PalaceTile(tile TileItem) error {

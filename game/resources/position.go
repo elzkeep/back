@@ -51,3 +51,11 @@ func Unique(lists []Position) []Position {
 
 	return items
 }
+
+func (p *Position) Equal(item Position) bool {
+	if p.X == item.X && p.Y == item.Y {
+		return true
+	} else {
+		return false
+	}
+}

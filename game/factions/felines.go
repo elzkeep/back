@@ -84,8 +84,8 @@ func (p *Felines) Dig(dig int) error {
 	return p.Faction.Dig(dig)
 }
 
-func (p *Felines) TurnEnd() error {
-	return p.Faction.TurnEnd()
+func (p *Felines) TurnEnd(round int) error {
+	return p.Faction.TurnEnd(round)
 }
 
 func (p *Felines) PalaceTile(tile TileItem) error {

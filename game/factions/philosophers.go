@@ -83,8 +83,8 @@ func (p *Philosophers) Dig(dig int) error {
 	return p.Faction.Dig(dig)
 }
 
-func (p *Philosophers) TurnEnd() error {
-	return p.Faction.TurnEnd()
+func (p *Philosophers) TurnEnd(round int) error {
+	return p.Faction.TurnEnd(round)
 }
 
 func (p *Philosophers) PalaceTile(tile TileItem) error {

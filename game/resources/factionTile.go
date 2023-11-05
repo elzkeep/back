@@ -1,6 +1,8 @@
 package resources
 
-import "aoi/models"
+import (
+	"aoi/models"
+)
 
 type FactionTile struct {
 	Items []TileItem `json:"items"`
@@ -20,7 +22,7 @@ func NewFactionTile(id int64) *FactionTile {
 		{Category: TileFaction, Type: TileFactionIllusionists, Name: "Illusionists", Once: Price{Science: Science{Medicine: 2}}, Use: false},
 		{Category: TileFaction, Type: TileFactionInventors, Name: "Inventors", Once: Price{Tile: 1}, Use: false},
 		{Category: TileFaction, Type: TileFactionLizards, Name: "Lizards", Once: Price{Science: Science{Any: 2}}, Use: false},
-		{Category: TileFaction, Type: TileFactionMoles, Name: "Moles", Once: Price{Science: Science{Engineering: 2}}, Use: false},
+		{Category: TileFaction, Type: TileFactionMoles, Name: "Moles", Once: Price{Science: Science{Engineering: 2}}, Action: Price{Bridge: 1}, Use: false},
 		{Category: TileFaction, Type: TileFactionMonks, Name: "Monks", Once: Price{Science: Science{Law: 1}}, Use: false},
 		{Category: TileFaction, Type: TileFactionNavigators, Name: "Navigators", Once: Price{Science: Science{Law: 3}}, Build: BuildVP{River: 2}, Use: false},
 		{Category: TileFaction, Type: TileFactionOmar, Name: "Omar", Once: Price{Science: Science{Banking: 1, Engineering: 1}, Building: WHITE_TOWER}, Receive: Price{Coin: 2, Power: 2}, Use: false},

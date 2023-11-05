@@ -3,6 +3,7 @@ package game
 import (
 	"aoi/game/resources"
 	"aoi/models"
+	"log"
 )
 
 type RoundBonusType int
@@ -74,6 +75,7 @@ func NewRoundBonus(id int64) *RoundBonus {
 		item.Items = append(item.Items, tiles[v.Number])
 	}
 
+	log.Println("number : ", items[6].Number)
 	item.FinalRound = finalRound[items[6].Number]
 
 	return &item
