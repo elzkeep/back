@@ -52,7 +52,11 @@ func NewFactionTile(id int64) *FactionTile {
 }
 
 func GetFactionTile(value TileType) TileItem {
-	pos := int(value) - int(TileSchoolPassPrist) - 1
+	for _, v := range _factionTile {
+		if v.Type == value {
+			return v
+		}
+	}
 
-	return _factionTile[pos]
+	return TileItem{}
 }

@@ -31,7 +31,8 @@ func (p *Illusionists) GetScience(pos int) int {
 	return p.Faction.GetScience(pos)
 }
 
-func (p *Illusionists) FirstBuild(x int, y int) {
+func (p *Illusionists) FirstBuild(x int, y int) error {
+	return p.Faction.FirstBuild(x, y)
 }
 
 func (p *Illusionists) Build(x int, y int, needSpade int, building Building) error {

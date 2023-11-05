@@ -11,7 +11,6 @@ import (
 	"encoding/gob"
 	"errors"
 	"log"
-	"math/rand"
 )
 
 const (
@@ -118,36 +117,14 @@ func (p *Game) CheckUser(id int64, user int) bool {
 
 func (p *Game) AddUser(user int64) {
 	p.Users = append(p.Users, user)
+}
 
-	if len(p.Users) == p.Count {
-		rand.Shuffle(len(p.Users), func(i, j int) { p.Users[i], p.Users[j] = p.Users[j], p.Users[i] })
+func (p *Game) UpdateDBRound(value int) {
+	conn := models.NewConnection()
+	defer conn.Close()
 
-		db := models.NewConnection()
-		defer db.Close()
-
-		conn, _ := db.Begin()
-		defer conn.Rollback()
-
-		gameManager := models.NewGameManager(conn)
-		gameuserManager := models.NewGameuserManager(conn)
-
-		gameManager.UpdateStatus(int(game.StatusFaction), p.Id)
-
-		items := gameuserManager.FindByGame(p.Id)
-
-		for i, v2 := range p.Users {
-			for _, v := range items {
-				if v.User == v2 {
-					v.Order = i + 1
-					gameuserManager.Update(&v)
-				}
-			}
-		}
-
-		conn.Commit()
-
-		p.CompleteAddUser()
-	}
+	gameManager := models.NewGameManager(conn)
+	gameManager.UpdateStatus(value, p.Id)
 }
 
 func (p *Game) CompleteAddUser() {
@@ -156,6 +133,8 @@ func (p *Game) CompleteAddUser() {
 	for i := 0; i < p.Count; i++ {
 		p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
 	}
+
+	p.UpdateDBRound(int(game.StatusFaction))
 }
 
 func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileItem) {
@@ -165,6 +144,60 @@ func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileIte
 
 	faction := item.GetInstance()
 	p.Sciences.AddUser(faction.Color, faction.Science)
+}
+
+func (p *Game) SelectFaction(user int, name string) {
+	pos := 0
+	for i, v := range p.FactionTiles.Items {
+		if v.Name == name {
+			pos = i
+		}
+	}
+
+	p.FactionTiles.Items[pos].Use = true
+
+	factionTile := p.FactionTiles.Items[pos]
+	colorTile := p.ColorTiles.Items[pos]
+	roundTile := p.RoundTiles.Items[pos]
+
+	var item factions.FactionInterface
+
+	if factionTile.Type == resources.TileFactionBlessed {
+		item = &factions.Monks{}
+	} else if factionTile.Type == resources.TileFactionFelines {
+		item = &factions.Felines{}
+	} else if factionTile.Type == resources.TileFactionGoblins {
+		item = &factions.Goblins{}
+	} else if factionTile.Type == resources.TileFactionIllusionists {
+		item = &factions.Illusionists{}
+	} else if factionTile.Type == resources.TileFactionInventors {
+		item = &factions.Inventors{}
+	} else if factionTile.Type == resources.TileFactionLizards {
+		item = &factions.Lizards{}
+	} else if factionTile.Type == resources.TileFactionMoles {
+		item = &factions.Moles{}
+	} else if factionTile.Type == resources.TileFactionMonks {
+		item = &factions.Monks{}
+	} else if factionTile.Type == resources.TileFactionNavigators {
+		item = &factions.Navigators{}
+	} else if factionTile.Type == resources.TileFactionOmar {
+		item = &factions.Omar{}
+	} else if factionTile.Type == resources.TileFactionPhilosophers {
+		item = &factions.Philosophers{}
+	} else if factionTile.Type == resources.TileFactionPsychics {
+		item = &factions.Psychics{}
+	}
+
+	item.Init(colorTile)
+
+	p.Factions = append(p.Factions, item)
+
+	faction := item.GetInstance()
+
+	faction.RoundTile(roundTile)
+	p.Sciences.AddUser(faction.Color, faction.Science)
+
+	p.PassOrder = append(p.PassOrder, user)
 }
 
 func (p *Game) IsTurn(user int) bool {
@@ -209,38 +242,43 @@ func (p *Game) Start() {
 
 	p.Round++
 
+	log.Println("Start ==============")
+	log.Println(p.PassOrder)
 	p.TurnOrder = p.PassOrder
 	p.PassOrder = make([]int, 0)
 
-	for i := range p.Factions {
-		user := p.TurnOrder[i]
-		faction := p.Factions[user]
-		f := faction.GetInstance()
-		faction.Income()
+	log.Println(p.TurnOrder)
+	if p.Round >= 1 {
+		for i := range p.Factions {
+			user := p.TurnOrder[i]
+			faction := p.Factions[user]
+			f := faction.GetInstance()
+			faction.Income()
 
-		p.Sciences.RoundBonus(faction.GetInstance())
+			p.Sciences.RoundBonus(faction.GetInstance())
 
-		roundBonus := p.RoundBonuss.Get(p.Round)
+			roundBonus := p.RoundBonuss.Get(p.Round)
 
-		count := 0
-		if roundBonus.Science.Banking > 0 {
-			count = faction.GetScience(0) / roundBonus.Science.Banking
-		} else if roundBonus.Science.Law > 0 {
-			count = faction.GetScience(1) / roundBonus.Science.Law
-		} else if roundBonus.Science.Engineering > 0 {
-			count = faction.GetScience(2) / roundBonus.Science.Engineering
-		} else if roundBonus.Science.Medicine > 0 {
-			count = faction.GetScience(3) / roundBonus.Science.Medicine
+			count := 0
+			if roundBonus.Science.Banking > 0 {
+				count = faction.GetScience(0) / roundBonus.Science.Banking
+			} else if roundBonus.Science.Law > 0 {
+				count = faction.GetScience(1) / roundBonus.Science.Law
+			} else if roundBonus.Science.Engineering > 0 {
+				count = faction.GetScience(2) / roundBonus.Science.Engineering
+			} else if roundBonus.Science.Medicine > 0 {
+				count = faction.GetScience(3) / roundBonus.Science.Medicine
+			}
+
+			roundBonus.Receive.Prist *= count
+			roundBonus.Receive.Power *= count
+			roundBonus.Receive.Book.Any *= count
+			roundBonus.Receive.Spade *= count
+			roundBonus.Receive.Coin *= count
+			roundBonus.Receive.Worker *= count
+
+			f.ReceiveResource(roundBonus.Receive)
 		}
-
-		roundBonus.Receive.Prist *= count
-		roundBonus.Receive.Power *= count
-		roundBonus.Receive.Book.Any *= count
-		roundBonus.Receive.Spade *= count
-		roundBonus.Receive.Coin *= count
-		roundBonus.Receive.Worker *= count
-
-		f.ReceiveResource(roundBonus.Receive)
 	}
 
 	for i := range p.Factions {
@@ -293,10 +331,10 @@ func (p *Game) TurnEnd(user int) {
 	p.Turn = p.Turn[1:]
 	p.Turn = append(p.PowerTurn, p.Turn...)
 
-	if p.Round > 0 {
-		faction := p.Factions[user]
-		faction.TurnEnd()
+	faction := p.Factions[user]
+	faction.TurnEnd()
 
+	if p.Round > 0 {
 		if user >= 0 {
 			if turnType == NormalTurn {
 				if !faction.GetInstance().IsPass {
@@ -304,22 +342,28 @@ func (p *Game) TurnEnd(user int) {
 				}
 			}
 		}
+	} else {
+		log.Println("add passorder")
+		p.PassOrder = append(p.PassOrder, user)
 	}
 
 	if len(p.Turn) == 0 {
 		if p.Round == FactionRound {
-			for i := 0; i < p.Count; i++ {
-				p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
-			}
-
 			p.Round = BuildRound
+
+			p.UpdateDBRound(int(game.StatusNormal))
+
+			p.BuildStart()
 		} else if p.Round == BuildRound {
 			for _, v := range p.Factions {
 				v.FirstIncome()
 			}
 
+			log.Println("start 1")
 			p.Start()
 		} else {
+			log.Println("turnend: passorder", p.PassOrder)
+			log.Println("start 2")
 			p.RoundEnd()
 			p.Start()
 		}
@@ -410,11 +454,12 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 		return errors.New("It's not a user's land")
 	}
 
-	faction.FirstBuild(x, y)
+	err := faction.FirstBuild(x, y)
+	if err != nil {
+		return err
+	}
 
 	p.Map.Build(x, y, f.Color, f.FirstBuilding)
-
-	p.TurnEnd(user)
 
 	return nil
 }
@@ -820,7 +865,7 @@ func (p *Game) Pass(user int, pos int) error {
 	p.RoundTiles.Add(tile)
 	p.PassOrder = append(p.PassOrder, user)
 
-	p.TurnEnd(user)
+	log.Println("pass: passOrder", p.PassOrder)
 
 	return nil
 }

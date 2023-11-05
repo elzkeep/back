@@ -6,6 +6,8 @@ import (
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
+	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 )
@@ -19,11 +21,13 @@ func init() {
 }
 
 func Init() {
+	log.Println("room Init")
 	conn := models.NewConnection()
 	defer conn.Close()
 
 	gameManager := models.NewGameManager(conn)
 	gameuserManager := models.NewGameuserManager(conn)
+	gamehistoryManager := models.NewGamehistoryManager(conn)
 
 	games := gameManager.Find(nil)
 
@@ -36,12 +40,24 @@ func Init() {
 			models.Ordering("gu_order"),
 		})
 
-		for _, gameuser := range gameusers {
-			g.Users = append(g.Users, gameuser.User)
-		}
+		if v.Count == len(gameusers) {
+			for _, gameuser := range gameusers {
+				g.AddUser(gameuser.User)
+			}
 
-		if v.Status == game.StatusFaction {
 			g.CompleteAddUser()
+
+			historys := gamehistoryManager.Find([]interface{}{
+				models.Where{Column: "game", Value: v.Id, Compare: "="},
+				models.Ordering("gh_id"),
+			})
+
+			for _, history := range historys {
+				Command(g, history.Game, history.User, history.Command, false)
+				Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
+			}
+
+			log.Println(g.Command)
 		}
 	}
 }
@@ -343,11 +359,21 @@ func Join(user int64, id int64) error {
 	gameuserManager.Insert(&gameuser)
 	count++
 
-	g.AddUser(user)
+	items := gameuserManager.FindByGame(id)
 
-	if count == item.Count {
-		item.Status = game.StatusFaction
-		gameManager.Update(item)
+	if len(items) == item.Count {
+		gameManager.UpdateStatus(int(game.StatusFaction), id)
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+		for i, v := range items {
+			v.Order = i + 1
+			gameuserManager.Update(&v)
+
+			g.AddUser(v.User)
+		}
+
+		g.CompleteAddUser()
 	}
 
 	Unlock()

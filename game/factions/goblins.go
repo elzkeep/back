@@ -31,7 +31,8 @@ func (p *Goblins) GetScience(pos int) int {
 	return p.Faction.GetScience(pos)
 }
 
-func (p *Goblins) FirstBuild(x int, y int) {
+func (p *Goblins) FirstBuild(x int, y int) error {
+	return p.Faction.FirstBuild(x, y)
 }
 
 func (p *Goblins) Build(x int, y int, needSpade int, building Building) error {

@@ -71,19 +71,10 @@ func NewRoundBonus(id int64) *RoundBonus {
 	})
 
 	for _, v := range items[:6] {
-		for _, tile := range tiles {
-			if v.Number == int(tile.Type) {
-				item.Items = append(item.Items, tile)
-			}
-		}
+		item.Items = append(item.Items, tiles[v.Number])
 	}
 
-	for _, tile := range finalRound {
-		if items[6].Type == int(tile.Type) {
-			item.FinalRound = tile
-			break
-		}
-	}
+	item.FinalRound = finalRound[items[6].Number]
 
 	return &item
 }

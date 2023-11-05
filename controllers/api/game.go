@@ -37,6 +37,7 @@ func (c *GameController) Game(id int64) {
 		return
 	}
 
+	log.Println(g.Turn)
 	c.Set("item", g)
 }
 
@@ -66,7 +67,7 @@ func (c *GameController) Command(id int64, cmd string) {
 		return
 	}
 
-	ret := game.Command(g, id, user, cmd)
+	ret := game.Command(g, id, user, cmd, true)
 
 	if ret != nil {
 		log.Println("-------------------------")

@@ -90,7 +90,7 @@ func ConvertBookType(str string) resources.BookType {
 	return resources.BookMedicine
 }
 
-func Command(p *Game, gameid int64, id int64, str string) error {
+func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 	log.Println("Command", str)
 	strs := strings.Split(str, " ")
 
@@ -102,7 +102,7 @@ func Command(p *Game, gameid int64, id int64, str string) error {
 
 	cmd := strs[1]
 
-	var err error
+	var err error = nil
 
 	if cmd == "build" {
 		x, y := ConvertPosition(strs[2])
@@ -163,7 +163,6 @@ func Command(p *Game, gameid int64, id int64, str string) error {
 			err = p.TileAction(user, resources.TilePalace, pos)
 		} else if action == "RO" {
 			pos := global.Atoi(strs[2][5:]) + int(resources.TilePalaceVp)
-			log.Println("ROUND", pos)
 			err = p.TileAction(user, resources.TileRound, pos)
 		} else if action == "SC" {
 			pos := global.Atoi(strs[2][6:]) + int(resources.TileRoundCoin)
@@ -257,6 +256,9 @@ func Command(p *Game, gameid int64, id int64, str string) error {
 		x, y := ConvertPosition(strs[2])
 
 		err = p.Annex(user, x, y)
+	} else if cmd == "faction" {
+		faction := strs[2]
+		p.SelectFaction(user, faction)
 	} else if cmd == "save" {
 		p.TurnEnd(user)
 	} else if cmd == "undo" {
@@ -268,25 +270,26 @@ func Command(p *Game, gameid int64, id int64, str string) error {
 	if err == nil {
 		if cmd == "undo" {
 		} else if cmd == "save" {
-			conn := models.NewConnection()
-			defer conn.Close()
+			p.ClearHistory()
+		} else {
+			p.AddHistory(str)
 
-			gamehistoryManager := models.NewGamehistoryManager(conn)
+			if update == true {
+				conn := models.NewConnection()
+				defer conn.Close()
 
-			date := global.GetCurrentDatetime()
-			for _, v := range p.Command {
+				gamehistoryManager := models.NewGamehistoryManager(conn)
+
+				date := global.GetCurrentDatetime()
+
 				var item models.Gamehistory
-				item.Command = v
+				item.Command = str
 				item.User = id
 				item.Game = gameid
 				item.Date = date
 
 				gamehistoryManager.Insert(&item)
 			}
-
-			p.ClearHistory()
-		} else {
-			p.AddHistory(str)
 		}
 	}
 

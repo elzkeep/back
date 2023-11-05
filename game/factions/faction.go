@@ -20,7 +20,7 @@ type FactionInterface interface {
 	Income()
 	GetScience(pos int) int
 
-	FirstBuild(x int, y int)
+	FirstBuild(x int, y int) error
 	Build(x int, y int, needSpade int, building Building) error
 	Upgrade(x int, y int, target Building) error
 	AdvanceShip() error
@@ -36,7 +36,7 @@ type FactionInterface interface {
 	TurnEnd() error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
-	InnovationTile(tile TileItem) error
+	InnovationTile(tile TileItem, price Price) error
 	RoundTile(tile TileItem) error
 	TileAction(category TileCategory, pos int) error
 }
@@ -223,7 +223,6 @@ func (p *Faction) GetHavePowerCount() int {
 }
 
 func (p *Faction) ReceiveResource(receive Price) {
-	log.Println("Faction ReceiveResource")
 	p.Resource.Coin += receive.Coin
 	p.Resource.Worker += receive.Worker
 	p.Resource.Prist += receive.Prist
@@ -365,16 +364,18 @@ func (p *Faction) UsePower(value int) error {
 }
 
 func (p *Faction) Print() {
-	extraShip := ""
+	/*
+		extraShip := ""
 
-	log.Printf("%v: %v C, %v W, %v/%v P, %v/%v/%v/%v B, %v/%v/%v pw, dig level: %v/%v, ship level: %v%v/%v\n",
-		p.Ename,
-		p.Resource.Coin,
-		p.Resource.Worker,
-		p.Resource.Prist, p.MaxPrist,
-		p.Resource.Book.Banking, p.Resource.Book.Law, p.Resource.Book.Engineering, p.Resource.Book.Medicine,
-		p.Resource.Power[0], p.Resource.Power[1], p.Resource.Power[2],
-		p.Spade, p.MaxSpade, p.Ship, extraShip, p.MaxShip)
+		log.Printf("%v: %v C, %v W, %v/%v P, %v/%v/%v/%v B, %v/%v/%v pw, dig level: %v/%v, ship level: %v%v/%v\n",
+			p.Ename,
+			p.Resource.Coin,
+			p.Resource.Worker,
+			p.Resource.Prist, p.MaxPrist,
+			p.Resource.Book.Banking, p.Resource.Book.Law, p.Resource.Book.Engineering, p.Resource.Book.Medicine,
+			p.Resource.Power[0], p.Resource.Power[1], p.Resource.Power[2],
+			p.Spade, p.MaxSpade, p.Ship, extraShip, p.MaxShip)
+	*/
 }
 
 func (p *Faction) UsePrice(need Price) {
@@ -446,9 +447,17 @@ func (p *Faction) AdvanceSpade() error {
 	return nil
 }
 
-func (p *Faction) FirstBuild(x int, y int) {
+func (p *Faction) FirstBuild(x int, y int) error {
+	if p.Action {
+		return errors.New("Already completed the action")
+	}
+
 	p.Building[p.FirstBuilding]++
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: p.FirstBuilding})
+
+	p.Action = true
+
+	return nil
 }
 
 func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
