@@ -212,7 +212,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 
 		err = p.City(user, resources.CityType(pos))
 	} else if cmd == "burn" {
-		count := global.Atoi(strs[2]) - 1
+		count := global.Atoi(strs[2])
 
 		err = p.Burn(user, count)
 	} else if cmd == "convert" {
@@ -241,6 +241,8 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 			pos = 5
 		}
 
+		log.Println(str)
+		log.Println(strs)
 		targetCategory := strs[pos]
 		targetCount := global.Atoi(strs[pos+1])
 

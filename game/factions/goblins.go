@@ -22,9 +22,11 @@ func (p *Goblins) Print() {
 }
 
 func (p *Goblins) FirstIncome() {
+	p.Faction.FirstIncome()
 }
 
 func (p *Goblins) Income() {
+	p.Faction.Income()
 }
 
 func (p *Goblins) GetScience(pos int) int {

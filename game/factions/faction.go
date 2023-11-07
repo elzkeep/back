@@ -6,6 +6,7 @@ import (
 	"aoi/game/resources"
 	. "aoi/game/resources"
 	"errors"
+	"log"
 
 	"math"
 )
@@ -302,6 +303,8 @@ func (p *Faction) FirstIncome() {
 }
 
 func (p *Faction) Income() {
+	log.Println("faction income")
+
 	power := 0
 
 	for i, v := range p.Incomes {
@@ -391,6 +394,7 @@ func (p *Faction) UsePrice(need Price) {
 
 	if p.Resource.Power[2] >= need.Power {
 		p.Resource.Power[2] -= need.Power
+		p.Resource.Power[0] += need.Power
 	} else {
 		need.Power -= p.Resource.Power[2]
 		p.Resource.Power[2] = 0

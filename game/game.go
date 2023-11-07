@@ -256,6 +256,7 @@ func (p *Game) Start() {
 			user := p.TurnOrder[i]
 			faction := p.Factions[user]
 			f := faction.GetInstance()
+			log.Println("faction.Income()")
 			faction.Income()
 
 			p.Sciences.RoundBonus(faction.GetInstance())

@@ -22,9 +22,11 @@ func (p *Blessed) Print() {
 }
 
 func (p *Blessed) FirstIncome() {
+	p.Faction.FirstIncome()
 }
 
 func (p *Blessed) Income() {
+	p.Faction.Income()
 }
 
 func (p *Blessed) GetScience(pos int) int {
