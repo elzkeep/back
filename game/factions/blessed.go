@@ -81,8 +81,8 @@ func (p *Blessed) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Blessed) Dig(dig int) error {
-	return p.Faction.Dig(dig)
+func (p *Blessed) Dig(x int, y int, dig int) error {
+	return p.Faction.Dig(x, y, dig)
 }
 
 func (p *Blessed) TurnEnd(round int) error {

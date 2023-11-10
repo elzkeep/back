@@ -81,9 +81,13 @@ func (p *Goblins) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Goblins) Dig(dig int) error {
-	p.ReceiveResource(Price{Coin: dig * 2})
-	return p.Faction.Dig(dig)
+func (p *Goblins) Dig(x int, y int, dig int) error {
+	err := p.Faction.Dig(x, y, dig)
+	if err == nil {
+		p.ReceiveResource(Price{Coin: dig * 2})
+	}
+
+	return err
 }
 
 func (p *Goblins) TurnEnd(round int) error {

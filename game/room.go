@@ -6,7 +6,6 @@ import (
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"sync"
@@ -54,7 +53,7 @@ func Init() {
 
 			for _, history := range historys {
 				Command(g, history.Game, history.User, history.Command, false)
-				Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
+				//Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
 			}
 
 			log.Println(g.Command)

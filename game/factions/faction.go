@@ -32,7 +32,7 @@ type FactionInterface interface {
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
 	Pass(tile TileItem) (error, TileItem)
 	ReceiveCity(item CityItem) error
-	Dig(dig int) error
+	Dig(x int, y int, dig int) error
 	TurnEnd(round int) error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
@@ -60,6 +60,7 @@ type Faction struct {
 	Point             int              `json:"point"`
 	TownPower         int              `json:"townPower"`
 	Spade             int              `json:"spade"`
+	DigPosition       []Position       `json:"digPosition"`
 	MaxSpade          int              `json:"maxSpade"`
 	Ship              int              `json:"ship"`
 	MaxShip           int              `json:"maxShip"`
@@ -67,6 +68,7 @@ type Faction struct {
 	Science           []int            `json:"science"`
 	Key               int              `json:"key"`
 	Action            bool             `json:"action"`
+	BuildAction       bool             `json:"buildAction"`
 	MaxBridge         int              `json:"maxBridge"`
 	ExtraBuild        int              `json:"extraBuild"`
 	VP                int              `json:"vp"`
@@ -100,6 +102,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.IsPass = false
 	item.FirstBuilding = D
 
+	item.DigPosition = make([]Position, 0)
 	item.Cities = make([]CityItem, 0)
 	item.Tiles = make([]TileItem, 0)
 	item.Tiles = append(item.Tiles, colorTile)
@@ -355,12 +358,19 @@ func (p *Faction) ConvertPower(convert Price) error {
 }
 
 func (p *Faction) UsePower(value int) error {
-	if p.Resource.Power[2] < value {
+	if p.Resource.Power[2] < value && p.Resource.Power[2]+p.Resource.Power[1]/2 < value {
 		return errors.New("not enough power")
 	}
 
-	p.Resource.Power[0] += value
-	p.Resource.Power[2] -= value
+	if p.Resource.Power[2] >= value {
+		p.Resource.Power[2] -= value
+		p.Resource.Power[0] += value
+	} else {
+		value -= p.Resource.Power[2]
+		p.Resource.Power[2] = 0
+		p.Resource.Power[1] -= value * 2
+		p.Resource.Power[0] += value
+	}
 
 	return nil
 }
@@ -473,6 +483,12 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 				}
 			}
 		} else {
+			if len(p.DigPosition) > 0 {
+				if p.DigPosition[0].X != x || p.DigPosition[0].Y != y {
+					return errors.New("must build first dig position")
+				}
+			}
+
 			p.ExtraBuild--
 		}
 	}
@@ -493,11 +509,17 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	}
 
 	if p.Resource.Spade >= needSpade {
-		p.Resource.Spade -= needSpade
+		if p.Resource.Spade-p.Resource.ConvertSpade >= needSpade {
+			p.Resource.Spade -= needSpade
+		} else {
+			p.Resource.Spade = 0
+		}
 	} else {
 		p.Resource.Worker -= p.GetWorkerForSpade() * (needSpade - p.Resource.Spade)
 		p.Resource.Spade = 0
 	}
+
+	p.Resource.ConvertSpade = 0
 
 	if building == D {
 		p.UsePrice(p.Price[D])
@@ -511,6 +533,7 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	p.Resource.Building = None
 
 	p.Action = true
+	p.BuildAction = true
 
 	p.Print()
 
@@ -614,6 +637,7 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 	}
 
 	p.Action = true
+	p.ResetResource()
 
 	p.Print()
 
@@ -625,6 +649,7 @@ func (p *Faction) SendScholar() error {
 	p.MaxPrist--
 
 	p.Action = true
+	p.ResetResource()
 
 	p.ReceivePristVP()
 
@@ -637,6 +662,7 @@ func (p *Faction) SupployScholar() error {
 	p.Resource.Prist--
 
 	p.Action = true
+	p.ResetResource()
 
 	p.Print()
 
@@ -648,6 +674,8 @@ func (p *Faction) PowerAction(item action.PowerActionItem) error {
 	if err != nil {
 		return err
 	}
+
+	p.ResetResource()
 
 	p.ReceiveResource(item.Receive)
 
@@ -670,6 +698,8 @@ func (p *Faction) Book(item action.BookActionItem, book Book) error {
 	p.Resource.Book.Law -= book.Law
 	p.Resource.Book.Engineering -= book.Engineering
 	p.Resource.Book.Medicine -= book.Medicine
+
+	p.ResetResource()
 
 	p.ReceiveResource(item.Receive)
 
@@ -695,15 +725,22 @@ func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return nil
 }
 
+func (p *Faction) ResetResource() {
+	p.Resource.Science = Science{}
+	p.Resource.Spade = 0
+	p.Resource.ConvertSpade = 0
+	p.Resource.Bridge = 0
+	p.Resource.TpUpgrade = 0
+	p.ExtraBuild = 0
+	p.DigPosition = make([]Position, 0)
+}
+
 func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 	if p.Resource.Downgrade > 0 {
 		return errors.New("have to downgrade"), TileItem{}
 	}
 
-	p.Resource.Science = Science{}
-	p.Resource.Spade = 0
-	p.Resource.Bridge = 0
-	p.Resource.TpUpgrade = 0
+	p.ResetResource()
 
 	for i, v := range p.Tiles {
 		if v.Type == TileRoundSchoolScienceCoin {
@@ -745,6 +782,8 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 func (p *Faction) ReceiveCity(item CityItem) error {
 	p.Cities = append(p.Cities, item)
 
+	p.ResetResource()
+
 	p.ReceiveResource(item.Receive)
 	p.Resource.City--
 	p.City++
@@ -753,12 +792,14 @@ func (p *Faction) ReceiveCity(item CityItem) error {
 	return nil
 }
 
-func (p *Faction) Dig(dig int) error {
+func (p *Faction) Dig(x int, y int, dig int) error {
 	if p.Resource.Spade < dig {
 		return errors.New("not enough spade")
 	}
 
 	p.Resource.Spade -= dig
+
+	p.DigPosition = append(p.DigPosition, Position{X: x, Y: y})
 
 	return nil
 }
@@ -774,15 +815,17 @@ func (p *Faction) ConvertDig(spade int) error {
 
 	p.Resource.Worker -= p.GetWorkerForSpade() * spade
 	p.Resource.Spade += spade
+	p.Resource.ConvertSpade += spade
 
 	return nil
 }
 
 func (p *Faction) TurnEnd(round int) error {
 	p.Action = false
+	p.BuildAction = false
 
 	if round > 0 {
-		p.Resource.Spade = 0
+		p.ResetResource()
 	}
 
 	return nil
@@ -930,6 +973,9 @@ func (p *Faction) Annex(x int, y int) error {
 
 	p.AnnexList = append(p.AnnexList, Position{X: x, Y: y})
 
+	p.ResetResource()
+	p.Action = true
+
 	p.Print()
 
 	return nil
@@ -972,8 +1018,12 @@ func (p *Faction) InnovationTile(tile TileItem, price Price) error {
 
 	p.Tiles = append(p.Tiles, tile)
 
+	p.ResetResource()
+
 	p.ReceiveResource(tile.Once)
 	p.UsePrice(price)
+
+	p.Action = true
 
 	return nil
 }

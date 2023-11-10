@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"strings"
 
@@ -162,7 +163,7 @@ func (p *Map) GetBuilding(x int, y int) resources.Building {
 		return resources.None
 	}
 
-	if x+p.Mx >= p.Width {
+	if x+p.Mx >= p.Width+2 {
 		return resources.None
 	}
 
@@ -170,7 +171,7 @@ func (p *Map) GetBuilding(x int, y int) resources.Building {
 		return resources.None
 	}
 
-	if y+1 >= p.Height {
+	if y+1 >= p.Height+2 {
 		return resources.None
 	}
 
@@ -518,7 +519,11 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 		total += v.Building.Power()
 	}
 
+	log.Println("total", total)
+	log.Println("count", count)
+
 	if total >= power && count >= needCount {
+		log.Println("CITY ===================")
 		return items
 	} else {
 		return make([]resources.Position, 0)

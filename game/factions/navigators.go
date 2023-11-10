@@ -81,8 +81,8 @@ func (p *Navigators) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Navigators) Dig(dig int) error {
-	return p.Faction.Dig(dig)
+func (p *Navigators) Dig(x int, y int, dig int) error {
+	return p.Faction.Dig(x, y, dig)
 }
 
 func (p *Navigators) TurnEnd(round int) error {

@@ -162,15 +162,13 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 			pos := global.Atoi(strs[2][6:]) - 1
 			err = p.TileAction(user, resources.TilePalace, pos)
 		} else if action == "RO" {
-			pos := global.Atoi(strs[2][5:]) + int(resources.TilePalaceVp)
+			pos := global.Atoi(strs[2][5:])
 			err = p.TileAction(user, resources.TileRound, pos)
 		} else if action == "SC" {
-			pos := global.Atoi(strs[2][6:]) + int(resources.TileRoundCoin)
-
-			pos += int(resources.TileRoundCoin)
+			pos := global.Atoi(strs[2][6:])
 			err = p.TileAction(user, resources.TileSchool, pos)
 		} else if action == "IN" {
-			pos := global.Atoi(strs[2][10:]) - 1
+			pos := global.Atoi(strs[2][10:])
 			err = p.TileAction(user, resources.TileInnovation, pos)
 		} else if action == "FA" {
 			pos := global.Atoi(strs[2][7:])
@@ -274,11 +272,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 
 	if err == nil {
 		if cmd == "undo" {
-		} else if cmd == "save" {
-			p.ClearHistory()
 		} else {
-			p.AddHistory(str)
-
 			if update == true {
 				conn := models.NewConnection()
 				defer conn.Close()
@@ -294,6 +288,12 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 				item.Date = date
 
 				gamehistoryManager.Insert(&item)
+			}
+
+			if cmd == "save" {
+				p.ClearHistory()
+			} else {
+				p.AddHistory(str)
 			}
 		}
 	}

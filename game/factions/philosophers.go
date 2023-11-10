@@ -81,8 +81,8 @@ func (p *Philosophers) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Philosophers) Dig(dig int) error {
-	return p.Faction.Dig(dig)
+func (p *Philosophers) Dig(x int, y int, dig int) error {
+	return p.Faction.Dig(x, y, dig)
 }
 
 func (p *Philosophers) TurnEnd(round int) error {

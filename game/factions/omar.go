@@ -81,8 +81,8 @@ func (p *Omar) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Omar) Dig(dig int) error {
-	return p.Faction.Dig(dig)
+func (p *Omar) Dig(x int, y int, dig int) error {
+	return p.Faction.Dig(x, y, dig)
 }
 
 func (p *Omar) TurnEnd(round int) error {

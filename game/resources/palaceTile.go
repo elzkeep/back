@@ -31,6 +31,7 @@ func NewPalaceTile(id int64) *PalaceTile {
 		{Category: TilePalace, Type: TilePalaceRiverCity, Name: "6 coin", Receive: Price{Power: 6, ShipUpgrade: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceBridge, Name: "6 coin", Receive: Price{Power: 6}, Once: Price{Book: Book{Any: 2}, Spade: 2, Bridge: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceTpBuild, Name: "tp build", Receive: Price{Power: 2, Book: Book{Any: 1}}, Once: Price{Building: TP}, Use: false},
+		{Category: TilePalace, Type: TilePalaceVp, Name: "10 vp", Receive: Price{Power: 2}, Once: Price{VP: 10}, Use: false},
 	}
 
 	conn := models.NewConnection()

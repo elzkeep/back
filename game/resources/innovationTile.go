@@ -50,14 +50,15 @@ func (p *InnovationTile) Init(count int) {
 	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
 	counts := [][]int{
+		{1, 1, 1, 1, 0, 0},
 		{1, 1, 1, 1, 1, 1},
-		{2, 2, 2, 2},
+		{2, 2, 2, 2, 0, 0},
 		{2, 2, 2, 2, 1, 1},
-		{3, 3, 3, 3, 3, 3},
+		{3, 3, 3, 3, 0, 0},
 	}
 
 	pos := 0
-	for i, v := range counts[count-2] {
+	for i, v := range counts[count-1] {
 		tiles := make([]TileItem, 0)
 
 		for j := 0; j < v; j++ {

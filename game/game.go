@@ -562,6 +562,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 }
 
 func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error {
+	log.Println("upgrade")
 	if p.Round < 1 {
 		return errors.New("round error")
 	}
@@ -593,7 +594,6 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 	}
 
 	p.Map.SetBuilding(x, y, target)
-
 	lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
 
 	if len(lists) > 0 {
@@ -917,34 +917,49 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	}
 
 	spade := 0
-	var change color.Color
+	change := 0
 	if dig >= needSpade {
-		change = f.Color
+		change = int(f.Color)
 		spade = needSpade
 	} else {
 		target := p.Map.GetType(x, y)
-
 		diff := f.Color - target
 
-		change := 0
 		if diff > 0 {
-			change = int(target) + dig
-		} else {
-			change = int(target) - dig
-			if change <= int(color.River) {
-				change += 7
+			if diff >= 4 {
+				change = int(target) - dig
+			} else {
+				change = int(target) + dig
 			}
+		} else {
+			if diff <= -4 {
+				change = int(target) + dig
+			} else {
+				change = int(target) - dig
+			}
+		}
+
+		if change <= int(color.River) {
+			change += 7
+		} else if change > int(color.Gray) {
+			change -= 7
 		}
 
 		spade = dig
 	}
 
-	faction.Dig(spade)
+	faction.Dig(x, y, spade)
 	p.Map.SetType(x, y, color.Color(change))
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
 	f.ReceiveResource(resources.Price{VP: buildVP.Spade * spade})
+
+	if f.Action == false {
+		f.ExtraBuild++
+	}
+
+	f.Action = true
 
 	return nil
 }
@@ -1237,6 +1252,15 @@ func (p *Game) ConvertDig(user int, spade int) error {
 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
+
+	if f.Resource.Spade+spade > 3 {
+		return errors.New("over")
+	}
+
+	if f.BuildAction == true {
+		return errors.New("already build")
+	}
+
 	f.ConvertDig(spade)
 	return nil
 }

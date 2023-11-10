@@ -81,8 +81,8 @@ func (p *Inventors) ReceiveCity(item CityItem) error {
 	return p.Faction.ReceiveCity(item)
 }
 
-func (p *Inventors) Dig(dig int) error {
-	return p.Faction.Dig(dig)
+func (p *Inventors) Dig(x int, y int, dig int) error {
+	return p.Faction.Dig(x, y, dig)
 }
 
 func (p *Inventors) TurnEnd(round int) error {
