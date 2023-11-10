@@ -592,5 +592,7 @@ func (p *Map) CheckAnnex(user color.Color, x int, y int) error {
 func (p *Map) Annex(user color.Color, x int, y int) error {
 	p.AnnexList = append(p.AnnexList, resources.Position{X: x, Y: y, Color: user})
 
+	log.Println("annex list", p.AnnexList)
+
 	return nil
 }
