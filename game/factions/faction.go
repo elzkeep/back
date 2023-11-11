@@ -5,6 +5,7 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
+	"sort"
 
 	"math"
 )
@@ -313,8 +314,6 @@ func (p *Faction) FirstIncome() {
 }
 
 func (p *Faction) Income() {
-	power := 0
-
 	for i, v := range p.Incomes {
 		for j := 0; j <= p.Building[i]; j++ {
 			p.ReceiveResource(v[j])
@@ -324,8 +323,6 @@ func (p *Faction) Income() {
 	for _, v := range p.Tiles {
 		p.ReceiveResource(v.Receive)
 	}
-
-	p.ReceivePower(power, false)
 
 	if p.Resource.Prist > p.MaxPrist {
 		p.Resource.Prist = p.MaxPrist
@@ -708,8 +705,6 @@ func (p *Faction) Book(item action.BookActionItem, book Book) error {
 	p.Resource.Book.Engineering -= book.Engineering
 	p.Resource.Book.Medicine -= book.Medicine
 
-	p.ResetResource()
-
 	p.ReceiveResource(item.Receive)
 
 	p.Action = true
@@ -935,6 +930,45 @@ func (p *Faction) TileAction(category TileCategory, pos int) error {
 	}
 
 	p.ReceiveResource(tile.Action)
+
+	if tile.Type == TileInnovationKind {
+		cnt := 0
+		for _, v := range p.Building {
+			if v > 0 {
+				cnt++
+			}
+		}
+
+		p.ReceiveResource(Price{Science: Science{Any: cnt}})
+	} else if tile.Type == TileInnovationCount {
+		cnt := 0
+		for _, v := range p.Building {
+			cnt += v
+		}
+
+		vp := 0
+		if cnt >= 11 {
+			vp = 18
+		} else if cnt >= 9 {
+			vp = 12
+		} else if cnt >= 7 {
+			vp = 8
+		}
+		p.ReceiveResource(Price{VP: vp})
+	} else if tile.Type == TileInnovationScience {
+		items := make([]int, 0)
+		for _, v := range p.Science {
+			items = append(items, v)
+		}
+
+		sort.Sort(sort.Reverse(sort.IntSlice(items)))
+
+		p.ReceiveResource(Price{VP: items[0] + items[1]})
+	} else if tile.Type == TileInnovationCluster {
+	} else if tile.Type == TileInnovationBridge {
+		vps := []int{0, 8, 12, 18}
+		p.ReceiveResource(Price{VP: vps[len(p.BridgeList)]})
+	}
 
 	tile.Use = true
 

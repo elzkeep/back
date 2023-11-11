@@ -6,7 +6,6 @@ import (
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
-	"log"
 	"math/rand"
 	"sync"
 )
@@ -20,7 +19,6 @@ func init() {
 }
 
 func Init() {
-	log.Println("room Init")
 	conn := models.NewConnection()
 	defer conn.Close()
 
@@ -55,8 +53,6 @@ func Init() {
 				Command(g, history.Game, history.User, history.Command, false)
 				//Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
 			}
-
-			log.Println(g.Command)
 		}
 	}
 }
@@ -399,7 +395,6 @@ func Join(user int64, id int64) error {
 	items := gameuserManager.FindByGame(id)
 
 	if len(items) == item.Count {
-		log.Println("join complete")
 		gameManager.UpdateStatus(int(game.StatusFaction), id)
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
@@ -412,8 +407,6 @@ func Join(user int64, id int64) error {
 		}
 
 		g.CompleteAddUser()
-	} else {
-		log.Println("join not complete")
 	}
 
 	Unlock()

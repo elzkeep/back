@@ -37,14 +37,11 @@ func (c *GameController) Game(id int64) {
 		return
 	}
 
-	log.Println(g.Turn)
 	c.Set("item", g)
 }
 
 func (c *GameController) Map(id int64) {
 	g := game.Get(id)
-
-	log.Println("map", id)
 
 	if g == nil {
 		c.Set("code", "not found game")
@@ -57,8 +54,6 @@ func (c *GameController) Map(id int64) {
 // @Post()
 func (c *GameController) Command(id int64, cmd string) {
 	user := c.Session.Id
-
-	log.Println("command", id)
 
 	g := game.Get(id)
 

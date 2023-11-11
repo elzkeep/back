@@ -81,6 +81,9 @@ const (
 	TileColorBlack
 	TileColorRed
 
+	TileInnovationSpade
+	TileInnovationTP
+	TileInnovationPrist
 	TileInnovationKind
 	TileInnovationCount
 	TileInnovationSchool

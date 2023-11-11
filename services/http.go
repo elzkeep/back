@@ -3,11 +3,11 @@ package services
 import (
 	"aoi/config"
 	"aoi/router"
+	"encoding/json"
 	"log"
 	"strings"
 
 	"github.com/antoniodipinto/ikisocket"
-	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -58,6 +58,7 @@ func Http() {
 	}
 
 	app.Static("/webdata", "./webdata")
+	app.Static("/", "../app/build/web")
 
 	router.SetRouter(app)
 

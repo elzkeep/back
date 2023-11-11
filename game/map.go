@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"strings"
 
@@ -519,11 +518,7 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 		total += v.Building.Power()
 	}
 
-	log.Println("total", total)
-	log.Println("count", count)
-
 	if total >= power && count >= needCount {
-		log.Println("CITY ===================")
 		return items
 	} else {
 		return make([]resources.Position, 0)
@@ -591,8 +586,6 @@ func (p *Map) CheckAnnex(user color.Color, x int, y int) error {
 
 func (p *Map) Annex(user color.Color, x int, y int) error {
 	p.AnnexList = append(p.AnnexList, resources.Position{X: x, Y: y, Color: user})
-
-	log.Println("annex list", p.AnnexList)
 
 	return nil
 }

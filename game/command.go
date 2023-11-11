@@ -241,8 +241,6 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 			pos = 5
 		}
 
-		log.Println(str)
-		log.Println(strs)
 		targetCategory := strs[pos]
 		targetCount := global.Atoi(strs[pos+1])
 
@@ -264,6 +262,10 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 	} else if cmd == "faction" {
 		faction := strs[2]
 		p.SelectFaction(user, faction)
+	} else if cmd == "leech" {
+		p.PowerConfirm(user, true)
+	} else if cmd == "decline" {
+		p.PowerConfirm(user, false)
 	} else if cmd == "save" {
 		err = p.TurnEnd(user)
 	} else if cmd == "undo" {

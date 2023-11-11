@@ -29,21 +29,26 @@ func NewInnovationTile(id int64, count int) *InnovationTile {
 	}
 
 	tiles := []TileItem{
-		{Category: TileInnovation, Type: TileInnovationKind, Name: "2W", Once: Price{VP: 10}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationCount, Name: "prist vp", Use: false},
-		{Category: TileInnovation, Type: TileInnovationSchool, Name: "tp vp", Once: Price{TeVP: 5}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationCity, Name: "sh/sa vp", Once: Price{CityVP: 5}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationScience, Name: "1 spade", Use: false},
-		{Category: TileInnovation, Type: TileInnovationCluster, Name: "1 bridge", Use: false},
-		{Category: TileInnovation, Type: TileInnovationD, Name: "1 science", Once: Price{DVP: 2}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationUpgrade, Name: "te science", Once: Price{Prist: 1, SpadeUpgrade: 1, ShipUpgrade: 1}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationBridge, Name: "4 power", Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeD, Name: "4 power", Receive: Price{Worker: 3}, Once: Price{Building: WHITE_D}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeTP, Name: "6 coin", Receive: Price{Coin: 5}, Once: Price{Building: WHITE_TP}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeSchool, Name: "6 coin", Once: Price{Tile: 1, Building: WHITE_TE}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeSA, Name: "6 coin", Receive: Price{VP: 2}, Once: Price{Building: WHITE_SA}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeSH, Name: "6 coin", Receive: Price{Power: 4}, Once: Price{Building: WHITE_SH, Token: 2}, Use: false},
-		{Category: TileInnovation, Type: TileInnovationFreeMT, Name: "6 coin", Once: Price{VP: 7, Building: WHITE_MT}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationSpade, Name: "spade", Action: Price{Spade: 1}, Once: Price{Book: Book{Any: 1}, Science: Science{Banking: 1, Law: 1, Engineering: 1, Medicine: 1}}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationTP, Name: "tp", Pass: Price{TpVP: 2}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationPrist, Name: "prist", Action: Price{Prist: 1, VP: 3}, Use: false},
+
+		{Category: TileInnovation, Type: TileInnovationKind, Name: "kind", Once: Price{VP: 10}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationCount, Name: "count", Use: false},
+		{Category: TileInnovation, Type: TileInnovationSchool, Name: "school", Once: Price{TeVP: 5}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationCity, Name: "city", Once: Price{CityVP: 5}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationScience, Name: "science", Use: false},
+		{Category: TileInnovation, Type: TileInnovationCluster, Name: "cluster", Use: false},
+		{Category: TileInnovation, Type: TileInnovationD, Name: "d", Once: Price{DVP: 2}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationUpgrade, Name: "upgrade", Once: Price{Prist: 1, SpadeUpgrade: 1, ShipUpgrade: 1}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationBridge, Name: "bridge", Use: false},
+
+		{Category: TileInnovation, Type: TileInnovationFreeD, Name: "freeD", Receive: Price{Worker: 3}, Once: Price{Building: WHITE_D}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeTP, Name: "freeTP", Receive: Price{Coin: 5}, Once: Price{Building: WHITE_TP}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSchool, Name: "freeSchool", Once: Price{Tile: 1, Building: WHITE_TE}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSA, Name: "freeSA", Receive: Price{VP: 2}, Once: Price{Building: WHITE_SA}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeSH, Name: "freeSH", Receive: Price{Power: 4}, Once: Price{Building: WHITE_SH, Token: 2}, Use: false},
+		{Category: TileInnovation, Type: TileInnovationFreeMT, Name: "freeMT", Once: Price{VP: 7, Building: WHITE_MT}, Use: false},
 	}
 
 	conn := models.NewConnection()

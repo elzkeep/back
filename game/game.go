@@ -40,7 +40,7 @@ type Game struct {
 	Turn            []Turn                    `json:"turn"`
 	PowerTurn       []Turn                    `json:"powerTurn"`
 	Round           int                       `json:"round"`
-	PassOrder       []int                     `json:"PassOrder"`
+	PassOrder       []int                     `json:"passOrder"`
 	TurnOrder       []int                     `json:"turnOrder"`
 	Users           []int64                   `json:"users"`
 	Count           int                       `json:"count"`
@@ -58,6 +58,7 @@ const (
 	BookTurn
 	TileTurn
 	BuildTurn
+	ResourceTurn
 )
 
 type Turn struct {
@@ -69,8 +70,8 @@ type Turn struct {
 }
 
 func (p *Turn) Print() {
-	//titles := []string{"Normal", "Power", "Science", "Spade", "Book"}
-	//log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
+	titles := []string{"Normal", "Power", "Science", "Spade", "Book", "Tile", "Build", "Resource"}
+	log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
 }
 
 func NewGame(id int64, count int) *Game {
@@ -122,6 +123,10 @@ func (p *Game) CheckUser(id int64, user int) bool {
 
 func (p *Game) AddUser(user int64) {
 	p.Users = append(p.Users, user)
+	item := &factions.Basic{}
+	colorTile := p.ColorTiles.Items[0]
+	item.Init(colorTile)
+	p.Factions = append(p.Factions, item)
 }
 
 func (p *Game) UpdateDBRound(value int) {
@@ -194,7 +199,7 @@ func (p *Game) SelectFaction(user int, name string) {
 
 	item.Init(colorTile)
 
-	p.Factions = append(p.Factions, item)
+	p.Factions[user] = item
 
 	f := item.GetInstance()
 
@@ -260,7 +265,6 @@ func (p *Game) Start() {
 			user := p.TurnOrder[i]
 			faction := p.Factions[user]
 			f := faction.GetInstance()
-			log.Println("faction.Income()")
 			faction.Income()
 
 			p.Sciences.RoundBonus(faction.GetInstance())
@@ -293,41 +297,47 @@ func (p *Game) Start() {
 		user := p.TurnOrder[i]
 		faction := p.Factions[user].GetInstance()
 
-		if faction.Resource.Building != resources.None {
-			turn := []Turn{{User: user, Type: BuildTurn}}
-			p.Turn = append(turn, p.Turn...)
+		if faction.Resource.Book.Any > 0 ||
+			!faction.Resource.Science.IsEmpty() ||
+			faction.Resource.Spade > 0 ||
+			faction.Resource.Building != resources.None {
+
+			turn := Turn{User: user, Type: ResourceTurn}
+			p.Turn = append(p.Turn, turn)
 		}
 	}
 
-	for i := range p.Factions {
-		user := p.TurnOrder[i]
-		faction := p.Factions[user].GetInstance()
+	/*
+		for i := range p.Factions {
+			user := p.TurnOrder[i]
+			faction := p.Factions[user].GetInstance()
 
-		if faction.Resource.Book.Any > 0 {
-			turn := []Turn{{User: user, Type: BookTurn}}
-			p.Turn = append(turn, p.Turn...)
+			if !faction.Resource.Science.IsEmpty() {
+				turn := []Turn{{User: user, Type: ScienceTurn}}
+				p.Turn = append(turn, p.Turn...)
+			}
 		}
-	}
 
-	for i := range p.Factions {
-		user := p.TurnOrder[i]
-		faction := p.Factions[user].GetInstance()
+		for i := range p.Factions {
+			user := p.TurnOrder[i]
+			faction := p.Factions[user].GetInstance()
 
-		if !faction.Resource.Science.IsEmpty() {
-			turn := []Turn{{User: user, Type: ScienceTurn}}
-			p.Turn = append(turn, p.Turn...)
+			if faction.Resource.Spade > 0 {
+				turn := []Turn{{User: user, Type: SpadeTurn}}
+				p.Turn = append(turn, p.Turn...)
+			}
 		}
-	}
 
-	for i := range p.Factions {
-		user := p.TurnOrder[i]
-		faction := p.Factions[user].GetInstance()
+		for i := range p.Factions {
+			user := p.TurnOrder[i]
+			faction := p.Factions[user].GetInstance()
 
-		if faction.Resource.Spade > 0 {
-			turn := []Turn{{User: user, Type: SpadeTurn}}
-			p.Turn = append(turn, p.Turn...)
+			if faction.Resource.Building != resources.None {
+				turn := []Turn{{User: user, Type: BuildTurn}}
+				p.Turn = append(turn, p.Turn...)
+			}
 		}
-	}
+	*/
 
 	for i := range p.Factions {
 		user := p.TurnOrder[i]
@@ -358,7 +368,9 @@ func (p *Game) TurnEnd(user int) error {
 	turnType := p.Turn[0].Type
 
 	p.Turn = p.Turn[1:]
+
 	p.Turn = append(p.PowerTurn, p.Turn...)
+	p.PowerTurn = make([]Turn, 0)
 
 	f.TurnEnd(p.Round)
 
@@ -384,6 +396,10 @@ func (p *Game) TurnEnd(user int) error {
 			p.BuildStart()
 		} else if p.Round == BuildRound {
 			p.Round = 0
+			p.PassOrder = make([]int, 0)
+			for i, _ := range p.Factions {
+				p.PassOrder = append(p.PassOrder, i)
+			}
 			p.Start()
 		} else {
 			p.RoundEnd()
@@ -405,6 +421,18 @@ func (p *Game) RoundEnd() {
 		faction := v.GetInstance()
 		p.Sciences.RoundEndBonus(faction, p.RoundBonuss.Items[p.Round])
 	}
+}
+
+func (p *Game) IsResourceTurn() bool {
+	if len(p.Turn) == 0 {
+		return false
+	}
+
+	if p.Turn[0].Type != ResourceTurn {
+		return false
+	}
+
+	return true
 }
 
 func (p *Game) IsBuildTurn() bool {
@@ -518,7 +546,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
-	if !p.IsNormalTurn() && !(p.IsBuildTurn() && f.Resource.Building != resources.None) {
+	if !p.IsNormalTurn() && !((p.IsBuildTurn() || p.IsResourceTurn()) && f.Resource.Building != resources.None) {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -601,7 +629,6 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 }
 
 func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error {
-	log.Println("upgrade")
 	if p.Round < 1 {
 		return errors.New("round error")
 	}
@@ -923,7 +950,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() && !p.IsSpadeTurn() {
+	if !p.IsNormalTurn() && !p.IsSpadeTurn() && !p.IsResourceTurn() {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -945,7 +972,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 
 	tile := true
 
-	if p.IsSpadeTurn() {
+	if p.IsSpadeTurn() || p.IsResourceTurn() {
 		tile = false
 	}
 
@@ -1119,10 +1146,10 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 		f := faction.GetInstance()
 
 		for _, position := range positions {
-			owner := p.Map.GetOwner(x+position.X, y+position.Y)
+			owner := p.Map.GetOwner(position.X, position.Y)
 
 			if owner == f.Color {
-				powers[i] += p.Map.GetPower(x+position.X, y+position.Y)
+				powers[i] += p.Map.GetPower(position.X, position.Y)
 			}
 		}
 	}
@@ -1137,8 +1164,12 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 	}
 
 	for _, v := range users {
-		if powers[v] > 0 {
-			p.PowerTurn = append(p.PowerTurn, Turn{User: v, Type: PowerTurn, Power: powers[v], From: user})
+		power := powers[v]
+		if power > 0 {
+			target := p.Factions[user].GetInstance()
+			if target.VP >= power {
+				p.PowerTurn = append(p.PowerTurn, Turn{User: v, Type: PowerTurn, Power: power, From: user})
+			}
 		}
 	}
 }
@@ -1152,13 +1183,14 @@ func (p *Game) PowerConfirm(user int, confirm bool) error {
 		return errors.New("It's not a turn")
 	}
 
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
 	if confirm == true {
-		faction := p.Factions[user]
-		f := faction.GetInstance()
 		f.ReceivePower(p.Turn[0].Power, true)
 	}
 
-	p.TurnEnd(user)
+	f.Action = true
 
 	return nil
 }
@@ -1210,7 +1242,7 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() && !p.IsScienceTurn() {
+	if !p.IsNormalTurn() && !p.IsScienceTurn() && !p.IsResourceTurn() {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -1240,6 +1272,10 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 
+	if p.IsScienceTurn() || p.IsResourceTurn() {
+		f.Action = true
+	}
+
 	return nil
 }
 
@@ -1248,7 +1284,7 @@ func (p *Game) Book(user int, pos resources.BookType, count int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() && !p.IsBookTurn() {
+	if !p.IsNormalTurn() && !p.IsBookTurn() && !p.IsResourceTurn() {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -1272,6 +1308,10 @@ func (p *Game) Book(user int, pos resources.BookType, count int) error {
 
 	f.ReceiveResource(resources.Price{Book: book})
 	f.Resource.Book.Any -= count
+
+	if p.IsBookTurn() || p.IsResourceTurn() {
+		f.Action = true
+	}
 
 	return nil
 }
@@ -1358,7 +1398,6 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 
 	err := faction.TileAction(category, pos)
 	if err != nil {
-		log.Println("errrrrrrrrrrrrrrrr")
 		return err
 	}
 
