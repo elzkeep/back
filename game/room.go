@@ -305,6 +305,41 @@ func Make(user int64, item *models.Game) {
 		gametileManager.Insert(&tile)
 	}
 
+	{
+		items := []int{
+			int(resources.TileInnovationKind),
+			int(resources.TileInnovationCount),
+			int(resources.TileInnovationSchool),
+			int(resources.TileInnovationCity),
+			int(resources.TileInnovationScience),
+			int(resources.TileInnovationCluster),
+			int(resources.TileInnovationD),
+			int(resources.TileInnovationUpgrade),
+			int(resources.TileInnovationBridge),
+			int(resources.TileInnovationFreeD),
+			int(resources.TileInnovationFreeTP),
+			int(resources.TileInnovationFreeSchool),
+			int(resources.TileInnovationFreeSA),
+			int(resources.TileInnovationFreeSH),
+			int(resources.TileInnovationFreeMT),
+		}
+
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+		counts := []int{4, 6, 8, 10, 12}
+
+		for i, v := range items[:counts[item.Count-1]] {
+			var tile models.Gametile
+
+			tile.Type = int(resources.TileInnovation)
+			tile.Number = v
+			tile.Order = i + 1
+			tile.Game = id
+
+			gametileManager.Insert(&tile)
+		}
+	}
+
 	conn.Commit()
 
 	g := NewGame(id, item.Count)

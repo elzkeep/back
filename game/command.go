@@ -265,7 +265,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		faction := strs[2]
 		p.SelectFaction(user, faction)
 	} else if cmd == "save" {
-		p.TurnEnd(user)
+		err = p.TurnEnd(user)
 	} else if cmd == "undo" {
 		p.Undo(user)
 	}

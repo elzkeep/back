@@ -1,26 +1,25 @@
 package resources
 
-import "math/rand"
+import (
+	"aoi/models"
+	"log"
+)
 
 type InnovationTile struct {
 	Items [][]TileItem `json:"items"`
 	Price []Price      `json:"price"`
 }
 
-func NewInnovationTile() *InnovationTile {
+func NewInnovationTile(id int64, count int) *InnovationTile {
 	var item InnovationTile
 
-	item.Items = make([][]TileItem, 0)
+	item.Items = make([][]TileItem, 6)
 
 	for i := 0; i < 6; i++ {
 		item.Items[i] = make([]TileItem, 0)
 	}
 
-	return &item
-}
-
-func (p *InnovationTile) Init(count int) {
-	p.Price = []Price{
+	item.Price = []Price{
 		{Book: Book{Any: 3, Banking: 2}},
 		{Book: Book{Any: 3, Law: 2}},
 		{Book: Book{Any: 3, Engineering: 2}},
@@ -29,7 +28,7 @@ func (p *InnovationTile) Init(count int) {
 		{Book: Book{Any: 1, Engineering: 2, Medicine: 2}},
 	}
 
-	items := []TileItem{
+	tiles := []TileItem{
 		{Category: TileInnovation, Type: TileInnovationKind, Name: "2W", Once: Price{VP: 10}, Use: false},
 		{Category: TileInnovation, Type: TileInnovationCount, Name: "prist vp", Use: false},
 		{Category: TileInnovation, Type: TileInnovationSchool, Name: "tp vp", Once: Price{TeVP: 5}, Use: false},
@@ -47,7 +46,25 @@ func (p *InnovationTile) Init(count int) {
 		{Category: TileInnovation, Type: TileInnovationFreeMT, Name: "6 coin", Once: Price{VP: 7, Building: WHITE_MT}, Use: false},
 	}
 
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gametileManager := models.NewGametileManager(conn)
+	items := gametileManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Where{Column: "type", Value: int(TileInnovation), Compare: "="},
+		models.Ordering("gt_order"),
+	})
+
+	targets := make([]TileItem, 0)
+
+	for _, v := range items {
+		for _, tile := range tiles {
+			if v.Number == int(tile.Type) {
+				targets = append(targets, tile)
+			}
+		}
+	}
 
 	counts := [][]int{
 		{1, 1, 1, 1, 0, 0},
@@ -57,17 +74,23 @@ func (p *InnovationTile) Init(count int) {
 		{3, 3, 3, 3, 0, 0},
 	}
 
+	for _, v := range targets {
+		log.Println(v)
+	}
+
 	pos := 0
 	for i, v := range counts[count-1] {
 		tiles := make([]TileItem, 0)
 
 		for j := 0; j < v; j++ {
-			tiles = append(tiles, items[pos])
+			tiles = append(tiles, targets[pos])
 			pos++
 		}
 
-		p.Items[i] = tiles
+		item.Items[i] = tiles
 	}
+
+	return &item
 }
 
 /*

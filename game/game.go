@@ -27,24 +27,25 @@ type Game struct {
 	Sciences *Science                    `json:"sciences"`
 	Factions []factions.FactionInterface `json:"factions"`
 
-	PowerActions *action.PowerAction    `json:"powerActions"`
-	BookActions  *action.BookAction     `json:"bookActions"`
-	RoundTiles   *resources.RoundTile   `json:"roundTiles"`
-	RoundBonuss  *RoundBonus            `json:"roundBonuss"`
-	PalaceTiles  *resources.PalaceTile  `json:"palaceTiles"`
-	SchoolTiles  *resources.SchoolTile  `json:"schoolTiles"`
-	FactionTiles *resources.FactionTile `json:"factionTiles"`
-	ColorTiles   *resources.ColorTile   `json:"colorTiles"`
-	Cities       *City                  `json:"cities"`
-	Turn         []Turn                 `json:"turn"`
-	PowerTurn    []Turn                 `json:"powerTurn"`
-	Round        int                    `json:"round"`
-	PassOrder    []int                  `json:"PassOrder"`
-	TurnOrder    []int                  `json:"turnOrder"`
-	Users        []int64                `json:"users"`
-	Count        int                    `json:"count"`
-	History      []Game                 `json:"-"`
-	Command      []string               `json:"-"`
+	PowerActions    *action.PowerAction       `json:"powerActions"`
+	BookActions     *action.BookAction        `json:"bookActions"`
+	RoundTiles      *resources.RoundTile      `json:"roundTiles"`
+	RoundBonuss     *RoundBonus               `json:"roundBonuss"`
+	PalaceTiles     *resources.PalaceTile     `json:"palaceTiles"`
+	SchoolTiles     *resources.SchoolTile     `json:"schoolTiles"`
+	InnovationTiles *resources.InnovationTile `json:"innovationTiles"`
+	FactionTiles    *resources.FactionTile    `json:"factionTiles"`
+	ColorTiles      *resources.ColorTile      `json:"colorTiles"`
+	Cities          *City                     `json:"cities"`
+	Turn            []Turn                    `json:"turn"`
+	PowerTurn       []Turn                    `json:"powerTurn"`
+	Round           int                       `json:"round"`
+	PassOrder       []int                     `json:"PassOrder"`
+	TurnOrder       []int                     `json:"turnOrder"`
+	Users           []int64                   `json:"users"`
+	Count           int                       `json:"count"`
+	History         []Game                    `json:"-"`
+	Command         []string                  `json:"-"`
 }
 
 type TurnType int
@@ -56,6 +57,7 @@ const (
 	SpadeTurn
 	BookTurn
 	TileTurn
+	BuildTurn
 )
 
 type Turn struct {
@@ -80,6 +82,7 @@ func NewGame(id int64, count int) *Game {
 	item.RoundBonuss = NewRoundBonus(id)
 	item.PalaceTiles = resources.NewPalaceTile(id)
 	item.SchoolTiles = resources.NewSchoolTile(id, count)
+	item.InnovationTiles = resources.NewInnovationTile(id, count)
 	item.FactionTiles = resources.NewFactionTile(id)
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
@@ -202,6 +205,7 @@ func (p *Game) SelectFaction(user int, name string) {
 	p.Sciences.AddUser(f.Color, f.Science)
 
 	p.FactionTiles.Items[pos].Use = true
+	f.Action = true
 
 	p.PassOrder = append(p.PassOrder, user)
 }
@@ -289,6 +293,16 @@ func (p *Game) Start() {
 		user := p.TurnOrder[i]
 		faction := p.Factions[user].GetInstance()
 
+		if faction.Resource.Building != resources.None {
+			turn := []Turn{{User: user, Type: BuildTurn}}
+			p.Turn = append(turn, p.Turn...)
+		}
+	}
+
+	for i := range p.Factions {
+		user := p.TurnOrder[i]
+		faction := p.Factions[user].GetInstance()
+
 		if faction.Resource.Book.Any > 0 {
 			turn := []Turn{{User: user, Type: BookTurn}}
 			p.Turn = append(turn, p.Turn...)
@@ -329,19 +343,29 @@ func (p *Game) Start() {
 	p.BookActions.Start()
 }
 
-func (p *Game) TurnEnd(user int) {
+func (p *Game) TurnEnd(user int) error {
+	if !p.IsTurn(user) {
+		return errors.New("It's not a turn")
+	}
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Action == false {
+		return errors.New("must action")
+	}
+
 	turnType := p.Turn[0].Type
 
 	p.Turn = p.Turn[1:]
 	p.Turn = append(p.PowerTurn, p.Turn...)
 
-	faction := p.Factions[user]
-	faction.TurnEnd(p.Round)
+	f.TurnEnd(p.Round)
 
 	if p.Round > 0 {
 		if user >= 0 {
 			if turnType == NormalTurn {
-				if !faction.GetInstance().IsPass {
+				if !f.IsPass {
 					p.Turn = append(p.Turn, Turn{User: user, Type: NormalTurn})
 				}
 			}
@@ -372,6 +396,8 @@ func (p *Game) TurnEnd(user int) {
 			}
 		}
 	}
+
+	return nil
 }
 
 func (p *Game) RoundEnd() {
@@ -379,6 +405,18 @@ func (p *Game) RoundEnd() {
 		faction := v.GetInstance()
 		p.Sciences.RoundEndBonus(faction, p.RoundBonuss.Items[p.Round])
 	}
+}
+
+func (p *Game) IsBuildTurn() bool {
+	if len(p.Turn) == 0 {
+		return false
+	}
+
+	if p.Turn[0].Type != BuildTurn {
+		return false
+	}
+
+	return true
 }
 
 func (p *Game) IsNormalTurn() bool {
@@ -477,12 +515,13 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if !p.IsNormalTurn() && !(p.IsBuildTurn() && f.Resource.Building != resources.None) {
 		return errors.New("It's not a normal turn")
 	}
 
-	faction := p.Factions[user]
-	f := faction.GetInstance()
 	if f.Action {
 		if f.Resource.Building == resources.None && f.ExtraBuild == 0 {
 			return errors.New("Already completed the action")
@@ -1246,7 +1285,7 @@ func (p *Game) ConvertDig(user int, spade int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() {
+	if !p.IsNormalTurn() && !p.IsBuildTurn() {
 		return errors.New("It's not a normal turn")
 	}
 

@@ -5,7 +5,6 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
-	"log"
 
 	"math"
 )
@@ -259,7 +258,6 @@ func (p *Faction) ReceiveResource(receive Price) {
 
 	p.Resource.SchoolTile += receive.Tile
 
-	log.Println("receiveResource: building", receive.Building)
 	if receive.Building != None {
 		p.Resource.Building = receive.Building
 	}
@@ -315,8 +313,6 @@ func (p *Faction) FirstIncome() {
 }
 
 func (p *Faction) Income() {
-	log.Println("faction income")
-
 	power := 0
 
 	for i, v := range p.Incomes {
@@ -487,8 +483,6 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 			if p.Resource.Building == None {
 				return errors.New("Already completed the action")
 			} else {
-				log.Println(p.Resource.Building, building)
-
 				if p.Resource.Building != building {
 					return errors.New("not match building")
 				}
@@ -820,7 +814,6 @@ func (p *Faction) Dig(x int, y int, dig int) error {
 }
 
 func (p *Faction) ConvertDig(spade int) error {
-	log.Println("faction: ConvertDig", spade)
 	if p.Action == true && p.ExtraBuild == 0 && p.Resource.Building == None {
 		return errors.New("already action end")
 	}
@@ -829,7 +822,6 @@ func (p *Faction) ConvertDig(spade int) error {
 		return errors.New("not enough worker")
 	}
 
-	log.Println("gogogo")
 	p.Resource.Worker -= p.GetWorkerForSpade() * spade
 	p.Resource.Spade += spade
 	p.Resource.ConvertSpade += spade
