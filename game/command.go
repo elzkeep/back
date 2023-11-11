@@ -27,6 +27,8 @@ func ConvertBuilding(str string) resources.Building {
 		return resources.SA
 	} else if str == "WHITE_D" {
 		return resources.WHITE_D
+	} else if str == "WHITE_TOWER" {
+		return resources.WHITE_TOWER
 	} else if str == "WHITE_TP" {
 		return resources.WHITE_TP
 	} else if str == "WHITE_TE" {

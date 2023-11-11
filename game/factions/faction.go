@@ -3,7 +3,6 @@ package factions
 import (
 	"aoi/game/action"
 	"aoi/game/color"
-	"aoi/game/resources"
 	. "aoi/game/resources"
 	"errors"
 	"log"
@@ -47,13 +46,13 @@ type Faction struct {
 	Color             color.Color      `json:"color"`
 	Resource          Resource         `json:"resource"`
 	Tiles             []TileItem       `json:"tiles"`
-	MaxBuilding       [6]int           `json:"maxBuilding"`
-	Building          [6]int           `json:"building"`
-	BuildingPower     [6]int           `json:"buildingPower"`
+	MaxBuilding       [13]int          `json:"maxBuilding"`
+	Building          [13]int          `json:"building"`
+	BuildingPower     [13]int          `json:"buildingPower"`
 	BuildingList      []Position       `json:"buildingList"`
 	BridgeList        []BridgePosition `json:"bridgeList"`
 	AnnexList         []Position       `json:"AnnexList"`
-	Price             [6]Price         `json:"price"`
+	Price             [13]Price        `json:"price"`
 	AdvanceShipPrice  Price            `json:"advanceShipPrice"`
 	AdvanceSpadePrice Price            `json:"advanceSpadePrice"`
 	Incomes           [][]Price        `json:"incomes"`
@@ -108,16 +107,23 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Tiles = append(item.Tiles, colorTile)
 	item.Tiles = append(item.Tiles, factionTile)
 
-	item.MaxBuilding = [6]int{0, 9, 4, 3, 1, 1}
-	item.Building = [6]int{0, 0, 0, 0, 0, 0}
-	item.BuildingPower = [6]int{0, 1, 2, 2, 3, 3}
-	item.Price = [6]Price{
+	item.MaxBuilding = [13]int{0, 9, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	item.Building = [13]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	item.BuildingPower = [13]int{0, 1, 2, 2, 3, 3, 1, 2, 2, 2, 3, 3, 4}
+	item.Price = [13]Price{
 		{Worker: 0, Coin: 0},
 		{Worker: 1, Coin: 2},
 		{Worker: 2, Coin: 3},
 		{Worker: 3, Coin: 5},
 		{Worker: 4, Coin: 6},
 		{Worker: 6, Coin: 6},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
+		{Worker: 0, Coin: 0},
 	}
 
 	item.AdvanceShipPrice = Price{Prist: 1, Coin: 4}
@@ -253,7 +259,10 @@ func (p *Faction) ReceiveResource(receive Price) {
 
 	p.Resource.SchoolTile += receive.Tile
 
-	p.Resource.Building = receive.Building
+	log.Println("receiveResource: building", receive.Building)
+	if receive.Building != None {
+		p.Resource.Building = receive.Building
+	}
 
 	if p.Resource.Bridge > p.MaxBridge {
 		p.Resource.Bridge = p.MaxBridge
@@ -291,7 +300,7 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.VP += min
 	}
 
-	if receive.Spade > 0 || p.Resource.Building != resources.None {
+	if receive.Spade > 0 {
 		p.ExtraBuild = 1
 	}
 
@@ -478,6 +487,8 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 			if p.Resource.Building == None {
 				return errors.New("Already completed the action")
 			} else {
+				log.Println(p.Resource.Building, building)
+
 				if p.Resource.Building != building {
 					return errors.New("not match building")
 				}
@@ -516,6 +527,10 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 		}
 	} else {
 		p.Resource.Worker -= p.GetWorkerForSpade() * (needSpade - p.Resource.Spade)
+		p.Resource.Spade = 0
+	}
+
+	if building >= WHITE_D {
 		p.Resource.Spade = 0
 	}
 
@@ -805,7 +820,8 @@ func (p *Faction) Dig(x int, y int, dig int) error {
 }
 
 func (p *Faction) ConvertDig(spade int) error {
-	if p.Action == true && p.ExtraBuild == 0 {
+	log.Println("faction: ConvertDig", spade)
+	if p.Action == true && p.ExtraBuild == 0 && p.Resource.Building == None {
 		return errors.New("already action end")
 	}
 
@@ -813,6 +829,7 @@ func (p *Faction) ConvertDig(spade int) error {
 		return errors.New("not enough worker")
 	}
 
+	log.Println("gogogo")
 	p.Resource.Worker -= p.GetWorkerForSpade() * spade
 	p.Resource.Spade += spade
 	p.Resource.ConvertSpade += spade
