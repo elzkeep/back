@@ -7,8 +7,6 @@ import (
 	"aoi/game/resources"
 	"aoi/models"
 	"aoi/models/game"
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"log"
 	"strings"
@@ -44,8 +42,8 @@ type Game struct {
 	TurnOrder       []int                     `json:"turnOrder"`
 	Users           []int64                   `json:"users"`
 	Count           int                       `json:"count"`
-	History         []Game                    `json:"-"`
-	Command         []string                  `json:"-"`
+	Command         []string                  `json:"commands"`
+	OldCommand      []string                  `json:"oldCommands"`
 }
 
 type TurnType int
@@ -98,7 +96,8 @@ func NewGame(id int64, count int) *Game {
 	item.TurnOrder = make([]int, 0)
 	item.Users = make([]int64, 0)
 
-	item.History = make([]Game, 0)
+	item.Command = make([]string, 0)
+	item.OldCommand = make([]string, 0)
 
 	item.Count = count
 
@@ -206,13 +205,11 @@ func (p *Game) SelectFaction(user int, name string) {
 	f.ReceiveResource(factionTile.Once)
 	f.ReceiveResource(colorTile.Once)
 
-	f.RoundTile(roundTile)
+	item.RoundTile(roundTile)
 	p.Sciences.AddUser(f.Color, f.Science)
 
 	p.FactionTiles.Items[pos].Use = true
 	f.Action = true
-
-	p.PassOrder = append(p.PassOrder, user)
 }
 
 func (p *Game) IsTurn(user int) bool {
@@ -372,7 +369,7 @@ func (p *Game) TurnEnd(user int) error {
 	p.Turn = append(p.PowerTurn, p.Turn...)
 	p.PowerTurn = make([]Turn, 0)
 
-	f.TurnEnd(p.Round)
+	faction.TurnEnd(p.Round)
 
 	if p.Round > 0 {
 		if user >= 0 {
@@ -419,7 +416,7 @@ func (p *Game) TurnEnd(user int) error {
 func (p *Game) RoundEnd() {
 	for _, v := range p.Factions {
 		faction := v.GetInstance()
-		p.Sciences.RoundEndBonus(faction, p.RoundBonuss.Items[p.Round])
+		p.Sciences.RoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 	}
 }
 
@@ -558,6 +555,57 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 
 	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(true), x, y)
 
+	molesBuild := false
+
+	if flag == false {
+		if f.Name == "Moles" {
+			if (f.Resource.Building == resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
+				flag = p.Map.CheckDistanceMoles(f.Color, x, y)
+
+				items := resources.GetGroundPosition(x, y)
+
+				flag := false
+				for _, position := range items {
+					x := position.X
+					y := position.Y
+
+					if p.Map.GetOwner(x, y) == f.Color {
+						flag = true
+						break
+					}
+
+					for _, v := range p.Map.BridgeList {
+						if v.Color != f.Color {
+							continue
+						}
+
+						if x == v.X1 && y == v.Y1 {
+							if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
+								flag = true
+								break
+							}
+						}
+
+						if x == v.X2 && y == v.Y2 {
+							if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
+								flag = true
+								break
+							}
+						}
+					}
+
+					if flag == true {
+						break
+					}
+				}
+
+				if flag == false {
+					molesBuild = true
+				}
+			}
+		}
+	}
+
 	if f.Resource.Building == resources.TP {
 		if p.Map.GetType(x, y) == f.Color {
 			flag = true
@@ -582,6 +630,13 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 	err = faction.Build(x, y, needSpade, building)
 	if err != nil {
 		return err
+	}
+
+	if molesBuild == true {
+		if f.Resource.Building != resources.TP {
+			f.Resource.Worker--
+			f.VP += 4
+		}
 	}
 
 	p.Map.Build(x, y, f.Color, building)
@@ -1525,26 +1580,13 @@ func (p *Game) Annex(user int, x int, y int) error {
 	return nil
 }
 
-func (p *Game) Copy() Game {
-	var b bytes.Buffer
-	var result Game
-
-	e := gob.NewEncoder(&b)
-	d := gob.NewDecoder(&b)
-
-	e.Encode(p)
-	d.Decode(&result)
-	return result
-}
-
 func (p *Game) ClearHistory() {
-	p.History = make([]Game, 0)
+	p.OldCommand = make([]string, 0)
+	p.OldCommand = append(p.OldCommand, p.Command...)
+	p.Command = make([]string, 0)
 }
 
 func (p *Game) AddHistory(str string) {
-	game := p.Copy()
-
-	p.History = append(p.History, game)
 	p.Command = append(p.Command, str)
 }
 
@@ -1553,15 +1595,38 @@ func (p *Game) Undo(user int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if len(p.History) > 0 {
-		p = &p.History[len(p.History)-1]
-		p.Command = p.Command[:len(p.Command)-1]
+	if len(p.Command) == 0 {
+		return errors.New("history empty")
 	}
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gamehistoryManager := models.NewGamehistoryManager(conn)
+	items := gamehistoryManager.Find([]interface{}{
+		models.Where{Column: "game", Value: p.Id, Compare: "="},
+		models.Ordering("gh_id desc"),
+	})
+
+	if len(items) == 0 {
+		return errors.New("history empty")
+	}
+
+	last := items[0]
+
+	strs := strings.Split(last.Command, " ")
+	if strs[1] == "save" {
+		return errors.New("unabled")
+	}
+
+	gamehistoryManager.Delete(last.Id)
+
+	MakeGame(p.Id, p.Count)
 
 	return nil
 }
 
 func (p *Game) EndGame() {
+	log.Println("EndGame *************************")
 	// 미션 점수
 	/*
 		for _, v := range p.Factions {

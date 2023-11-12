@@ -28,10 +28,6 @@ func Chat() {
 		fmt.Println(fmt.Sprintf("Connection event 1 - User: %s", ep.Kws.GetStringAttribute("id")))
 	})
 
-	ikisocket.On(ikisocket.EventConnect, func(ep *ikisocket.EventPayload) {
-		fmt.Println(fmt.Sprintf("Connection event 2 - User: %s", ep.Kws.GetStringAttribute("id")))
-	})
-
 	ikisocket.On(ikisocket.EventMessage, func(ep *ikisocket.EventPayload) {
 		id := ep.Kws.GetStringAttribute("id")
 

@@ -18,6 +18,43 @@ func init() {
 	_rooms = make(map[int64]*Game, 0)
 }
 
+func SetGame(id int64, game *Game) {
+	_rooms[id] = game
+}
+
+func MakeGame(id int64, count int) {
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gameuserManager := models.NewGameuserManager(conn)
+	gamehistoryManager := models.NewGamehistoryManager(conn)
+
+	g := NewGame(id, count)
+	SetGame(id, g)
+
+	gameusers := gameuserManager.Find([]interface{}{
+		models.Where{Column: "game", Value: id, Compare: "="},
+		models.Ordering("gu_order"),
+	})
+
+	if count == len(gameusers) {
+		for _, gameuser := range gameusers {
+			g.AddUser(gameuser.User)
+		}
+
+		g.CompleteAddUser()
+
+		historys := gamehistoryManager.Find([]interface{}{
+			models.Where{Column: "game", Value: id, Compare: "="},
+			models.Ordering("gh_id"),
+		})
+
+		for _, history := range historys {
+			Command(g, history.Game, history.User, history.Command, false)
+			//Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
+		}
+	}
+}
 func Init() {
 	conn := models.NewConnection()
 	defer conn.Close()
@@ -30,7 +67,7 @@ func Init() {
 
 	for _, v := range games {
 		g := NewGame(v.Id, v.Count)
-		_rooms[v.Id] = g
+		SetGame(v.Id, g)
 
 		gameusers := gameuserManager.Find([]interface{}{
 			models.Where{Column: "game", Value: v.Id, Compare: "="},
@@ -339,7 +376,7 @@ func Make(user int64, item *models.Game) {
 	conn.Commit()
 
 	g := NewGame(id, item.Count)
-	_rooms[id] = g
+	SetGame(id, g)
 
 	Join(user, id)
 }

@@ -5,6 +5,7 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
+	"log"
 	"sort"
 
 	"math"
@@ -825,6 +826,7 @@ func (p *Faction) ConvertDig(spade int) error {
 }
 
 func (p *Faction) TurnEnd(round int) error {
+	log.Println("faction.TurnEnd")
 	p.Action = false
 	p.BuildAction = false
 

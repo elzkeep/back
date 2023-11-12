@@ -295,6 +295,11 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 			}
 
 			if cmd == "save" {
+				if update == true {
+					msg := global.Notify{Title: "title title"}
+					global.SendNotify(msg)
+				}
+
 				p.ClearHistory()
 			} else {
 				p.AddHistory(str)

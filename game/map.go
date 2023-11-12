@@ -405,6 +405,10 @@ func (p *Map) CheckBridge(user color.Color, x1 int, y1 int, x2 int, y2 int) erro
 		return errors.New("not owner")
 	}
 
+	if p.GetType(x1, y1) == color.River || p.GetType(x2, y2) == color.River || p.GetType(x1, y1) == color.None || p.GetType(x2, y2) == color.None {
+		return errors.New("can't build")
+	}
+
 	for _, v := range p.BridgeList {
 		if (x1 == v.X1 && x2 == v.X2 && y1 == v.Y1 && y2 == v.Y2) ||
 			(x1 == v.X2 && x2 == v.X1 && y1 == v.Y2 && y2 == v.Y1) {
@@ -588,4 +592,38 @@ func (p *Map) Annex(user color.Color, x int, y int) error {
 	p.AnnexList = append(p.AnnexList, resources.Position{X: x, Y: y, Color: user})
 
 	return nil
+}
+
+func (p *Map) CheckDistanceMoles(user color.Color, x int, y int) bool {
+	dx := 0
+	if x%2 == 1 {
+		dx = 1
+	}
+
+	items := make([]resources.Position, 0)
+
+	items = append(items, resources.Position{X: x - 2, Y: y - 1})
+	items = append(items, resources.Position{X: x - 2, Y: y - 0})
+	items = append(items, resources.Position{X: x - 2, Y: y + 1})
+
+	items = append(items, resources.Position{X: x - 1, Y: y - 2 + dx})
+	items = append(items, resources.Position{X: x - 1, Y: y + 1 + dx})
+
+	items = append(items, resources.Position{X: x + 0, Y: y - 2})
+	items = append(items, resources.Position{X: x + 0, Y: y + 2})
+
+	items = append(items, resources.Position{X: x + 1, Y: y - 2 + dx})
+	items = append(items, resources.Position{X: x + 1, Y: y + 1 + dx})
+
+	items = append(items, resources.Position{X: x + 2, Y: y - 1})
+	items = append(items, resources.Position{X: x + 2, Y: y - 0})
+	items = append(items, resources.Position{X: x + 2, Y: y + 1})
+
+	for _, v := range items {
+		if p.GetOwner(v.X, v.Y) == user {
+			return true
+		}
+	}
+
+	return false
 }
