@@ -177,6 +177,7 @@ func Make(user int64, item *models.Game) {
 		}
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
 		for i, v := range items[:7] {
 			var tile models.Gametile
 
@@ -209,7 +210,13 @@ func Make(user int64, item *models.Game) {
 			int(resources.TilePalaceTpBuild),
 		}
 
-		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for {
+			rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+			if items[0] == int(resources.TilePalaceTpBuild) {
+				break
+			}
+		}
 		for i, v := range items[:item.Count+1] {
 			var tile models.Gametile
 
@@ -304,7 +311,13 @@ func Make(user int64, item *models.Game) {
 
 		items := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
-		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		for {
+			rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+
+			if items[4] != 7 && items[5] != 7 {
+				break
+			}
+		}
 
 		for i, v := range items[:6] {
 			var tile models.Gametile
@@ -330,8 +343,27 @@ func Make(user int64, item *models.Game) {
 
 		var tile models.Gametile
 
+		pos := 0
+		for {
+			pos = rand.Intn(len(finalRound))
+
+			if (items[5] == 0 || items[5] == 1) && (pos == 0 || pos == 3) {
+				continue
+			}
+
+			if (items[5] == 2 || items[5] == 3) && pos == 1 {
+				continue
+			}
+
+			if items[5] == 4 && pos == 2 {
+				continue
+			}
+
+			break
+		}
+
 		tile.Type = int(resources.TileRoundBonus)
-		tile.Number = finalRound[rand.Intn(len(finalRound))]
+		tile.Number = finalRound[pos]
 		tile.Order = 6 + 1
 		tile.Game = id
 

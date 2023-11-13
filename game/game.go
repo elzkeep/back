@@ -87,7 +87,7 @@ func NewGame(id int64, count int) *Game {
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
 
-	item.Map = NewMap()
+	item.Map = NewMap(count)
 	item.Sciences = NewScience()
 	item.Factions = make([]factions.FactionInterface, 0)
 
@@ -171,9 +171,6 @@ func (p *Game) SelectFaction(user int, name string) {
 
 	var item factions.FactionInterface
 
-	log.Println("pos", pos)
-	log.Println(factionTile.Type)
-
 	if factionTile.Type == resources.TileFactionBlessed {
 		item = &factions.Blessed{}
 	} else if factionTile.Type == resources.TileFactionFelines {
@@ -209,6 +206,16 @@ func (p *Game) SelectFaction(user int, name string) {
 	f.ReceiveResource(factionTile.Once)
 	f.ReceiveResource(colorTile.Once)
 
+	f.IncScience(int(Banking), p.Sciences.Action(f, Banking, factionTile.Once.Science.Banking))
+	f.IncScience(int(Law), p.Sciences.Action(f, Law, factionTile.Once.Science.Law))
+	f.IncScience(int(Engineering), p.Sciences.Action(f, Engineering, factionTile.Once.Science.Engineering))
+	f.IncScience(int(Medicine), p.Sciences.Action(f, Medicine, factionTile.Once.Science.Medicine))
+
+	f.IncScience(int(Banking), p.Sciences.Action(f, Banking, colorTile.Once.Science.Banking))
+	f.IncScience(int(Law), p.Sciences.Action(f, Law, colorTile.Once.Science.Law))
+	f.IncScience(int(Engineering), p.Sciences.Action(f, Engineering, colorTile.Once.Science.Engineering))
+	f.IncScience(int(Medicine), p.Sciences.Action(f, Medicine, colorTile.Once.Science.Medicine))
+
 	item.RoundTile(roundTile)
 	p.Sciences.AddUser(f.Color, f.Science)
 
@@ -239,12 +246,13 @@ func (p *Game) BuildStart() {
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
 	}
 
-	for i, v := range p.Factions {
+	for i := len(p.Factions) - 1; i >= 0; i-- {
+		v := p.Factions[i]
 		faction := v.GetInstance()
 		if faction.FirstBuilding == resources.SA {
 			continue
 		}
-		p.Turn = append(p.Turn, Turn{User: len(p.Factions) - i - 1, Type: NormalTurn})
+		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
 	}
 
 	for i, v := range p.Factions {
@@ -278,7 +286,10 @@ func (p *Game) Start() {
 
 				log.Println(roundBonus)
 
-				log.Println(roundBonus.Science.Banking)
+				log.Println("banking", roundBonus.Science.Banking)
+				log.Println("law", roundBonus.Science.Law)
+				log.Println("engineering", roundBonus.Science.Engineering)
+				log.Println("medicine", roundBonus.Science.Medicine)
 				count := 0
 				if roundBonus.Science.Banking > 0 {
 					count = faction.GetScience(0) / roundBonus.Science.Banking
@@ -287,9 +298,11 @@ func (p *Game) Start() {
 				} else if roundBonus.Science.Engineering > 0 {
 					count = faction.GetScience(2) / roundBonus.Science.Engineering
 				} else if roundBonus.Science.Medicine > 0 {
+					log.Println("faction value", faction.GetScience(3))
 					count = faction.GetScience(3) / roundBonus.Science.Medicine
 				}
 
+				log.Println("round count", count)
 				roundBonus.Receive.Prist *= count
 				roundBonus.Receive.Power *= count
 				roundBonus.Receive.Book.Any *= count
@@ -732,6 +745,7 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 
 	if f.Resource.TpUpgrade == 0 && target == resources.TP {
 		// 생업 체크
+		log.Println("check solor", p.Map.CheckSolo(f.Color, x, y))
 		if p.Map.CheckSolo(f.Color, x, y) {
 			extra = 3
 		}
@@ -952,7 +966,7 @@ func (p *Game) SendScholar(user int, pos ScienceType) error {
 
 	inc := p.Sciences.Send(f, pos)
 
-	faction.SendScholar()
+	faction.SendScholar(int(pos), inc)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
@@ -985,7 +999,7 @@ func (p *Game) SupployScholar(user int, pos ScienceType) error {
 
 	inc := p.Sciences.Supploy(f, pos)
 
-	faction.SupployScholar()
+	faction.SupployScholar(int(pos), inc)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
@@ -1348,6 +1362,7 @@ func (p *Game) Science(user int, pos ScienceType, level int) error {
 	}
 
 	inc := p.Sciences.Action(f, pos, level)
+	f.IncScience(int(pos), inc)
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 	f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})

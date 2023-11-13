@@ -53,12 +53,12 @@ func (p *Felines) AdvanceSpade() error {
 	return p.Faction.AdvanceSpade()
 }
 
-func (p *Felines) SendScholar() error {
-	return p.Faction.SendScholar()
+func (p *Felines) SendScholar(pos int, inc int) error {
+	return p.Faction.SendScholar(pos, inc)
 }
 
-func (p *Felines) SupployScholar() error {
-	return p.Faction.SupployScholar()
+func (p *Felines) SupployScholar(pos int, inc int) error {
+	return p.Faction.SupployScholar(pos, inc)
 }
 
 func (p *Felines) PowerAction(item action.PowerActionItem) error {

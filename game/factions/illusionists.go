@@ -53,12 +53,12 @@ func (p *Illusionists) AdvanceSpade() error {
 	return p.Faction.AdvanceSpade()
 }
 
-func (p *Illusionists) SendScholar() error {
-	return p.Faction.SendScholar()
+func (p *Illusionists) SendScholar(pos int, inc int) error {
+	return p.Faction.SendScholar(pos, inc)
 }
 
-func (p *Illusionists) SupployScholar() error {
-	return p.Faction.SupployScholar()
+func (p *Illusionists) SupployScholar(pos int, inc int) error {
+	return p.Faction.SupployScholar(pos, inc)
 }
 
 func (p *Illusionists) PowerAction(item action.PowerActionItem) error {

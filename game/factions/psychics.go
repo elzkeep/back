@@ -54,12 +54,12 @@ func (p *Psychics) AdvanceSpade() error {
 	return p.Faction.AdvanceSpade()
 }
 
-func (p *Psychics) SendScholar() error {
-	return p.Faction.SendScholar()
+func (p *Psychics) SendScholar(pos int, inc int) error {
+	return p.Faction.SendScholar(pos, inc)
 }
 
-func (p *Psychics) SupployScholar() error {
-	return p.Faction.SupployScholar()
+func (p *Psychics) SupployScholar(pos int, inc int) error {
+	return p.Faction.SupployScholar(pos, inc)
 }
 
 func (p *Psychics) PowerAction(item action.PowerActionItem) error {

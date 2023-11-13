@@ -22,7 +22,7 @@ type Map struct {
 	CityList   []resources.Position       `json:"city"`
 }
 
-func NewMap() *Map {
+func NewMap(count int) *Map {
 	var item Map
 
 	item.BridgeList = make([]resources.BridgePosition, 0)
@@ -62,6 +62,23 @@ func NewMap() *Map {
 		"SXBKXGBXXXXXX",
 		"XYSXRKYRKSGKX",
 		"GWRXYWBSGWRYB",
+	}
+
+	if count <= 3 {
+		maps = []string{
+			"GWYBXSGWRX",
+			"KSKRXKBSXG",
+			"XBWGXXYXXY",
+			"XRYXGXXWBK",
+			"XXXXKBSYRW",
+			"XSBXRWXGSY",
+			"XXKWXXXXXX",
+			"XYGRYGSKGX",
+			"XRBWSKBYRW",
+		}
+
+		item.Width = 9
+		item.Height = 10
 	}
 
 	y := 0

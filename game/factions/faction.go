@@ -25,8 +25,8 @@ type FactionInterface interface {
 	Upgrade(x int, y int, target Building, extra int) error
 	AdvanceShip() error
 	AdvanceSpade() error
-	SendScholar() error
-	SupployScholar() error
+	SendScholar(pos int, inc int) error
+	SupployScholar(pos int, inc int) error
 	PowerAction(item action.PowerActionItem) error
 	Book(item action.BookActionItem, book Book) error
 	Bridge(x1 int, y1 int, x2 int, y2 int) error
@@ -372,6 +372,7 @@ func (p *Faction) UsePower(value int) error {
 		p.Resource.Power[0] += value
 	} else {
 		value -= p.Resource.Power[2]
+		p.Resource.Power[0] += p.Resource.Power[2]
 		p.Resource.Power[2] = 0
 		p.Resource.Power[1] -= value * 2
 		p.Resource.Power[0] += value
@@ -618,11 +619,12 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 		price := p.Price[target]
 		price.Coin += extra
 
+		log.Println(price.Coin)
 		err := CheckResource(p.Resource, price)
 		if err != nil {
 			return err
 		}
-		p.UsePrice(p.Price[target])
+		p.UsePrice(price)
 	}
 
 	p.Building[current]--
@@ -658,7 +660,8 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 	return nil
 }
 
-func (p *Faction) SendScholar() error {
+func (p *Faction) SendScholar(pos int, inc int) error {
+	p.Science[pos] += inc
 	p.Resource.Prist--
 	p.MaxPrist--
 
@@ -672,7 +675,8 @@ func (p *Faction) SendScholar() error {
 	return nil
 }
 
-func (p *Faction) SupployScholar() error {
+func (p *Faction) SupployScholar(pos int, inc int) error {
+	p.Science[pos] += inc
 	p.Resource.Prist--
 
 	p.Action = true
@@ -1037,6 +1041,10 @@ func (p *Faction) Annex(x int, y int) error {
 
 func (p *Faction) GetScience(pos int) int {
 	return p.Science[pos]
+}
+
+func (p *Faction) IncScience(pos int, level int) {
+	p.Science[pos] += level
 }
 
 func (p *Faction) InnovationTile(tile TileItem, book Book) error {
