@@ -32,9 +32,9 @@ linux:
 	env GOOS=linux GOARCH=amd64 go build -o bin/main.linux main.go
 
 dockerbuild:
-	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/main.linux main.go
+	cd ../app && make release-web && cp -rf build/web ../back/
 
-docker: 
+docker: dockerbuild
 	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .
 
 dockerrun:
@@ -44,17 +44,16 @@ push: docker
 	docker push netb.co.kr:5000/aoi:$(tag)
 
 deploy: push
-	docker-compose --context dev pull
-	docker-compose --context dev up -d
+	docker-compose --context cicd pull
+	docker-compose --context cicd up -d
 
 localdeploy: 
 	git pull
-	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/main.linux main.go
-	cd ../front && npm run release && cp -rf dist ../back/
+	cd ../app && make release && cp -rf build/web ../back/	
 	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .
 	docker push netb.co.kr:5000/aoi:$(tag)
-	docker-compose --context dev pull
-	docker-compose --context dev up -d
+	docker-compose --context cicd pull
+	docker-compose --context cicd up -d
 
 clean:
 	rm -f bin/main

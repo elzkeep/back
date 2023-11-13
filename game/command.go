@@ -202,6 +202,14 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		level := 3 - global.Atoi(strs[3])
 
 		err = p.SchoolTile(user, int(science), level)
+	} else if cmd == "innovationtile" {
+		pos := global.Atoi(strs[2])
+		index := global.Atoi(strs[3])
+
+		temp := strings.Split(str, "book ")
+		book := ConvertBook(temp[1])
+
+		err = p.InnovationTile(user, pos, index, book)
 	} else if cmd == "bridge" {
 		x, y := ConvertPosition(strs[2])
 		x2, y2 := ConvertPosition(strs[3])

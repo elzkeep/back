@@ -58,7 +58,7 @@ func Http() {
 	}
 
 	app.Static("/webdata", "./webdata")
-	app.Static("/", "../app/build/web")
+	app.Static("/", config.DocumentRoot)
 
 	router.SetRouter(app)
 

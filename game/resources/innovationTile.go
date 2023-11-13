@@ -98,12 +98,10 @@ func NewInnovationTile(id int64, count int) *InnovationTile {
 	return &item
 }
 
-/*
-func (p *InnovationTile) GetTile(pos int) TileItem {
-	return p.Items[pos]
+func (p *InnovationTile) GetTile(pos int, index int) TileItem {
+	return p.Items[pos][index]
 }
 
-func (p *InnovationTile) Setup(pos int) {
-	p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
+func (p *InnovationTile) Setup(pos int, index int) {
+	p.Items[pos][index].Use = true
 }
-*/

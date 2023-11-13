@@ -20,12 +20,13 @@ type _Database struct {
 }
 
 type _Mode struct {
-	Port       string    `yaml:"port"`
-	UploadPath string    `yaml:"path"`
-	Mail       _Mail     `yaml:"mail"`
-	Sms        _Sms      `yaml:"sms"`
-	Cors       []string  `yaml:"cors"`
-	Database   _Database `yaml:"database"`
+	Port         string    `yaml:"port"`
+	UploadPath   string    `yaml:"path"`
+	DocumentRoot string    `yaml:"documentRoot"`
+	Mail         _Mail     `yaml:"mail"`
+	Sms          _Sms      `yaml:"sms"`
+	Cors         []string  `yaml:"cors"`
+	Database     _Database `yaml:"database"`
 }
 
 type _Mail struct {
@@ -48,6 +49,7 @@ var Mail _Mail
 var Database _Database
 var Sms _Sms
 var UploadPath string
+var DocumentRoot string
 var Version string
 var Mode string
 var Port string
@@ -82,6 +84,7 @@ func init() {
 		Mail = config.Production.Mail
 		Sms = config.Production.Sms
 		UploadPath = config.Production.UploadPath
+		DocumentRoot = config.Production.DocumentRoot
 		Port = config.Production.Port
 		Database = config.Production.Database
 		Cors = config.Production.Cors
@@ -89,6 +92,7 @@ func init() {
 		Mail = config.Develop.Mail
 		Sms = config.Develop.Sms
 		UploadPath = config.Develop.UploadPath
+		DocumentRoot = config.Develop.DocumentRoot
 		Port = config.Develop.Port
 		Database = config.Develop.Database
 		Cors = config.Develop.Cors

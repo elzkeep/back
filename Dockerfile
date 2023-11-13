@@ -9,6 +9,7 @@ MAINTAINER missbsd@gmail.com
 
 COPY --from=gobuilder /build/main /usr/local/main/main
 COPY ./.env.yml /usr/local/main/.env.yml
+COPY web /usr/local/main/web
 #COPY ./fcm.json /usr/local/main/fcm.json
 #RUN  mkdir -p /usr/local/main/webdata
 

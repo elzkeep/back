@@ -36,7 +36,7 @@ type FactionInterface interface {
 	TurnEnd(round int) error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
-	InnovationTile(tile TileItem, price Price) error
+	InnovationTile(tile TileItem, book Book) error
 	RoundTile(tile TileItem) error
 	TileAction(category TileCategory, pos int) error
 }
@@ -156,7 +156,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Resource.Coin = 100
 	item.Resource.Worker = 100
 	item.Resource.Prist = 7
-	item.Resource.Book = Book{Banking: 2, Law: 3, Engineering: 2, Medicine: 3}
+	item.Resource.Book = Book{Banking: 5, Law: 5, Engineering: 5, Medicine: 5}
 
 	item.Resource.Power = [3]int{0, 0, 12}
 
@@ -470,6 +470,10 @@ func (p *Faction) FirstBuild(x int, y int) error {
 	p.Building[p.FirstBuilding]++
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: p.FirstBuilding})
 
+	if p.FirstBuilding == SA {
+		p.Resource.SchoolTile++
+	}
+
 	p.Action = true
 
 	return nil
@@ -736,6 +740,7 @@ func (p *Faction) ResetResource() {
 	p.Resource.ConvertSpade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
+	p.Resource.Building = None
 	p.ExtraBuild = 0
 	p.DigPosition = make([]Position, 0)
 }
@@ -830,6 +835,7 @@ func (p *Faction) TurnEnd(round int) error {
 	p.Action = false
 	p.BuildAction = false
 
+	log.Println("schhol tile", p.Resource.SchoolTile)
 	if round > 0 {
 		p.ResetResource()
 	}
@@ -1030,7 +1036,7 @@ func (p *Faction) GetScience(pos int) int {
 	return p.Science[pos]
 }
 
-func (p *Faction) InnovationTile(tile TileItem, price Price) error {
+func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 	count := 0
 
 	for _, v := range p.Tiles {
@@ -1043,22 +1049,28 @@ func (p *Faction) InnovationTile(tile TileItem, price Price) error {
 		}
 	}
 
+	need := 5
 	if count >= 3 {
 		return errors.New("full")
 	} else if count == 2 {
-		price.Book.Any += 2
+		need += 2
 	} else if count == 1 {
 		if p.Color != color.Red {
-			price.Book.Any += 1
+			need++
 		}
 	}
 
+	if book.Count() < need {
+		return errors.New("not enough book")
+	}
+
+	price := Price{Book: book}
 	if p.Building[SH] == 0 {
 		if p.Resource.Coin < 5 {
 			return errors.New("not enough coin")
 		}
 
-		tile.Once.Coin += 5
+		price.Coin = 5
 	}
 
 	p.Tiles = append(p.Tiles, tile)

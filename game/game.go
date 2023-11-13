@@ -9,6 +9,7 @@ import (
 	"aoi/models/game"
 	"errors"
 	"log"
+	"sort"
 	"strings"
 )
 
@@ -250,6 +251,7 @@ func (p *Game) BuildStart() {
 }
 
 func (p *Game) Start() {
+	log.Println("Start")
 	p.RoundTiles.Start()
 
 	p.Round++
@@ -380,13 +382,13 @@ func (p *Game) TurnEnd(user int) error {
 			}
 		}
 	} else {
-		p.PassOrder = append(p.PassOrder, user)
+		//p.PassOrder = append(p.PassOrder, user)
 	}
 
 	if len(p.Turn) == 0 {
 		if p.Round == FactionRound {
-
 			p.Round = BuildRound
+			p.PassOrder = make([]int, 0)
 
 			p.UpdateDBRound(int(game.StatusNormal))
 
@@ -397,6 +399,8 @@ func (p *Game) TurnEnd(user int) error {
 			for i, _ := range p.Factions {
 				p.PassOrder = append(p.PassOrder, i)
 			}
+
+			log.Println("start 1 round")
 			p.Start()
 		} else {
 			p.RoundEnd()
@@ -408,6 +412,11 @@ func (p *Game) TurnEnd(user int) error {
 				p.Start()
 			}
 		}
+	}
+
+	log.Println("round", p.Round)
+	for _, v := range p.Turn {
+		v.Print()
 	}
 
 	return nil
@@ -532,6 +541,7 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 }
 
 func (p *Game) Build(user int, x int, y int, building resources.Building) error {
+	log.Println("build", p.Round)
 	if p.Round < 1 {
 		return errors.New("round error")
 	}
@@ -997,10 +1007,6 @@ func (p *Game) FactionAction() {
 }
 
 func (p *Game) Dig(user int, x int, y int, dig int) error {
-	if p.Round < 1 {
-		return errors.New("round error")
-	}
-
 	if !p.IsTurn(user) {
 		return errors.New("It's not a turn")
 	}
@@ -1076,7 +1082,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 
 	f.ReceiveResource(resources.Price{VP: buildVP.Spade * spade})
 
-	if f.Action == false {
+	if f.Action == false && p.Round > 0 {
 		f.ExtraBuild++
 	}
 
@@ -1431,6 +1437,46 @@ func (p *Game) PalaceTile(user int, pos int) error {
 	return nil
 }
 
+func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book) error {
+	if p.Round < 1 {
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		return errors.New("It's not a normal turn")
+	}
+
+	if pos >= len(p.InnovationTiles.Items) {
+		return errors.New("not found tile")
+	}
+
+	if index >= len(p.InnovationTiles.Items[pos]) {
+		return errors.New("not found tile")
+	}
+
+	tile := p.InnovationTiles.GetTile(pos, index)
+
+	if tile.Use == true {
+		return errors.New("already select")
+	}
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+	err := faction.InnovationTile(tile, book)
+
+	if err == nil {
+		p.InnovationTiles.Setup(pos, index)
+	}
+
+	f.Action = true
+
+	return nil
+}
+
 func (p *Game) TileAction(user int, category resources.TileCategory, pos int) error {
 	if p.Round < 1 {
 		return errors.New("round error")
@@ -1625,23 +1671,126 @@ func (p *Game) Undo(user int) error {
 	return nil
 }
 
+type Score struct {
+	User  int
+	Score int
+}
+
 func (p *Game) EndGame() {
 	log.Println("EndGame *************************")
-	// 미션 점수
-	/*
-		for _, v := range p.Factions {
-			faction := v.GetInstance()
-			for i, d1 := range faction.BuildingList {
-				for j, d2 := range faction.BuildingList {
-					if d1.Equal(d2) {
-						continue
-					}
 
-					p.CheckDistance(user color.Color, distance int, x int, y int) bool {
-				}
+	scores := make([]Score, 0)
+	// 미션 점수
+	for user, v := range p.Factions {
+		faction := v.GetInstance()
+
+		total := 0
+		for _, d := range faction.Building {
+			total += d
+		}
+
+		scores = append(scores, Score{User: user, Score: total})
+	}
+
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score < scores[j].Score
+	})
+
+	receives := []int{0, 18, 15, 12, 9, 7}
+	receiveCount := 0
+
+	for i := 0; i < 3; i++ {
+		if len(scores) == 0 {
+			break
+		}
+
+		score := scores[0].Score
+
+		cnt := 0
+		for _, v := range scores {
+			if v.Score == score {
+				cnt++
 			}
 		}
-	*/
+
+		receive := receives[cnt]
+
+		for _, v := range scores {
+			if v.Score == score {
+				faction := p.Factions[v.User]
+				f := faction.GetInstance()
+				f.ReceiveResource(resources.Price{VP: receive})
+			}
+		}
+
+		scores = scores[cnt:]
+		receiveCount += cnt
+
+		if receiveCount >= 3 {
+			break
+		}
+
+		if receiveCount == 1 {
+			receives = []int{0, 12, 9, 6, 4}
+		} else if receiveCount == 2 {
+			receives = []int{0, 6, 3, 2}
+		}
+	}
+
 	// 과학 점수
+	for k := 0; k < 4; k++ {
+		scores = make([]Score, 0)
+
+		for user, v := range p.Factions {
+			faction := v.GetInstance()
+
+			scores = append(scores, Score{User: user, Score: faction.Science[k]})
+		}
+
+		sort.Slice(scores, func(i, j int) bool {
+			return scores[i].Score < scores[j].Score
+		})
+
+		receives := []int{0, 8, 4, 2}
+		receiveCount := 0
+
+		for i := 0; i < 3; i++ {
+			if len(scores) == 0 {
+				break
+			}
+
+			score := scores[0].Score
+
+			cnt := 0
+			for _, v := range scores {
+				if v.Score == score {
+					cnt++
+				}
+			}
+
+			receive := receives[cnt]
+
+			for _, v := range scores {
+				if v.Score == score {
+					faction := p.Factions[v.User]
+					f := faction.GetInstance()
+					f.ReceiveResource(resources.Price{VP: receive})
+				}
+			}
+
+			scores = scores[cnt:]
+			receiveCount += cnt
+
+			if receiveCount >= 3 {
+				break
+			}
+
+			if receiveCount == 1 {
+				receives = []int{0, 4, 2, 1}
+			} else if receiveCount == 2 {
+				receives = []int{0, 2, 1, 0}
+			}
+		}
+	}
 	// 등수 계산
 }
