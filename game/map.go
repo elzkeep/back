@@ -498,7 +498,7 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 			}
 		}
 
-		if v.Building == resources.WHITE_D {
+		if v.Building == resources.WHITE_MT {
 			needCount = 2
 		} else if v.Building == resources.SA || v.Building == resources.WHITE_SA {
 			if needCount > 3 {
@@ -507,7 +507,7 @@ func (p *Map) CheckCity(user color.Color, x int, y int, power int) []resources.P
 		}
 
 		for _, a := range p.AnnexList {
-			if v.X != a.X && v.Y != a.Y {
+			if v.X != a.X || v.Y != a.Y {
 				continue
 			}
 
