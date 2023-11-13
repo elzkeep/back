@@ -167,12 +167,15 @@ func (p *Game) SelectFaction(user int, name string) {
 
 	factionTile := p.FactionTiles.Items[pos]
 	colorTile := p.ColorTiles.Items[pos]
-	roundTile := p.RoundTiles.Items[pos]
+	roundTile := p.RoundTiles.Reserved[pos]
 
 	var item factions.FactionInterface
 
+	log.Println("pos", pos)
+	log.Println(factionTile.Type)
+
 	if factionTile.Type == resources.TileFactionBlessed {
-		item = &factions.Monks{}
+		item = &factions.Blessed{}
 	} else if factionTile.Type == resources.TileFactionFelines {
 		item = &factions.Felines{}
 	} else if factionTile.Type == resources.TileFactionGoblins {
@@ -226,6 +229,8 @@ func (p *Game) IsTurn(user int) bool {
 }
 
 func (p *Game) BuildStart() {
+	p.RoundTiles.BuildStart()
+
 	for i, v := range p.Factions {
 		faction := v.GetInstance()
 		if faction.FirstBuilding == resources.SA {
@@ -268,27 +273,32 @@ func (p *Game) Start() {
 
 			p.Sciences.RoundBonus(faction.GetInstance())
 
-			roundBonus := p.RoundBonuss.Get(p.Round)
+			if p.Round > 1 {
+				roundBonus := p.RoundBonuss.Get(p.Round - 1)
 
-			count := 0
-			if roundBonus.Science.Banking > 0 {
-				count = faction.GetScience(0) / roundBonus.Science.Banking
-			} else if roundBonus.Science.Law > 0 {
-				count = faction.GetScience(1) / roundBonus.Science.Law
-			} else if roundBonus.Science.Engineering > 0 {
-				count = faction.GetScience(2) / roundBonus.Science.Engineering
-			} else if roundBonus.Science.Medicine > 0 {
-				count = faction.GetScience(3) / roundBonus.Science.Medicine
+				log.Println(roundBonus)
+
+				log.Println(roundBonus.Science.Banking)
+				count := 0
+				if roundBonus.Science.Banking > 0 {
+					count = faction.GetScience(0) / roundBonus.Science.Banking
+				} else if roundBonus.Science.Law > 0 {
+					count = faction.GetScience(1) / roundBonus.Science.Law
+				} else if roundBonus.Science.Engineering > 0 {
+					count = faction.GetScience(2) / roundBonus.Science.Engineering
+				} else if roundBonus.Science.Medicine > 0 {
+					count = faction.GetScience(3) / roundBonus.Science.Medicine
+				}
+
+				roundBonus.Receive.Prist *= count
+				roundBonus.Receive.Power *= count
+				roundBonus.Receive.Book.Any *= count
+				roundBonus.Receive.Spade *= count
+				roundBonus.Receive.Coin *= count
+				roundBonus.Receive.Worker *= count
+
+				f.ReceiveResource(roundBonus.Receive)
 			}
-
-			roundBonus.Receive.Prist *= count
-			roundBonus.Receive.Power *= count
-			roundBonus.Receive.Book.Any *= count
-			roundBonus.Receive.Spade *= count
-			roundBonus.Receive.Coin *= count
-			roundBonus.Receive.Worker *= count
-
-			f.ReceiveResource(roundBonus.Receive)
 		}
 	}
 
@@ -718,7 +728,16 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 		return errors.New("not owner")
 	}
 
-	err := faction.Upgrade(x, y, target)
+	extra := 0
+
+	if f.Resource.TpUpgrade == 0 && target == resources.TP {
+		// 생업 체크
+		if p.Map.CheckSolo(f.Color, x, y) {
+			extra = 3
+		}
+	}
+
+	err := faction.Upgrade(x, y, target, extra)
 
 	if err != nil {
 		return err

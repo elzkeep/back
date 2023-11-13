@@ -41,8 +41,8 @@ func (p *Philosophers) Build(x int, y int, needSpade int, building Building) err
 	return p.Faction.Build(x, y, needSpade, building)
 }
 
-func (p *Philosophers) Upgrade(x int, y int, target Building) error {
-	return p.Faction.Upgrade(x, y, target)
+func (p *Philosophers) Upgrade(x int, y int, target Building, extra int) error {
+	return p.Faction.Upgrade(x, y, target, extra)
 }
 
 func (p *Philosophers) AdvanceShip() error {

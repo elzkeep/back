@@ -22,7 +22,7 @@ type FactionInterface interface {
 
 	FirstBuild(x int, y int) error
 	Build(x int, y int, needSpade int, building Building) error
-	Upgrade(x int, y int, target Building) error
+	Upgrade(x int, y int, target Building, extra int) error
 	AdvanceShip() error
 	AdvanceSpade() error
 	SendScholar() error
@@ -86,7 +86,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 
 	item.Resource.Coin = 15
 	item.Resource.Worker = 4
-	item.Resource.Power = [3]int{2, 4, 0}
+	item.Resource.Power = [3]int{5, 7, 0}
 	item.Resource.Building = None
 	item.VP = 20
 	item.Spade = 0
@@ -153,19 +153,21 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.BridgeList = make([]BridgePosition, 0)
 	item.AnnexList = make([]Position, 0)
 
-	item.Resource.Coin = 100
-	item.Resource.Worker = 100
-	item.Resource.Prist = 7
-	item.Resource.Book = Book{Banking: 5, Law: 5, Engineering: 5, Medicine: 5}
+	/*
+		item.Resource.Coin = 100
+		item.Resource.Worker = 100
+		item.Resource.Prist = 7
+		item.Resource.Book = Book{Banking: 5, Law: 5, Engineering: 5, Medicine: 5}
 
-	item.Resource.Power = [3]int{0, 0, 12}
+		item.Resource.Power = [3]int{0, 0, 12}
 
-	if colorTile.Type == TileColorGray {
-		item.Incomes[D][0] = Price{Worker: 1, Coin: 2}
-		item.Incomes[TP][1] = Price{Coin: 3, Power: 1}
-	} else if colorTile.Type == TileColorBrown {
-		item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 1}
-	}
+		if colorTile.Type == TileColorGray {
+			item.Incomes[D][0] = Price{Worker: 1, Coin: 2}
+			item.Incomes[TP][1] = Price{Coin: 3, Power: 1}
+		} else if colorTile.Type == TileColorBrown {
+			item.AdvanceSpadePrice = Price{Prist: 1, Worker: 1, Coin: 1}
+		}
+	*/
 }
 
 func (p *Faction) GetShipDistance(tile bool) int {
@@ -511,9 +513,8 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 		}
 	}
 
-	if p.Resource.Worker < p.GetWorkerForSpade()*(needSpade-p.Resource.Spade)+p.Price[D].Worker {
-		return errors.New("not enough spade")
-	}
+	log.Println("need spade", needSpade)
+	log.Println("spade", p.Resource.Spade)
 
 	if p.Resource.Spade >= needSpade {
 		if p.Resource.Spade-p.Resource.ConvertSpade >= needSpade {
@@ -522,8 +523,7 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 			p.Resource.Spade = 0
 		}
 	} else {
-		p.Resource.Worker -= p.GetWorkerForSpade() * (needSpade - p.Resource.Spade)
-		p.Resource.Spade = 0
+		return errors.New("not enough spade")
 	}
 
 	if building >= WHITE_D {
@@ -593,7 +593,7 @@ func (p *Faction) ReceivePristVP() {
 	}
 }
 
-func (p *Faction) Upgrade(x int, y int, target Building) error {
+func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 	current := None
 
 	for _, item := range p.BuildingList {
@@ -615,7 +615,10 @@ func (p *Faction) Upgrade(x int, y int, target Building) error {
 
 	if target == TP && p.Resource.TpUpgrade > 0 {
 	} else {
-		err := CheckResource(p.Resource, p.Price[target])
+		price := p.Price[target]
+		price.Coin += extra
+
+		err := CheckResource(p.Resource, price)
 		if err != nil {
 			return err
 		}

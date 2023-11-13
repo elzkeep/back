@@ -41,8 +41,8 @@ func (p *Blessed) Build(x int, y int, needSpade int, building Building) error {
 	return p.Faction.Build(x, y, needSpade, building)
 }
 
-func (p *Blessed) Upgrade(x int, y int, target Building) error {
-	return p.Faction.Upgrade(x, y, target)
+func (p *Blessed) Upgrade(x int, y int, target Building, extra int) error {
+	return p.Faction.Upgrade(x, y, target, extra)
 }
 
 func (p *Blessed) AdvanceShip() error {

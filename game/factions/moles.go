@@ -4,7 +4,6 @@ import (
 	"aoi/game/action"
 	. "aoi/game/resources"
 	"errors"
-	"log"
 )
 
 type Moles struct {
@@ -43,8 +42,8 @@ func (p *Moles) Build(x int, y int, needSpade int, building Building) error {
 	return p.Faction.Build(x, y, needSpade, building)
 }
 
-func (p *Moles) Upgrade(x int, y int, target Building) error {
-	return p.Faction.Upgrade(x, y, target)
+func (p *Moles) Upgrade(x int, y int, target Building, extra int) error {
+	return p.Faction.Upgrade(x, y, target, extra)
 }
 
 func (p *Moles) AdvanceShip() error {
@@ -88,23 +87,10 @@ func (p *Moles) Dig(x int, y int, dig int) error {
 }
 
 func (p *Moles) TurnEnd(round int) error {
-	log.Println("moles.TurnEnd")
-	log.Println("********************************************")
 	for i, v := range p.Tiles {
 		if v.Type == TileFactionMoles {
-			log.Println("Find====================================")
-			log.Println(v.Type, v.Use)
 			tile := &p.Tiles[i]
 			tile.Use = false
-			break
-		}
-	}
-
-	log.Println("------------------------------------------")
-	for _, v := range p.Tiles {
-		if v.Type == TileFactionMoles {
-			log.Println("Find====================================")
-			log.Println(v.Type, v.Use)
 			break
 		}
 	}

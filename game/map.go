@@ -627,3 +627,32 @@ func (p *Map) CheckDistanceMoles(user color.Color, x int, y int) bool {
 
 	return false
 }
+
+func (p *Map) CheckSolo(user color.Color, x int, y int) bool {
+	items := resources.GetGroundPosition(x, y)
+
+	for _, v := range items {
+		owner := p.GetOwner(v.X, v.Y)
+		if owner != color.None && owner != color.River && owner != user {
+			return false
+		}
+	}
+
+	for _, v := range p.BridgeList {
+		if x == v.X1 && y == v.X1 {
+			owner := p.GetOwner(v.X2, v.Y2)
+			if owner != color.None && owner != color.River && owner != user {
+				return false
+			}
+		}
+
+		if x == v.X2 && y == v.X2 {
+			owner := p.GetOwner(v.X1, v.Y1)
+			if owner != color.None && owner != color.River && owner != user {
+				return false
+			}
+		}
+	}
+
+	return true
+}

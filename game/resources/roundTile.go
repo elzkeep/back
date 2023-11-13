@@ -2,17 +2,18 @@ package resources
 
 import (
 	"aoi/models"
-	"log"
 )
 
 type RoundTile struct {
-	Items []TileItem `json:"items"`
+	Items    []TileItem `json:"items"`
+	Reserved []TileItem `json:"reserved"`
 }
 
 func NewRoundTile(id int64) *RoundTile {
 	var item RoundTile
 
 	item.Items = make([]TileItem, 0)
+	item.Reserved = make([]TileItem, 0)
 
 	tiles := []TileItem{
 		{Category: TileRound, Type: TileRoundEdgeVP, Name: "side VP", Build: BuildVP{River: 2}, Ship: 1, Use: false},
@@ -40,12 +41,30 @@ func NewRoundTile(id int64) *RoundTile {
 	for _, v := range items {
 		for _, tile := range tiles {
 			if v.Number == int(tile.Type) {
-				item.Items = append(item.Items, tile)
+				item.Reserved = append(item.Reserved, tile)
 			}
 		}
 	}
 
+	for _, tile := range tiles {
+		flag := false
+
+		for _, v := range items {
+			if v.Number == int(tile.Type) {
+				flag = true
+			}
+		}
+
+		if flag == false {
+			item.Items = append(item.Items, tile)
+		}
+	}
+
 	return &item
+}
+
+func (p *RoundTile) BuildStart() {
+	p.Reserved = make([]TileItem, 0)
 }
 
 func (p *RoundTile) Start() {
@@ -56,9 +75,7 @@ func (p *RoundTile) Start() {
 }
 
 func (p *RoundTile) Pass(pos int) TileItem {
-	log.Println("pos", pos)
 	ret := p.Items[pos]
-	log.Println(ret.Name)
 
 	p.Items = append(p.Items[:pos], p.Items[pos+1:]...)
 
