@@ -285,7 +285,6 @@ func (p *Game) BuildStart() {
 }
 
 func (p *Game) Start() {
-	log.Println("Start")
 	p.RoundTiles.Start()
 
 	p.Round++
@@ -296,36 +295,18 @@ func (p *Game) Start() {
 	if p.Round >= 1 {
 		for i := range p.Factions {
 			user := p.TurnOrder[i]
-			faction := p.Factions[user]
+			f := p.Factions[user].GetInstance()
+			f.Income()
+
+			// income 계산
+			f.CalulateReceive()
+			p.Sciences.CalculateRoundBonus(f)
+			if p.Round < 6 {
+				p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round-1])
+			}
 
 			if p.Round > 1 {
-				faction.Income()
-
-				p.Sciences.RoundBonus(faction.GetInstance())
-
-				/*
-					roundBonus := p.RoundBonuss.Get(p.Round - 1)
-
-					count := 0
-					if roundBonus.Science.Banking > 0 {
-						count = faction.GetScience(0) / roundBonus.Science.Banking
-					} else if roundBonus.Science.Law > 0 {
-						count = faction.GetScience(1) / roundBonus.Science.Law
-					} else if roundBonus.Science.Engineering > 0 {
-						count = faction.GetScience(2) / roundBonus.Science.Engineering
-					} else if roundBonus.Science.Medicine > 0 {
-						count = faction.GetScience(3) / roundBonus.Science.Medicine
-					}
-
-					roundBonus.Receive.Prist *= count
-					roundBonus.Receive.Power *= count
-					roundBonus.Receive.Book.Any *= count
-					roundBonus.Receive.Spade *= count
-					roundBonus.Receive.Coin *= count
-					roundBonus.Receive.Worker *= count
-
-					f.ReceiveResource(roundBonus.Receive)
-				*/
+				p.Sciences.RoundBonus(f)
 			}
 		}
 	}
@@ -393,10 +374,7 @@ func (p *Game) RoundProcess() {
 			p.Round = 0
 			p.PassOrder = make([]int, 0)
 
-			for i, v := range p.Factions {
-				f := v.GetInstance()
-				f.Income()
-
+			for i := range p.Factions {
 				p.PassOrder = append(p.PassOrder, i)
 			}
 
@@ -406,23 +384,17 @@ func (p *Game) RoundProcess() {
 		p.Round = 0
 		p.PassOrder = make([]int, 0)
 
-		for i, v := range p.Factions {
-			f := v.GetInstance()
-			f.Income()
-
+		for i := range p.Factions {
 			p.PassOrder = append(p.PassOrder, i)
 		}
 
 		p.Start()
+	} else if p.Round == 6 {
+		p.Round++
+		p.EndGame()
 	} else {
 		p.RoundEnd()
-
-		if p.Round == 6 {
-			p.Round++
-			p.EndGame()
-		} else {
-			p.Start()
-		}
+		p.Start()
 	}
 }
 
@@ -448,11 +420,18 @@ func (p *Game) TurnEnd(user int) error {
 	faction.TurnEnd(p.Round)
 
 	// income 계산
-	if p.Round > 0 {
+	if p.Round >= 6 {
+		for _, v := range p.Factions {
+			f := v.GetInstance()
+			f.CalulateVP()
+		}
+
+		p.CalculateEndGame()
+	} else if p.Round > 0 {
 		f.CalulateReceive()
 		p.Sciences.CalculateRoundBonus(f)
 		if p.Round < 6 {
-			p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round])
+			p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round-1])
 		}
 	}
 
@@ -817,10 +796,6 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 
 	if p.Map.IsEdge(x, y) && building == resources.D {
 		f.ReceiveEdgeVP()
-
-		if p.Round == 6 {
-			f.ReceiveResource(resources.Price{VP: buildVP.Edge})
-		}
 	}
 
 	if building == resources.D {
@@ -831,6 +806,10 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 
 	if p.Round == 6 {
 		buildVP = p.RoundBonuss.FinalRound.Build
+
+		if p.Map.IsEdge(x, y) && building == resources.D {
+			f.ReceiveResource(resources.Price{VP: buildVP.Edge})
+		}
 
 		if building == resources.D {
 			f.ReceiveResource(resources.Price{VP: buildVP.D})
@@ -1148,8 +1127,15 @@ func (p *Game) Pass(user int, pos int) error {
 	}
 
 	faction := p.Factions[user]
-	roundTile := p.RoundTiles.Pass(pos)
-	err, tile := faction.Pass(roundTile)
+	f := faction.GetInstance()
+
+	roundTile := resources.TileItem{}
+
+	if pos != -1 {
+		roundTile = p.RoundTiles.Pass(pos)
+	}
+
+	err, tile := f.Pass(roundTile)
 
 	if err != nil {
 		p.RoundTiles.Add(roundTile)
@@ -1931,6 +1917,10 @@ func (p *Game) EndGame() {
 			break
 		}
 
+		if receiveCount > p.Count {
+			break
+		}
+
 		if receiveCount == 1 {
 			receives = []int{0, 12, 9, 6, 4}
 		} else if receiveCount == 2 {
@@ -1986,6 +1976,10 @@ func (p *Game) EndGame() {
 				break
 			}
 
+			if receiveCount > p.Count {
+				break
+			}
+
 			if receiveCount == 1 {
 				receives = []int{0, 4, 2, 1}
 			} else if receiveCount == 2 {
@@ -1993,5 +1987,138 @@ func (p *Game) EndGame() {
 			}
 		}
 	}
-	// 등수 계산
+
+	// 남은 자원
+	for _, v := range p.Factions {
+		f := v.GetInstance()
+
+		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 2
+		f.ReceiveResource(resources.Price{VP: receive})
+	}
+}
+
+func (p *Game) CalculateEndGame() {
+	scores := make([]Score, 0)
+	// 미션 점수
+	for user, v := range p.Factions {
+		faction := v.GetInstance()
+
+		total := 0
+		for _, d := range faction.Building {
+			total += d
+		}
+
+		scores = append(scores, Score{User: user, Score: total})
+	}
+
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score < scores[j].Score
+	})
+
+	receives := []int{0, 18, 15, 12, 9, 7}
+	receiveCount := 0
+
+	for i := 0; i < 3; i++ {
+		if len(scores) == 0 {
+			break
+		}
+
+		score := scores[0].Score
+
+		cnt := 0
+		for _, v := range scores {
+			if v.Score == score {
+				cnt++
+			}
+		}
+
+		receive := receives[cnt]
+
+		for _, v := range scores {
+			if v.Score == score {
+				faction := p.Factions[v.User]
+				f := faction.GetInstance()
+				f.Receive.VP += receive
+			}
+		}
+
+		scores = scores[cnt:]
+		receiveCount += cnt
+
+		if receiveCount >= 3 {
+			break
+		}
+
+		if receiveCount == 1 {
+			receives = []int{0, 12, 9, 6, 4}
+		} else if receiveCount == 2 {
+			receives = []int{0, 6, 3, 2}
+		}
+	}
+
+	// 과학 점수
+	for k := 0; k < 4; k++ {
+		scores = make([]Score, 0)
+
+		for user, v := range p.Factions {
+			faction := v.GetInstance()
+
+			scores = append(scores, Score{User: user, Score: faction.Science[k]})
+		}
+
+		sort.Slice(scores, func(i, j int) bool {
+			return scores[i].Score < scores[j].Score
+		})
+
+		receives := []int{0, 8, 4, 2}
+		receiveCount := 0
+
+		for i := 0; i < 3; i++ {
+			if len(scores) == 0 {
+				break
+			}
+
+			score := scores[0].Score
+
+			cnt := 0
+			for _, v := range scores {
+				if v.Score == score {
+					cnt++
+				}
+			}
+
+			receive := receives[cnt]
+
+			for _, v := range scores {
+				if v.Score == score {
+					faction := p.Factions[v.User]
+					f := faction.GetInstance()
+
+					f.Receive.VP += receive
+				}
+			}
+
+			scores = scores[cnt:]
+			receiveCount += cnt
+
+			if receiveCount >= 3 {
+				break
+			}
+
+			if receiveCount == 1 {
+				receives = []int{0, 4, 2, 1}
+			} else if receiveCount == 2 {
+				receives = []int{0, 2, 1, 0}
+			}
+		}
+	}
+
+	// 남은 자원
+	for _, v := range p.Factions {
+		f := v.GetInstance()
+
+		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 2
+		f.Receive.VP += receive
+	}
+
 }

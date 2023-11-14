@@ -2,7 +2,6 @@ package resources
 
 import (
 	"aoi/models"
-	"log"
 )
 
 type PalaceTile struct {
@@ -56,7 +55,6 @@ func NewPalaceTile(id int64) *PalaceTile {
 }
 
 func (p *PalaceTile) GetTile(pos int) TileItem {
-	log.Println(p.Items[pos].Name)
 	return p.Items[pos]
 }
 

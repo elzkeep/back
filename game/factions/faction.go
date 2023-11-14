@@ -5,6 +5,7 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
+	"log"
 	"sort"
 
 	"math"
@@ -830,7 +831,9 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 	p.Resource.Coin += tile.Coin
 	tile.Coin = 0
 
-	p.Tiles = append(p.Tiles, tile)
+	if tile.Name != "" {
+		p.Tiles = append(p.Tiles, tile)
+	}
 
 	p.IsPass = true
 	p.Action = true
@@ -1155,12 +1158,11 @@ func (p *Faction) ReceiveIncome(receive Price) {
 	if p.Receive.Prist > p.MaxPrist {
 		p.Receive.Prist = p.MaxPrist
 	}
-
-	p.Receive.Power += receive.Power
 }
 
 func (p *Faction) CalulateReceive() {
 	p.Receive = Price{}
+	p.Receive.VP = p.VP
 
 	for i, v := range p.Incomes {
 		for j := 0; j <= p.Building[i]; j++ {
@@ -1169,10 +1171,37 @@ func (p *Faction) CalulateReceive() {
 	}
 
 	for _, v := range p.Tiles {
-		if v.Category == TileRound {
+		if p.IsPass == false && v.Category == TileRound {
+			log.Println("skip roundtile")
 			continue
 		}
 
 		p.ReceiveIncome(v.Receive)
+	}
+}
+
+func (p *Faction) CalulateVP() {
+	p.Receive = Price{}
+	p.Receive.VP = p.VP
+
+	for _, v := range p.Tiles {
+		receive := v.Pass
+
+		p.Receive.VP += receive.VP
+		p.Receive.VP += receive.DVP * p.Building[D]
+		p.Receive.VP += receive.TpVP * p.Building[TP]
+		p.Receive.VP += receive.TeVP * p.Building[TE]
+		p.Receive.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
+		p.Receive.VP += receive.CityVP * p.City
+
+		if receive.ScienceVP > 0 {
+			min := 999
+			for _, v := range p.Science {
+				if v < min {
+					min = v
+				}
+			}
+			p.Receive.VP += min
+		}
 	}
 }
