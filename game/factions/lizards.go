@@ -33,8 +33,8 @@ func (p *Lizards) GetScience(pos int) int {
 	return p.Faction.GetScience(pos)
 }
 
-func (p *Lizards) FirstBuild(x int, y int) error {
-	return p.Faction.FirstBuild(x, y)
+func (p *Lizards) FirstBuild(x int, y int, building Building) error {
+	return p.Faction.FirstBuild(x, y, building)
 }
 
 func (p *Lizards) Build(x int, y int, needSpade int, building Building) error {
@@ -78,8 +78,13 @@ func (p *Lizards) Pass(tile TileItem) (error, TileItem) {
 }
 
 func (p *Lizards) ReceiveCity(item CityItem) error {
-	p.ReceiveResource(Price{Spade: 1, Building: D})
-	return p.Faction.ReceiveCity(item)
+	err := p.Faction.ReceiveCity(item)
+
+	if err == nil {
+		p.Faction.ReceiveResource(Price{Spade: 1, Building: D})
+	}
+
+	return err
 }
 
 func (p *Lizards) Dig(x int, y int, dig int) error {

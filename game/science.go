@@ -163,7 +163,7 @@ func (p *Science) RoundBonus(user *factions.Faction) {
 
 func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
 	if tile.Science.Banking > 0 {
-		value := p.Value[int(Banking)][user.Color] % tile.Science.Banking
+		value := p.Value[int(Banking)][user.Color] / tile.Science.Banking
 
 		for i := 0; i < value; i++ {
 			user.ReceiveResource(tile.Receive)
@@ -171,7 +171,7 @@ func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
 	}
 
 	if tile.Science.Law > 0 {
-		value := p.Value[int(Law)][user.Color] % tile.Science.Law
+		value := p.Value[int(Law)][user.Color] / tile.Science.Law
 
 		for i := 0; i < value; i++ {
 			user.ReceiveResource(tile.Receive)
@@ -179,7 +179,7 @@ func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
 	}
 
 	if tile.Science.Engineering > 0 {
-		value := p.Value[int(Engineering)][user.Color] % tile.Science.Engineering
+		value := p.Value[int(Engineering)][user.Color] / tile.Science.Engineering
 
 		for i := 0; i < value; i++ {
 			user.ReceiveResource(tile.Receive)
@@ -187,7 +187,7 @@ func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
 	}
 
 	if tile.Science.Medicine > 0 {
-		value := p.Value[int(Medicine)][user.Color] % tile.Science.Medicine
+		value := p.Value[int(Medicine)][user.Color] / tile.Science.Medicine
 
 		for i := 0; i < value; i++ {
 			user.ReceiveResource(tile.Receive)

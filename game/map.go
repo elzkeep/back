@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"strings"
 
@@ -443,6 +444,8 @@ func (p *Map) Bridge(user color.Color, x1 int, y1 int, x2 int, y2 int) error {
 }
 
 func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
+	log.Println("check distance", distance)
+
 	positions := resources.GetGroundPosition(x, y)
 
 	for _, position := range positions {
@@ -475,25 +478,33 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 }
 
 func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistance int) bool {
+	log.Println("find distance", maxDistance, x, y)
 	if distance >= maxDistance {
 		return false
 	}
 
 	positions := resources.GetGroundPosition(x, y)
+	log.Println(positions)
 
 	for _, v := range positions {
+		log.Println("check", v.X, v.Y)
 		if p.GetType(v.X, v.Y) != color.River {
 			continue
 		}
 
+		log.Println("river found", x, y)
+
 		items := resources.GetGroundPosition(v.X, v.Y)
 		for _, item := range items {
 			if p.GetType(item.X, item.Y) == user {
+				log.Println("find true")
 				return true
 			}
 		}
 
-		p.FindRiver(user, v.X, v.Y, distance+1, maxDistance)
+		if p.FindRiver(user, v.X, v.Y, distance+1, maxDistance) {
+			return true
+		}
 	}
 
 	return false
@@ -638,6 +649,18 @@ func (p *Map) CheckDistanceMoles(user color.Color, x int, y int) bool {
 
 	for _, v := range items {
 		if p.GetOwner(v.X, v.Y) == user {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *Map) CheckDistanceJump(items []resources.Position, x int, y int) bool {
+	for _, v := range items {
+		distance := p.GetDistance(x, y, v.X, v.Y)
+
+		if distance == 2 || distance == 3 {
 			return true
 		}
 	}

@@ -33,8 +33,8 @@ func (p *Goblins) GetScience(pos int) int {
 	return p.Faction.GetScience(pos)
 }
 
-func (p *Goblins) FirstBuild(x int, y int) error {
-	return p.Faction.FirstBuild(x, y)
+func (p *Goblins) FirstBuild(x int, y int, building Building) error {
+	return p.Faction.FirstBuild(x, y, building)
 }
 
 func (p *Goblins) Build(x int, y int, needSpade int, building Building) error {
@@ -84,7 +84,7 @@ func (p *Goblins) ReceiveCity(item CityItem) error {
 func (p *Goblins) Dig(x int, y int, dig int) error {
 	err := p.Faction.Dig(x, y, dig)
 	if err == nil {
-		p.ReceiveResource(Price{Coin: dig * 2})
+		p.Faction.ReceiveResource(Price{Coin: dig * 2})
 	}
 
 	return err

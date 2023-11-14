@@ -210,13 +210,8 @@ func Make(user int64, item *models.Game) {
 			int(resources.TilePalaceTpBuild),
 		}
 
-		for {
-			rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
+		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
-			if items[0] == int(resources.TilePalaceTpBuild) {
-				break
-			}
-		}
 		for i, v := range items[:item.Count+1] {
 			var tile models.Gametile
 

@@ -33,8 +33,8 @@ func (p *Blessed) GetScience(pos int) int {
 	return p.Faction.GetScience(pos) + 3
 }
 
-func (p *Blessed) FirstBuild(x int, y int) error {
-	return p.Faction.FirstBuild(x, y)
+func (p *Blessed) FirstBuild(x int, y int, building Building) error {
+	return p.Faction.FirstBuild(x, y, building)
 }
 
 func (p *Blessed) Build(x int, y int, needSpade int, building Building) error {

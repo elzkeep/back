@@ -3,6 +3,7 @@ package factions
 import (
 	"aoi/game/action"
 	. "aoi/game/resources"
+	"log"
 )
 
 type Felines struct {
@@ -33,8 +34,8 @@ func (p *Felines) GetScience(pos int) int {
 	return p.Faction.GetScience(pos)
 }
 
-func (p *Felines) FirstBuild(x int, y int) error {
-	return p.Faction.FirstBuild(x, y)
+func (p *Felines) FirstBuild(x int, y int, building Building) error {
+	return p.Faction.FirstBuild(x, y, building)
 }
 
 func (p *Felines) Build(x int, y int, needSpade int, building Building) error {
@@ -78,8 +79,14 @@ func (p *Felines) Pass(tile TileItem) (error, TileItem) {
 }
 
 func (p *Felines) ReceiveCity(item CityItem) error {
-	p.ReceiveResource(Price{Book: Book{Any: 1}, Science: Science{Any: 3}})
-	return p.Faction.ReceiveCity(item)
+	err := p.Faction.ReceiveCity(item)
+
+	if err == nil {
+		log.Println(Price{Book: Book{Any: 1}, Science: Science{Any: 3}})
+		p.Faction.ReceiveResource(Price{Book: Book{Any: 1}, Science: Science{Any: 3}})
+	}
+
+	return err
 }
 
 func (p *Felines) Dig(x int, y int, dig int) error {

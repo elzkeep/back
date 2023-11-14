@@ -20,7 +20,7 @@ type FactionInterface interface {
 	Income()
 	GetScience(pos int) int
 
-	FirstBuild(x int, y int) error
+	FirstBuild(x int, y int, building Building) error
 	Build(x int, y int, needSpade int, building Building) error
 	Upgrade(x int, y int, target Building, extra int) error
 	AdvanceShip() error
@@ -75,6 +75,7 @@ type Faction struct {
 	City              int              `json:"city"`
 	CityBuildingList  []Position       `json:"cityBuildingList"`
 	Cities            []CityItem       `json:"cities"`
+	Type              TileType         `json:"type"`
 	IsPass            bool             `json:"-"`
 	FirstBuilding     Building         `json:"-"`
 }
@@ -83,6 +84,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Name = name
 	item.Ename = ename
 	item.Color = colorTile.Color
+	item.Type = factionTile.Type
 
 	item.Resource.Coin = 15
 	item.Resource.Worker = 4
@@ -311,8 +313,24 @@ func (p *Faction) ReceiveResource(receive Price) {
 }
 
 func (p *Faction) FirstIncome() {
+	for i, v := range p.Incomes {
+		for j := 0; j <= p.Building[i]; j++ {
+			p.ReceiveResource(v[j])
+		}
+	}
+
 	for _, v := range p.Tiles {
-		p.ReceiveResource(v.Once)
+		if v.Category != TileRound {
+			p.ReceiveResource(v.Receive)
+		}
+	}
+
+	if p.Resource.Prist > p.MaxPrist {
+		p.Resource.Prist = p.MaxPrist
+	}
+
+	if p.Resource.Bridge > p.MaxBridge {
+		p.Resource.Bridge = p.MaxBridge
 	}
 }
 
@@ -465,15 +483,15 @@ func (p *Faction) AdvanceSpade() error {
 	return nil
 }
 
-func (p *Faction) FirstBuild(x int, y int) error {
+func (p *Faction) FirstBuild(x int, y int, building Building) error {
 	if p.Action {
 		return errors.New("Already completed the action")
 	}
 
-	p.Building[p.FirstBuilding]++
-	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: p.FirstBuilding})
+	p.Building[building]++
+	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
-	if p.FirstBuilding == SA {
+	if building == SA {
 		p.Resource.SchoolTile++
 	}
 
@@ -524,7 +542,11 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 			p.Resource.Spade = 0
 		}
 	} else {
-		return errors.New("not enough spade")
+		if p.Resource.Worker < p.GetWorkerForSpade()*(needSpade-p.Resource.Spade) {
+			return errors.New("not enough spade")
+		}
+
+		p.Resource.Worker -= p.GetWorkerForSpade() * (needSpade - p.Resource.Spade)
 	}
 
 	if building >= WHITE_D {
@@ -543,6 +565,10 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
 	p.Resource.Building = None
+
+	if building == WHITE_TE || building == WHITE_SA {
+		p.Resource.SchoolTile++
+	}
 
 	p.Action = true
 	p.BuildAction = true
@@ -690,6 +716,7 @@ func (p *Faction) SupployScholar(pos int, inc int) error {
 func (p *Faction) PowerAction(item action.PowerActionItem) error {
 	err := p.UsePower(item.Power)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -842,10 +869,11 @@ func (p *Faction) TurnEnd(round int) error {
 	p.Action = false
 	p.BuildAction = false
 
-	log.Println("schhol tile", p.Resource.SchoolTile)
+	log.Println("spade: faction.turnend", p.Resource.Spade)
 	if round > 0 {
 		p.ResetResource()
 	}
+	log.Println("spade: faction.turnend after", p.Resource.Spade)
 
 	return nil
 }

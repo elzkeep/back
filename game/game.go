@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	InitRound      = -3
-	FactionRound   = -2
-	BuildRound     = -1
-	RoundTileRound = 0
+	InitRound       = -4
+	FactionRound    = -3
+	BuildRound      = -2
+	BuildExtraRound = -1
+	RoundTileRound  = 0
 )
 
 type Game struct {
@@ -253,12 +254,32 @@ func (p *Game) BuildStart() {
 			continue
 		}
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+
+		if faction.Type != resources.TileFactionOmar && faction.Color == color.Yellow {
+			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
+		}
+	}
+
+	for i, v := range p.Factions {
+		faction := v.GetInstance()
+		if faction.Type != resources.TileFactionOmar {
+			continue
+		}
+		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+
+		if faction.Color == color.Yellow {
+			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
+		}
 	}
 
 	for i, v := range p.Factions {
 		faction := v.GetInstance()
 		if faction.FirstBuilding == resources.SA {
 			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+
+			if faction.Color == color.Yellow {
+				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
+			}
 		}
 	}
 }
@@ -276,41 +297,35 @@ func (p *Game) Start() {
 		for i := range p.Factions {
 			user := p.TurnOrder[i]
 			faction := p.Factions[user]
-			f := faction.GetInstance()
-			faction.Income()
-
-			p.Sciences.RoundBonus(faction.GetInstance())
 
 			if p.Round > 1 {
-				roundBonus := p.RoundBonuss.Get(p.Round - 1)
+				faction.Income()
 
-				log.Println(roundBonus)
+				p.Sciences.RoundBonus(faction.GetInstance())
 
-				log.Println("banking", roundBonus.Science.Banking)
-				log.Println("law", roundBonus.Science.Law)
-				log.Println("engineering", roundBonus.Science.Engineering)
-				log.Println("medicine", roundBonus.Science.Medicine)
-				count := 0
-				if roundBonus.Science.Banking > 0 {
-					count = faction.GetScience(0) / roundBonus.Science.Banking
-				} else if roundBonus.Science.Law > 0 {
-					count = faction.GetScience(1) / roundBonus.Science.Law
-				} else if roundBonus.Science.Engineering > 0 {
-					count = faction.GetScience(2) / roundBonus.Science.Engineering
-				} else if roundBonus.Science.Medicine > 0 {
-					log.Println("faction value", faction.GetScience(3))
-					count = faction.GetScience(3) / roundBonus.Science.Medicine
-				}
+				/*
+					roundBonus := p.RoundBonuss.Get(p.Round - 1)
 
-				log.Println("round count", count)
-				roundBonus.Receive.Prist *= count
-				roundBonus.Receive.Power *= count
-				roundBonus.Receive.Book.Any *= count
-				roundBonus.Receive.Spade *= count
-				roundBonus.Receive.Coin *= count
-				roundBonus.Receive.Worker *= count
+					count := 0
+					if roundBonus.Science.Banking > 0 {
+						count = faction.GetScience(0) / roundBonus.Science.Banking
+					} else if roundBonus.Science.Law > 0 {
+						count = faction.GetScience(1) / roundBonus.Science.Law
+					} else if roundBonus.Science.Engineering > 0 {
+						count = faction.GetScience(2) / roundBonus.Science.Engineering
+					} else if roundBonus.Science.Medicine > 0 {
+						count = faction.GetScience(3) / roundBonus.Science.Medicine
+					}
 
-				f.ReceiveResource(roundBonus.Receive)
+					roundBonus.Receive.Prist *= count
+					roundBonus.Receive.Power *= count
+					roundBonus.Receive.Book.Any *= count
+					roundBonus.Receive.Spade *= count
+					roundBonus.Receive.Coin *= count
+					roundBonus.Receive.Worker *= count
+
+					f.ReceiveResource(roundBonus.Receive)
+				*/
 			}
 		}
 	}
@@ -329,38 +344,6 @@ func (p *Game) Start() {
 		}
 	}
 
-	/*
-		for i := range p.Factions {
-			user := p.TurnOrder[i]
-			faction := p.Factions[user].GetInstance()
-
-			if !faction.Resource.Science.IsEmpty() {
-				turn := []Turn{{User: user, Type: ScienceTurn}}
-				p.Turn = append(turn, p.Turn...)
-			}
-		}
-
-		for i := range p.Factions {
-			user := p.TurnOrder[i]
-			faction := p.Factions[user].GetInstance()
-
-			if faction.Resource.Spade > 0 {
-				turn := []Turn{{User: user, Type: SpadeTurn}}
-				p.Turn = append(turn, p.Turn...)
-			}
-		}
-
-		for i := range p.Factions {
-			user := p.TurnOrder[i]
-			faction := p.Factions[user].GetInstance()
-
-			if faction.Resource.Building != resources.None {
-				turn := []Turn{{User: user, Type: BuildTurn}}
-				p.Turn = append(turn, p.Turn...)
-			}
-		}
-	*/
-
 	for i := range p.Factions {
 		user := p.TurnOrder[i]
 
@@ -373,6 +356,74 @@ func (p *Game) Start() {
 
 	p.PowerActions.Start()
 	p.BookActions.Start()
+}
+
+func (p *Game) RoundProcess() {
+	if p.Round == FactionRound {
+		p.Round = BuildRound
+		p.PassOrder = make([]int, 0)
+
+		p.UpdateDBRound(int(game.StatusNormal))
+
+		p.BuildStart()
+	} else if p.Round == BuildRound {
+		p.Round = BuildExtraRound
+
+		flag := false
+
+		for i, v := range p.Factions {
+			f := v.GetInstance()
+
+			if f.Resource.Spade > 0 {
+				flag = true
+				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
+			}
+
+			if f.Type == resources.TileFactionOmar {
+				f.Resource.Building = resources.None
+			} else {
+				if f.Resource.Building != resources.None {
+					flag = true
+					p.Turn = append(p.Turn, Turn{User: i, Type: BuildTurn})
+				}
+			}
+		}
+
+		if flag == false {
+			p.Round = 0
+			p.PassOrder = make([]int, 0)
+
+			for i, v := range p.Factions {
+				f := v.GetInstance()
+				f.Income()
+
+				p.PassOrder = append(p.PassOrder, i)
+			}
+
+			p.Start()
+		}
+	} else if p.Round == BuildExtraRound {
+		p.Round = 0
+		p.PassOrder = make([]int, 0)
+
+		for i, v := range p.Factions {
+			f := v.GetInstance()
+			f.Income()
+
+			p.PassOrder = append(p.PassOrder, i)
+		}
+
+		p.Start()
+	} else {
+		p.RoundEnd()
+
+		if p.Round == 6 {
+			p.Round++
+			p.EndGame()
+		} else {
+			p.Start()
+		}
+	}
 }
 
 func (p *Game) TurnEnd(user int) error {
@@ -404,42 +455,10 @@ func (p *Game) TurnEnd(user int) error {
 				}
 			}
 		}
-	} else {
-		//p.PassOrder = append(p.PassOrder, user)
 	}
 
 	if len(p.Turn) == 0 {
-		if p.Round == FactionRound {
-			p.Round = BuildRound
-			p.PassOrder = make([]int, 0)
-
-			p.UpdateDBRound(int(game.StatusNormal))
-
-			p.BuildStart()
-		} else if p.Round == BuildRound {
-			p.Round = 0
-			p.PassOrder = make([]int, 0)
-			for i, _ := range p.Factions {
-				p.PassOrder = append(p.PassOrder, i)
-			}
-
-			log.Println("start 1 round")
-			p.Start()
-		} else {
-			p.RoundEnd()
-
-			if p.Round == 6 {
-				p.Round++
-				p.EndGame()
-			} else {
-				p.Start()
-			}
-		}
-	}
-
-	log.Println("round", p.Round)
-	for _, v := range p.Turn {
-		v.Print()
+		p.RoundProcess()
 	}
 
 	return nil
@@ -536,7 +555,7 @@ func (p *Game) IsBookTurn() bool {
 	return true
 }
 
-func (p *Game) FirstBuild(user int, x int, y int) error {
+func (p *Game) FirstBuild(user int, x int, y int, building resources.Building) error {
 	if p.Round != BuildRound {
 		return errors.New("round error : FirstBuild")
 	}
@@ -546,55 +565,63 @@ func (p *Game) FirstBuild(user int, x int, y int) error {
 	}
 
 	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Type == resources.TileFactionOmar {
+		if building != resources.D && building != resources.WHITE_TOWER {
+			return errors.New("wrong building")
+		}
+
+		if building == resources.D && f.Building[resources.D] >= 2 {
+			return errors.New("wrong building")
+		}
+
+		if building == resources.WHITE_TOWER && f.Building[resources.WHITE_TOWER] >= 1 {
+			return errors.New("wrong building")
+		}
+	} else {
+		if building != f.FirstBuilding {
+			return errors.New("wrong building")
+		}
+
+		if f.Building[building] >= 2 {
+			return errors.New("max first building")
+		}
+	}
 
 	color := p.Map.GetType(x, y)
-	f := faction.GetInstance()
+
 	if color != f.Color {
 		return errors.New("It's not a user's land")
 	}
 
-	err := faction.FirstBuild(x, y)
+	err := faction.FirstBuild(x, y, building)
 	if err != nil {
 		return err
 	}
 
-	p.Map.Build(x, y, f.Color, f.FirstBuilding)
+	p.Map.Build(x, y, f.Color, building)
 
 	return nil
 }
 
-func (p *Game) Build(user int, x int, y int, building resources.Building) error {
-	log.Println("build", p.Round)
+func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool, bool, bool) {
+	jump := false
+
 	if p.Round < 1 {
-		return errors.New("round error")
+		tile = false
 	}
 
-	if !p.IsTurn(user) {
-		return errors.New("It's not a turn")
+	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(tile), x, y)
+
+	log.Println("flag", true)
+	if flag == true {
+		return true, false, false
 	}
 
-	faction := p.Factions[user]
-	f := faction.GetInstance()
-
-	if !p.IsNormalTurn() && !((p.IsBuildTurn() || p.IsResourceTurn()) && f.Resource.Building != resources.None) {
-		return errors.New("It's not a normal turn")
-	}
-
-	if f.Action {
-		if f.Resource.Building == resources.None && f.ExtraBuild == 0 {
-			return errors.New("Already completed the action")
-		}
-	}
-
-	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(true), x, y)
-
-	molesBuild := false
-
-	if flag == false {
-		if f.Name == "Moles" {
-			if (f.Resource.Building == resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
-				flag = p.Map.CheckDistanceMoles(f.Color, x, y)
-
+	if f.Type == resources.TileFactionMoles {
+		if (f.Resource.Building != resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
+			if p.Map.CheckDistanceMoles(f.Color, x, y) {
 				items := resources.GetGroundPosition(x, y)
 
 				flag := false
@@ -631,17 +658,110 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 						break
 					}
 				}
-
-				if flag == false {
-					molesBuild = true
-				}
 			}
 		}
 	}
 
-	if f.Resource.Building == resources.TP {
-		if p.Map.GetType(x, y) == f.Color {
-			flag = true
+	if flag == true {
+		return true, true, false
+	}
+
+	jumpFlag := false
+	for _, v := range f.Tiles {
+		if v.Type == resources.TilePalaceJump {
+			jumpFlag = true
+			break
+		}
+
+	}
+
+	if jumpFlag != true {
+		log.Println("jump false")
+		return false, false, false
+	}
+
+	if (f.Resource.Building != resources.None && f.Resource.Prist > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2 && f.Resource.Prist > 0) {
+		log.Println("go 1")
+		if p.Map.CheckDistanceJump(f.BuildingList, x, y) {
+			log.Println("go 2")
+			items := resources.GetGroundPosition(x, y)
+
+			flag := false
+			for _, position := range items {
+				x := position.X
+				y := position.Y
+
+				if p.Map.GetOwner(x, y) == f.Color {
+					flag = true
+					break
+				}
+
+				for _, v := range p.Map.BridgeList {
+					if v.Color != f.Color {
+						continue
+					}
+
+					if x == v.X1 && y == v.Y1 {
+						if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
+							flag = true
+							break
+						}
+					}
+
+					if x == v.X2 && y == v.Y2 {
+						if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
+							flag = true
+							break
+						}
+					}
+				}
+
+				if flag == true {
+					break
+				}
+			}
+
+			if flag == false {
+				jump = true
+			}
+		}
+	}
+
+	if jump == true {
+		return true, false, true
+	}
+
+	return false, false, false
+}
+
+func (p *Game) Build(user int, x int, y int, building resources.Building) error {
+	if p.Round < -1 {
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		return errors.New("It's not a turn")
+	}
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if !p.IsNormalTurn() && !((p.IsBuildTurn() || p.IsResourceTurn()) && f.Resource.Building != resources.None) {
+		return errors.New("It's not a normal turn")
+	}
+
+	if f.Action {
+		if f.Resource.Building == resources.None && f.ExtraBuild == 0 {
+			return errors.New("Already completed the action")
+		}
+	}
+
+	flag, moles, jump := p.CheckDistance(f, x, y, true)
+	if flag == false {
+		if f.Resource.Building == resources.TP {
+			if p.Map.GetType(x, y) == f.Color {
+				flag = true
+			}
 		}
 	}
 
@@ -665,11 +785,14 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return err
 	}
 
-	if molesBuild == true {
-		if f.Resource.Building != resources.TP {
-			f.Resource.Worker--
-			f.VP += 4
-		}
+	if moles == true {
+		f.Resource.Worker--
+		f.VP += 4
+	}
+
+	if jump == true {
+		f.Resource.Prist--
+		f.VP += 5
 	}
 
 	p.Map.Build(x, y, f.Color, building)
@@ -745,7 +868,6 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 
 	if f.Resource.TpUpgrade == 0 && target == resources.TP {
 		// 생업 체크
-		log.Println("check solor", p.Map.CheckSolo(f.Color, x, y))
 		if p.Map.CheckSolo(f.Color, x, y) {
 			extra = 3
 		}
@@ -1065,15 +1187,24 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	}
 
 	tile := true
-
 	if p.IsSpadeTurn() || p.IsResourceTurn() {
 		tile = false
 	}
 
-	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(tile), x, y)
+	flag, moles, jump := p.CheckDistance(f, x, y, tile)
 
 	if flag == false {
 		return errors.New("ship distance error")
+	}
+
+	if moles == true {
+		f.Resource.Worker--
+		f.VP += 4
+	}
+
+	if jump == true {
+		f.Resource.Prist--
+		f.VP += 5
 	}
 
 	spade := 0
@@ -1180,7 +1311,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 				y--
 			}
 
-			if f.Ename == "Moles" {
+			if f.Type == resources.TileFactionMoles {
 				flag = true
 			} else if p.Map.GetType(x1+1, y) == color.River && p.Map.GetType(x1+1, y+1) == color.River {
 				flag = true
@@ -1189,7 +1320,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 	} else {
 		if x1%2 == 1 {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 2 {
-				if f.Ename == "Moles" {
+				if f.Type == resources.TileFactionMoles {
 					flag = true
 				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
 					flag = true
@@ -1197,7 +1328,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 			}
 		} else {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 1 {
-				if f.Ename == "Moles" {
+				if f.Type == resources.TileFactionMoles {
 					flag = true
 				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
 					flag = true
@@ -1222,6 +1353,22 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 	}
 
 	p.Map.Bridge(f.Color, x1, y1, x2, y2)
+
+	if p.Map.GetOwner(x1, y1) == f.Color {
+		lists := p.Map.CheckCity(f.Color, x1, y1, f.TownPower)
+
+		if len(lists) > 0 {
+			f.CityBuildingList = lists
+			f.Resource.City++
+		}
+	} else if p.Map.GetOwner(x2, y2) == f.Color {
+		lists := p.Map.CheckCity(f.Color, x2, y2, f.TownPower)
+
+		if len(lists) > 0 {
+			f.CityBuildingList = lists
+			f.Resource.City++
+		}
+	}
 
 	return nil
 }

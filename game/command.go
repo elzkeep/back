@@ -108,12 +108,11 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 
 	if cmd == "build" {
 		x, y := ConvertPosition(strs[2])
+		target := ConvertBuilding(strs[3])
 
 		if p.Round == BuildRound {
-			err = p.FirstBuild(user, x, y)
+			err = p.FirstBuild(user, x, y, target)
 		} else {
-			target := ConvertBuilding(strs[3])
-
 			err = p.Build(user, x, y, target)
 		}
 	} else if cmd == "dig" {
