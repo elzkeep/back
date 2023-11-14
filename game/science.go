@@ -194,3 +194,55 @@ func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
 		}
 	}
 }
+
+func (p *Science) CalculateRoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
+	if tile.Science.Banking > 0 {
+		value := p.Value[int(Banking)][user.Color] / tile.Science.Banking
+
+		for i := 0; i < value; i++ {
+			user.ReceiveIncome(tile.Receive)
+		}
+	}
+
+	if tile.Science.Law > 0 {
+		value := p.Value[int(Law)][user.Color] / tile.Science.Law
+
+		for i := 0; i < value; i++ {
+			user.ReceiveIncome(tile.Receive)
+		}
+	}
+
+	if tile.Science.Engineering > 0 {
+		value := p.Value[int(Engineering)][user.Color] / tile.Science.Engineering
+
+		for i := 0; i < value; i++ {
+			user.ReceiveIncome(tile.Receive)
+		}
+	}
+
+	if tile.Science.Medicine > 0 {
+		value := p.Value[int(Medicine)][user.Color] / tile.Science.Medicine
+
+		for i := 0; i < value; i++ {
+			user.ReceiveIncome(tile.Receive)
+		}
+	}
+}
+
+func (p *Science) CalculateRoundBonus(user *factions.Faction) {
+	for i := 0; i < 4; i++ {
+		if p.Value[i][user.Color] < 9 {
+			continue
+		}
+
+		if i == 0 {
+			user.ReceiveIncome(resources.Price{Coin: 3})
+		} else if i == 1 {
+			user.ReceiveIncome(resources.Price{Power: 6})
+		} else if i == 2 {
+			user.ReceiveIncome(resources.Price{Worker: 1})
+		} else if i == 3 {
+			user.ReceiveIncome(resources.Price{VP: 3})
+		}
+	}
+}

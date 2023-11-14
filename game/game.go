@@ -447,6 +447,15 @@ func (p *Game) TurnEnd(user int) error {
 
 	faction.TurnEnd(p.Round)
 
+	// income 계산
+	if p.Round > 0 {
+		f.CalulateReceive()
+		p.Sciences.CalculateRoundBonus(f)
+		if p.Round < 6 {
+			p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round])
+		}
+	}
+
 	if p.Round > 0 {
 		if user >= 0 {
 			if turnType == NormalTurn {
@@ -614,7 +623,6 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 
 	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(tile), x, y)
 
-	log.Println("flag", true)
 	if flag == true {
 		return true, false, false
 	}
@@ -676,14 +684,11 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 	}
 
 	if jumpFlag != true {
-		log.Println("jump false")
 		return false, false, false
 	}
 
 	if (f.Resource.Building != resources.None && f.Resource.Prist > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2 && f.Resource.Prist > 0) {
-		log.Println("go 1")
 		if p.Map.CheckDistanceJump(f.BuildingList, x, y) {
-			log.Println("go 2")
 			items := resources.GetGroundPosition(x, y)
 
 			flag := false
@@ -1610,11 +1615,20 @@ func (p *Game) PalaceTile(user int, pos int) error {
 	}
 
 	faction := p.Factions[user]
+	f := faction.GetInstance()
+
 	err := faction.PalaceTile(tile)
 
 	if err == nil {
 		p.PalaceTiles.Setup(pos)
 	}
+
+	if tile.Type == resources.TilePalaceRiverCity {
+		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+
+		f.ReceiveResource(resources.Price{VP: buildVP.Advance * 2})
+	}
+
 	return nil
 }
 
@@ -1651,6 +1665,12 @@ func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book)
 
 	if err == nil {
 		p.InnovationTiles.Setup(pos, index)
+	}
+
+	if tile.Type == resources.TileInnovationUpgrade {
+		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+
+		f.ReceiveResource(resources.Price{VP: buildVP.Advance * 2})
 	}
 
 	f.Action = true

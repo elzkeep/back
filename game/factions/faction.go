@@ -5,7 +5,6 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
-	"log"
 	"sort"
 
 	"math"
@@ -57,6 +56,7 @@ type Faction struct {
 	AdvanceShipPrice  Price            `json:"advanceShipPrice"`
 	AdvanceSpadePrice Price            `json:"advanceSpadePrice"`
 	Incomes           [][]Price        `json:"incomes"`
+	Receive           Price            `json:"receive"`
 	Point             int              `json:"point"`
 	TownPower         int              `json:"townPower"`
 	Spade             int              `json:"spade"`
@@ -137,7 +137,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 		{Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}, Price{Worker: 1}},
 		{Price{}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 1}, Price{Coin: 2, Power: 2}, Price{Coin: 2, Power: 2}},
 		{Price{}, Price{Prist: 1}, Price{Prist: 1}, Price{Prist: 1}},
-		{Price{}, Price{Power: 4}},
+		{Price{}, Price{Power: 0}},
 		{Price{}, Price{Prist: 1}},
 	}
 
@@ -454,6 +454,22 @@ func (p *Faction) AdvanceShip() error {
 
 	p.Ship++
 
+	if p.Color == color.Blue {
+		if p.Ship == 2 {
+			p.ReceiveResource(Price{VP: 3})
+		} else if p.Ship == 3 {
+			p.ReceiveResource(Price{Book: Book{Any: 2}})
+		}
+	} else {
+		if p.Ship == 1 {
+			p.ReceiveResource(Price{VP: 2})
+		} else if p.Ship == 2 {
+			p.ReceiveResource(Price{Book: Book{Any: 2}})
+		} else if p.Ship == 3 {
+			p.ReceiveResource(Price{VP: 4})
+		}
+	}
+
 	p.Action = true
 
 	p.Print()
@@ -475,6 +491,12 @@ func (p *Faction) AdvanceSpade() error {
 	p.UsePrice(p.AdvanceSpadePrice)
 
 	p.Spade++
+
+	if p.Ship == 1 {
+		p.ReceiveResource(Price{Book: Book{Any: 2}})
+	} else if p.Ship == 3 {
+		p.ReceiveResource(Price{VP: 6})
+	}
 
 	p.Action = true
 
@@ -531,9 +553,6 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 			return err
 		}
 	}
-
-	log.Println("need spade", needSpade)
-	log.Println("spade", p.Resource.Spade)
 
 	if p.Resource.Spade >= needSpade {
 		if p.Resource.Spade-p.Resource.ConvertSpade >= needSpade {
@@ -645,7 +664,6 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 		price := p.Price[target]
 		price.Coin += extra
 
-		log.Println(price.Coin)
 		err := CheckResource(p.Resource, price)
 		if err != nil {
 			return err
@@ -716,7 +734,6 @@ func (p *Faction) SupployScholar(pos int, inc int) error {
 func (p *Faction) PowerAction(item action.PowerActionItem) error {
 	err := p.UsePower(item.Power)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -865,15 +882,12 @@ func (p *Faction) ConvertDig(spade int) error {
 }
 
 func (p *Faction) TurnEnd(round int) error {
-	log.Println("faction.TurnEnd")
 	p.Action = false
 	p.BuildAction = false
 
-	log.Println("spade: faction.turnend", p.Resource.Spade)
 	if round > 0 {
 		p.ResetResource()
 	}
-	log.Println("spade: faction.turnend after", p.Resource.Spade)
 
 	return nil
 }
@@ -1122,4 +1136,43 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 	p.Action = true
 
 	return nil
+}
+
+func (p *Faction) ReceiveIncome(receive Price) {
+	p.Receive.Coin += receive.Coin
+	p.Receive.Worker += receive.Worker
+	p.Receive.Prist += receive.Prist
+
+	p.Receive.Book.Any += receive.Book.Any
+	p.Receive.Book.Banking += receive.Book.Banking
+	p.Receive.Book.Law += receive.Book.Law
+	p.Receive.Book.Engineering += receive.Book.Engineering
+	p.Receive.Book.Medicine += receive.Book.Medicine
+
+	p.Receive.Science.Any += receive.Science.Any
+	p.Receive.Science.Single += receive.Science.Single
+
+	if p.Receive.Prist > p.MaxPrist {
+		p.Receive.Prist = p.MaxPrist
+	}
+
+	p.Receive.Power += receive.Power
+}
+
+func (p *Faction) CalulateReceive() {
+	p.Receive = Price{}
+
+	for i, v := range p.Incomes {
+		for j := 0; j <= p.Building[i]; j++ {
+			p.ReceiveIncome(v[j])
+		}
+	}
+
+	for _, v := range p.Tiles {
+		if v.Category == TileRound {
+			continue
+		}
+
+		p.ReceiveIncome(v.Receive)
+	}
 }
