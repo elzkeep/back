@@ -2,7 +2,6 @@ package resources
 
 import (
 	"aoi/models"
-	"log"
 )
 
 type InnovationTile struct {
@@ -77,10 +76,6 @@ func NewInnovationTile(id int64, count int) *InnovationTile {
 		{2, 2, 2, 2, 0, 0},
 		{2, 2, 2, 2, 1, 1},
 		{3, 3, 3, 3, 0, 0},
-	}
-
-	for _, v := range targets {
-		log.Println(v)
 	}
 
 	pos := 0

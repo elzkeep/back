@@ -68,6 +68,8 @@ func (c *GameController) Command(id int64, cmd string) {
 		log.Println("-------------------------")
 		log.Println(ret)
 		log.Println("-------------------------")
+		c.Error(ret.Error())
+
 	}
-	//c.Set("item", ret)
+
 }

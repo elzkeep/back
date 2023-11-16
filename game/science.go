@@ -5,6 +5,7 @@ import (
 	"aoi/game/factions"
 	"aoi/game/resources"
 	"fmt"
+	"log"
 )
 
 type ScienceType int
@@ -161,70 +162,77 @@ func (p *Science) RoundBonus(user *factions.Faction) {
 	}
 }
 
-func (p *Science) RoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
+func (p *Science) RoundEndBonus(user factions.FactionInterface, tile RoundBonusItem) {
+	f := user.GetInstance()
+
 	if tile.Science.Banking > 0 {
-		value := p.Value[int(Banking)][user.Color] / tile.Science.Banking
+		log.Println("bank")
+
+		log.Println("user", user.GetScience(int(Banking)))
+		value := user.GetScience(int(Banking)) / tile.Science.Banking
 
 		for i := 0; i < value; i++ {
-			user.ReceiveResource(tile.Receive)
+			f.ReceiveResource(tile.Receive)
 		}
 	}
 
 	if tile.Science.Law > 0 {
-		value := p.Value[int(Law)][user.Color] / tile.Science.Law
+		value := user.GetScience(int(Law)) / tile.Science.Law
 
 		for i := 0; i < value; i++ {
-			user.ReceiveResource(tile.Receive)
+			f.ReceiveResource(tile.Receive)
 		}
 	}
 
 	if tile.Science.Engineering > 0 {
-		value := p.Value[int(Engineering)][user.Color] / tile.Science.Engineering
+		value := user.GetScience(int(Engineering)) / tile.Science.Engineering
 
 		for i := 0; i < value; i++ {
-			user.ReceiveResource(tile.Receive)
+			f.ReceiveResource(tile.Receive)
 		}
 	}
 
 	if tile.Science.Medicine > 0 {
-		value := p.Value[int(Medicine)][user.Color] / tile.Science.Medicine
+		value := user.GetScience(int(Medicine)) / tile.Science.Medicine
 
 		for i := 0; i < value; i++ {
-			user.ReceiveResource(tile.Receive)
+			f.ReceiveResource(tile.Receive)
 		}
 	}
 }
 
-func (p *Science) CalculateRoundEndBonus(user *factions.Faction, tile RoundBonusItem) {
+func (p *Science) CalculateRoundEndBonus(user factions.FactionInterface, tile RoundBonusItem) {
+	f := user.GetInstance()
+
 	if tile.Science.Banking > 0 {
-		value := p.Value[int(Banking)][user.Color] / tile.Science.Banking
+		value := user.GetScience(int(Banking)) / tile.Science.Banking
 
 		for i := 0; i < value; i++ {
-			user.ReceiveIncome(tile.Receive)
+			f.ReceiveIncome(tile.Receive)
 		}
 	}
 
 	if tile.Science.Law > 0 {
-		value := p.Value[int(Law)][user.Color] / tile.Science.Law
+		value := user.GetScience(int(Law)) / tile.Science.Law
 
 		for i := 0; i < value; i++ {
-			user.ReceiveIncome(tile.Receive)
+			f.ReceiveIncome(tile.Receive)
 		}
 	}
 
 	if tile.Science.Engineering > 0 {
-		value := p.Value[int(Engineering)][user.Color] / tile.Science.Engineering
+		value := user.GetScience(int(Engineering)) / tile.Science.Engineering
 
 		for i := 0; i < value; i++ {
-			user.ReceiveIncome(tile.Receive)
+			f.ReceiveIncome(tile.Receive)
 		}
 	}
 
 	if tile.Science.Medicine > 0 {
-		value := p.Value[int(Medicine)][user.Color] / tile.Science.Medicine
+		value := user.GetScience(int(Medicine)) / tile.Science.Medicine
 
 		for i := 0; i < value; i++ {
-			user.ReceiveIncome(tile.Receive)
+			f.ReceiveIncome(tile.Receive)
 		}
 	}
 }

@@ -23,6 +23,7 @@ const (
 
 type Game struct {
 	Id       int64                       `json:"id"`
+	Name     string                      `json:"name"`
 	Map      *Map                        `json:"map"`
 	Sciences *Science                    `json:"sciences"`
 	Factions []factions.FactionInterface `json:"factions"`
@@ -74,9 +75,10 @@ func (p *Turn) Print() {
 	log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
 }
 
-func NewGame(id int64, count int) *Game {
+func NewGame(id int64, name string, count int) *Game {
 	var item Game
 	item.Id = id
+	item.Name = name
 	item.PowerActions = action.NewPowerAction()
 	item.BookActions = action.NewBookAction(id)
 	item.RoundTiles = resources.NewRoundTile(id)
@@ -254,10 +256,6 @@ func (p *Game) BuildStart() {
 			continue
 		}
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
-
-		if faction.Type != resources.TileFactionOmar && faction.Color == color.Yellow {
-			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
-		}
 	}
 
 	for i, v := range p.Factions {
@@ -266,20 +264,20 @@ func (p *Game) BuildStart() {
 			continue
 		}
 		p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
-
-		if faction.Color == color.Yellow {
-			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
-		}
 	}
 
 	for i, v := range p.Factions {
 		faction := v.GetInstance()
 		if faction.FirstBuilding == resources.SA {
 			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+	}
 
-			if faction.Color == color.Yellow {
-				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
-			}
+	for i, v := range p.Factions {
+		faction := v.GetInstance()
+
+		if faction.Color == color.Yellow {
+			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
 		}
 	}
 }
@@ -295,17 +293,19 @@ func (p *Game) Start() {
 	if p.Round >= 1 {
 		for i := range p.Factions {
 			user := p.TurnOrder[i]
-			f := p.Factions[user].GetInstance()
+			faction := p.Factions[user]
+			f := faction.GetInstance()
 			f.Income()
 
 			// income 계산
 			f.CalulateReceive()
 			p.Sciences.CalculateRoundBonus(f)
 			if p.Round < 6 {
-				p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round-1])
+				p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 			}
 
 			if p.Round > 1 {
+				log.Println(f.Name)
 				p.Sciences.RoundBonus(f)
 			}
 		}
@@ -431,7 +431,7 @@ func (p *Game) TurnEnd(user int) error {
 		f.CalulateReceive()
 		p.Sciences.CalculateRoundBonus(f)
 		if p.Round < 6 {
-			p.Sciences.CalculateRoundEndBonus(f, p.RoundBonuss.Items[p.Round-1])
+			p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 		}
 	}
 
@@ -454,8 +454,7 @@ func (p *Game) TurnEnd(user int) error {
 
 func (p *Game) RoundEnd() {
 	for _, v := range p.Factions {
-		faction := v.GetInstance()
-		p.Sciences.RoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
+		p.Sciences.RoundEndBonus(v, p.RoundBonuss.Items[p.Round-1])
 	}
 }
 
@@ -653,14 +652,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 		return true, true, false
 	}
 
-	jumpFlag := false
-	for _, v := range f.Tiles {
-		if v.Type == resources.TilePalaceJump {
-			jumpFlag = true
-			break
-		}
-
-	}
+	jumpFlag := f.CheckTile(resources.TilePalaceJump)
 
 	if jumpFlag != true {
 		return false, false, false
@@ -734,8 +726,13 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return errors.New("It's not a normal turn")
 	}
 
+	riverCity := false
+	if f.CheckTile(resources.TilePalaceRiverCity) && p.Map.GetType(x, y) == color.River {
+		riverCity = true
+	}
+
 	if f.Action {
-		if f.Resource.Building == resources.None && f.ExtraBuild == 0 {
+		if building != resources.CITY && f.Resource.Building == resources.None && f.ExtraBuild == 0 {
 			return errors.New("Already completed the action")
 		}
 	}
@@ -751,6 +748,28 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 
 	if flag == false {
 		return errors.New("ship distance error")
+	}
+
+	if p.Turn[0].Type == SpadeTurn {
+		if moles || jump {
+			return errors.New("ship distance error")
+		}
+	}
+
+	if riverCity {
+		lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
+
+		if len(lists) == 0 {
+			return errors.New("can't create a city")
+		}
+
+		f.CityBuildingList = lists
+		f.Resource.City++
+
+		p.Map.SetOwner(x, y, f.Color)
+		p.Map.SetBuilding(x, y, resources.CITY)
+
+		return nil
 	}
 
 	err := p.Map.CheckBuild(x, y, f.Color, f.GetSpadeCount())
@@ -790,31 +809,39 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
-	if p.Map.IsRiverside(x, y) && building == resources.D {
+	if p.Map.IsRiverside(x, y) && (building == resources.D || building == resources.WHITE_D) {
 		f.ReceiveRiverVP()
 	}
 
-	if p.Map.IsEdge(x, y) && building == resources.D {
+	if p.Map.IsEdge(x, y) && (building == resources.D || building == resources.WHITE_D) {
 		f.ReceiveEdgeVP()
 	}
 
-	if building == resources.D {
+	if building == resources.D || building == resources.WHITE_D {
 		f.ReceiveResource(resources.Price{VP: buildVP.D})
-	} else if building == resources.TP {
+	} else if building == resources.TP || building == resources.WHITE_TP {
 		f.ReceiveResource(resources.Price{VP: buildVP.TP})
+	} else if building == resources.WHITE_TE {
+		f.ReceiveResource(resources.Price{VP: buildVP.TE})
+	} else if building == resources.WHITE_SH || building == resources.WHITE_SA {
+		f.ReceiveResource(resources.Price{VP: buildVP.SHSA})
 	}
 
 	if p.Round == 6 {
 		buildVP = p.RoundBonuss.FinalRound.Build
 
-		if p.Map.IsEdge(x, y) && building == resources.D {
+		if p.Map.IsEdge(x, y) && (building == resources.D || building == resources.WHITE_D) {
 			f.ReceiveResource(resources.Price{VP: buildVP.Edge})
 		}
 
-		if building == resources.D {
+		if building == resources.D || building == resources.WHITE_D {
 			f.ReceiveResource(resources.Price{VP: buildVP.D})
-		} else if building == resources.TP {
+		} else if building == resources.TP || building == resources.WHITE_TP {
 			f.ReceiveResource(resources.Price{VP: buildVP.TP})
+		} else if building == resources.WHITE_TE {
+			f.ReceiveResource(resources.Price{VP: buildVP.TE})
+		} else if building == resources.WHITE_SH || building == resources.WHITE_SA {
+			f.ReceiveResource(resources.Price{VP: buildVP.SHSA})
 		}
 	}
 
@@ -922,6 +949,9 @@ func (p *Game) PowerAction(user int, pos int) error {
 	}
 
 	have := f.GetHavePowerCount()
+	if f.Type == resources.TileFactionIllusionists {
+		have++
+	}
 	if have < p.PowerActions.GetNeedPower(pos) {
 		return errors.New("not enough power")
 	}
@@ -932,16 +962,14 @@ func (p *Game) PowerAction(user int, pos int) error {
 		return err
 	}
 
-	for _, v := range f.Tiles {
-		if v.Type == resources.TileFactionIllusionists {
-			vp := 3
+	if f.CheckTile(resources.TileFactionIllusionists) {
+		vp := 3
 
-			if len(p.Factions) == 5 {
-				vp = 4
-			}
-
-			f.ReceiveResource(resources.Price{VP: vp})
+		if len(p.Factions) == 5 {
+			vp = 4
 		}
+
+		f.ReceiveResource(resources.Price{VP: vp})
 	}
 
 	return nil
@@ -1649,9 +1677,47 @@ func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book)
 	f := faction.GetInstance()
 	err := faction.InnovationTile(tile, book)
 
-	if err == nil {
-		p.InnovationTiles.Setup(pos, index)
+	if err != nil {
+		return err
 	}
+
+	if tile.Type == resources.TileInnovationCluster {
+		buildingList := make([]resources.Position, 0)
+		buildingList = append(buildingList, f.BuildingList...)
+
+		cnt := 0
+		for {
+			if len(buildingList) == 0 {
+				break
+			}
+
+			v := buildingList[0]
+			lists := p.Map.GetBuildingList(f.Color, v.X, v.Y, make([]resources.Position, 0))
+			items := resources.Unique(lists)
+
+			for _, item := range items {
+				for pos, v2 := range buildingList {
+					if item.X == v2.X && item.Y == v2.Y {
+						buildingList = append(buildingList[:pos], buildingList[pos+1:]...)
+						break
+					}
+				}
+			}
+			cnt++
+		}
+
+		vp := 0
+		if cnt >= 6 {
+			vp = 18
+		} else if cnt >= 5 {
+			vp = 12
+		} else if cnt >= 4 {
+			vp = 8
+		}
+		f.ReceiveResource(resources.Price{VP: vp})
+	}
+
+	p.InnovationTiles.Setup(pos, index)
 
 	if tile.Type == resources.TileInnovationUpgrade {
 		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
@@ -1733,6 +1799,8 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 		f.ReceiveResource(resources.Price{VP: buildVP.Science * inc})
 	}
+
+	f.IncScience(science, inc)
 
 	p.SchoolTiles.Items[science][level].Count--
 
@@ -1853,7 +1921,7 @@ func (p *Game) Undo(user int) error {
 
 	gamehistoryManager.Delete(last.Id)
 
-	MakeGame(p.Id, p.Count)
+	MakeGame(p.Id, p.Name, p.Count)
 
 	return nil
 }

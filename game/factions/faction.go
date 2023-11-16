@@ -111,7 +111,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Tiles = append(item.Tiles, colorTile)
 	item.Tiles = append(item.Tiles, factionTile)
 
-	item.MaxBuilding = [13]int{0, 9, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	item.MaxBuilding = [13]int{0, 9, 4, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1}
 	item.Building = [13]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	item.BuildingPower = [13]int{0, 1, 2, 2, 3, 3, 1, 2, 2, 2, 3, 3, 4}
 	item.Price = [13]Price{
@@ -120,7 +120,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 		{Worker: 2, Coin: 3},
 		{Worker: 3, Coin: 5},
 		{Worker: 4, Coin: 6},
-		{Worker: 6, Coin: 6},
+		{Worker: 5, Coin: 8},
 		{Worker: 0, Coin: 0},
 		{Worker: 0, Coin: 0},
 		{Worker: 0, Coin: 0},
@@ -210,7 +210,7 @@ func (p *Faction) ReceivePower(value int, vp bool) {
 
 	for i := 0; i <= 1; i++ {
 		if p.Resource.Power[i] < remain {
-			c = p.Resource.Power[0]
+			c = p.Resource.Power[i]
 		} else {
 			c = remain
 		}
@@ -277,8 +277,44 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.Resource.Prist = p.MaxPrist
 	}
 
-	p.Ship += receive.ShipUpgrade
+	if receive.ShipUpgrade == 1 {
+		if p.Color == color.Blue {
+			if p.Ship == 1 {
+				p.ReceiveResource(Price{VP: 3})
+			} else if p.Ship == 2 {
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+			}
+		} else {
+			if p.Ship == 0 {
+				p.ReceiveResource(Price{VP: 2})
+			} else if p.Ship == 1 {
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+			} else if p.Ship == 2 {
+				p.ReceiveResource(Price{VP: 4})
+			}
+		}
+	} else if receive.ShipUpgrade == 2 {
+		if p.Color == color.Blue {
+			if p.Ship == 1 {
+				p.ReceiveResource(Price{VP: 3})
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+			} else if p.Ship == 2 {
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+			}
+		} else {
+			if p.Ship == 0 {
+				p.ReceiveResource(Price{VP: 2})
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+			} else if p.Ship == 1 {
+				p.ReceiveResource(Price{Book: Book{Any: 2}})
+				p.ReceiveResource(Price{VP: 4})
+			} else if p.Ship == 2 {
+				p.ReceiveResource(Price{VP: 4})
+			}
+		}
+	}
 
+	p.Ship += receive.ShipUpgrade
 	if p.Ship > p.MaxShip {
 		p.Ship = p.MaxShip
 	}
@@ -289,10 +325,10 @@ func (p *Faction) ReceiveResource(receive Price) {
 		p.Spade = p.MaxSpade
 	}
 
-	p.VP += receive.DVP * p.Building[D]
-	p.VP += receive.TpVP * p.Building[TP]
-	p.VP += receive.TeVP * p.Building[TE]
-	p.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
+	p.VP += receive.DVP * (p.Building[D] + p.Building[WHITE_D])
+	p.VP += receive.TpVP * (p.Building[TP] + p.Building[WHITE_TP])
+	p.VP += receive.TeVP * (p.Building[TE] + p.Building[WHITE_TE])
+	p.VP += receive.ShVP * (p.Building[SH] + p.Building[SA] + p.Building[WHITE_SH] + p.Building[WHITE_SA])
 	p.VP += receive.CityVP * p.City
 
 	if receive.ScienceVP > 0 {
@@ -453,23 +489,23 @@ func (p *Faction) AdvanceShip() error {
 
 	p.UsePrice(p.AdvanceShipPrice)
 
-	p.Ship++
-
 	if p.Color == color.Blue {
-		if p.Ship == 2 {
+		if p.Ship == 1 {
 			p.ReceiveResource(Price{VP: 3})
-		} else if p.Ship == 3 {
+		} else if p.Ship == 2 {
 			p.ReceiveResource(Price{Book: Book{Any: 2}})
 		}
 	} else {
-		if p.Ship == 1 {
+		if p.Ship == 0 {
 			p.ReceiveResource(Price{VP: 2})
-		} else if p.Ship == 2 {
+		} else if p.Ship == 1 {
 			p.ReceiveResource(Price{Book: Book{Any: 2}})
-		} else if p.Ship == 3 {
+		} else if p.Ship == 2 {
 			p.ReceiveResource(Price{VP: 4})
 		}
 	}
+
+	p.Ship++
 
 	p.Action = true
 
@@ -491,13 +527,13 @@ func (p *Faction) AdvanceSpade() error {
 
 	p.UsePrice(p.AdvanceSpadePrice)
 
-	p.Spade++
-
-	if p.Ship == 1 {
+	if p.Spade == 0 {
 		p.ReceiveResource(Price{Book: Book{Any: 2}})
-	} else if p.Ship == 3 {
+	} else if p.Spade == 1 {
 		p.ReceiveResource(Price{VP: 6})
 	}
+
+	p.Spade++
 
 	p.Action = true
 
@@ -578,6 +614,14 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	if building == D {
 		p.UsePrice(p.Price[D])
 		p.ReceiveDVP()
+	} else if building == WHITE_D {
+		p.ReceiveDVP()
+	} else if building == WHITE_TP {
+		p.ReceiveTpVP()
+	} else if building == WHITE_TE {
+		p.ReceiveTeVP()
+	} else if building == WHITE_SH || building == WHITE_SA {
+		p.ReceiveShsaVP()
 	}
 
 	p.Building[building]++
@@ -585,10 +629,6 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
 	p.Resource.Building = None
-
-	if building == WHITE_TE || building == WHITE_SA {
-		p.Resource.SchoolTile++
-	}
 
 	p.Action = true
 	p.BuildAction = true
@@ -646,7 +686,7 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 	for _, item := range p.BuildingList {
 		if item.X == x && item.Y == y {
 			current = item.Building
-			if current == None || current == SH || current == SA {
+			if current == None || current == SH || current == SA || int(current) >= int(WHITE_D) {
 				return errors.New("can not upgrade")
 			}
 		}
@@ -665,6 +705,7 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 		price := p.Price[target]
 		price.Coin += extra
 
+		log.Println(price)
 		err := CheckResource(p.Resource, price)
 		if err != nil {
 			return err
@@ -806,16 +847,13 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 
 	for i, v := range p.Tiles {
 		if v.Type == TileRoundSchoolScienceCoin {
-			p.Resource.Science.Any += p.Building[TE]
+			p.Resource.Science.Any += p.Building[TE] + p.Building[WHITE_TE]
 			v.Pass.Science.Any = 0
 		}
 
 		p.ReceiveResource(v.Pass)
 		p.Tiles[i].Use = false
 
-		if v.Type == TileRoundSchoolScienceCoin {
-			p.Resource.Science.Any += p.Building[TE]
-		}
 	}
 
 	var ret TileItem
@@ -991,45 +1029,6 @@ func (p *Faction) TileAction(category TileCategory, pos int) error {
 
 	p.ReceiveResource(tile.Action)
 
-	if tile.Type == TileInnovationKind {
-		cnt := 0
-		for _, v := range p.Building {
-			if v > 0 {
-				cnt++
-			}
-		}
-
-		p.ReceiveResource(Price{Science: Science{Any: cnt}})
-	} else if tile.Type == TileInnovationCount {
-		cnt := 0
-		for _, v := range p.Building {
-			cnt += v
-		}
-
-		vp := 0
-		if cnt >= 11 {
-			vp = 18
-		} else if cnt >= 9 {
-			vp = 12
-		} else if cnt >= 7 {
-			vp = 8
-		}
-		p.ReceiveResource(Price{VP: vp})
-	} else if tile.Type == TileInnovationScience {
-		items := make([]int, 0)
-		for _, v := range p.Science {
-			items = append(items, v)
-		}
-
-		sort.Sort(sort.Reverse(sort.IntSlice(items)))
-
-		p.ReceiveResource(Price{VP: items[0] + items[1]})
-	} else if tile.Type == TileInnovationCluster {
-	} else if tile.Type == TileInnovationBridge {
-		vps := []int{0, 8, 12, 18}
-		p.ReceiveResource(Price{VP: vps[len(p.BridgeList)]})
-	}
-
 	tile.Use = true
 
 	p.Action = true
@@ -1121,7 +1120,7 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 	}
 
 	price := Price{Book: book}
-	if p.Building[SH] == 0 {
+	if p.Building[SH] == 0 && p.Building[WHITE_SH] == 0 {
 		if p.Resource.Coin < 5 {
 			return errors.New("not enough coin")
 		}
@@ -1135,6 +1134,45 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 
 	p.ReceiveResource(tile.Once)
 	p.UsePrice(price)
+
+	if tile.Type == TileInnovationKind {
+		cnt := 0
+		for _, v := range p.Building[:len(p.Building)-1] {
+			if v > 0 {
+				cnt++
+			}
+		}
+
+		p.ReceiveResource(Price{Science: Science{Any: cnt}})
+	} else if tile.Type == TileInnovationCount {
+		cnt := 0
+		for _, v := range p.Building {
+			cnt += v
+		}
+
+		vp := 0
+		if cnt >= 11 {
+			vp = 18
+		} else if cnt >= 9 {
+			vp = 12
+		} else if cnt >= 7 {
+			vp = 8
+		}
+		p.ReceiveResource(Price{VP: vp})
+	} else if tile.Type == TileInnovationScience {
+		items := make([]int, 0)
+		for _, v := range p.Science {
+			items = append(items, v)
+		}
+
+		sort.Sort(sort.Reverse(sort.IntSlice(items)))
+
+		p.ReceiveResource(Price{VP: items[0] + items[1]})
+	} else if tile.Type == TileInnovationCluster {
+	} else if tile.Type == TileInnovationBridge {
+		vps := []int{0, 8, 12, 18}
+		p.ReceiveResource(Price{VP: vps[len(p.BridgeList)]})
+	}
 
 	p.Action = true
 
@@ -1158,6 +1196,8 @@ func (p *Faction) ReceiveIncome(receive Price) {
 	if p.Receive.Prist > p.MaxPrist {
 		p.Receive.Prist = p.MaxPrist
 	}
+
+	p.Receive.Power += receive.Power
 }
 
 func (p *Faction) CalulateReceive() {
@@ -1172,7 +1212,6 @@ func (p *Faction) CalulateReceive() {
 
 	for _, v := range p.Tiles {
 		if p.IsPass == false && v.Category == TileRound {
-			log.Println("skip roundtile")
 			continue
 		}
 
@@ -1188,10 +1227,10 @@ func (p *Faction) CalulateVP() {
 		receive := v.Pass
 
 		p.Receive.VP += receive.VP
-		p.Receive.VP += receive.DVP * p.Building[D]
-		p.Receive.VP += receive.TpVP * p.Building[TP]
-		p.Receive.VP += receive.TeVP * p.Building[TE]
-		p.Receive.VP += receive.ShVP * (p.Building[SH] + p.Building[SA])
+		p.Receive.VP += receive.DVP * (p.Building[D] + p.Building[WHITE_D])
+		p.Receive.VP += receive.TpVP * (p.Building[TP] + p.Building[WHITE_TP])
+		p.Receive.VP += receive.TeVP * (p.Building[TE] + p.Building[WHITE_TE])
+		p.Receive.VP += receive.ShVP * (p.Building[SH] + p.Building[SA] + p.Building[WHITE_SH] + p.Building[WHITE_SA])
 		p.Receive.VP += receive.CityVP * p.City
 
 		if receive.ScienceVP > 0 {
@@ -1204,4 +1243,14 @@ func (p *Faction) CalulateVP() {
 			p.Receive.VP += min
 		}
 	}
+}
+
+func (p *Faction) CheckTile(tile TileType) bool {
+	for _, v := range p.Tiles {
+		if v.Type == tile {
+			return true
+		}
+	}
+
+	return false
 }

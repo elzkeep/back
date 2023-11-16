@@ -27,7 +27,7 @@ func NewPalaceTile(id int64) *PalaceTile {
 		{Category: TilePalace, Type: TilePalaceCity, Name: "6 coin", Receive: Price{Worker: 1}, Once: Price{City: 1}, Use: false},
 		{Category: TilePalace, Type: TilePalaceDVp, Name: "6 coin", Receive: Price{Power: 8}, Build: BuildVP{D: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceTpVp, Name: "6 coin", Action: Price{Coin: 3, Book: Book{Any: 1}}, Build: BuildVP{TP: 3}, Use: false},
-		{Category: TilePalace, Type: TilePalaceRiverCity, Name: "6 coin", Receive: Price{Power: 6, ShipUpgrade: 2}, Use: false},
+		{Category: TilePalace, Type: TilePalaceRiverCity, Name: "6 coin", Receive: Price{Power: 6}, Once: Price{ShipUpgrade: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceBridge, Name: "6 coin", Receive: Price{Power: 6}, Once: Price{Book: Book{Any: 2}, Spade: 2, Bridge: 2}, Use: false},
 		{Category: TilePalace, Type: TilePalaceTpBuild, Name: "tp build", Receive: Price{Power: 2, Book: Book{Any: 1}}, Once: Price{Building: TP}, Use: false},
 		{Category: TilePalace, Type: TilePalaceVp, Name: "10 vp", Receive: Price{Power: 2}, Once: Price{VP: 10}, Use: false},

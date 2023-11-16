@@ -22,14 +22,14 @@ func SetGame(id int64, game *Game) {
 	_rooms[id] = game
 }
 
-func MakeGame(id int64, count int) {
+func MakeGame(id int64, name string, count int) {
 	conn := models.NewConnection()
 	defer conn.Close()
 
 	gameuserManager := models.NewGameuserManager(conn)
 	gamehistoryManager := models.NewGamehistoryManager(conn)
 
-	g := NewGame(id, count)
+	g := NewGame(id, name, count)
 	SetGame(id, g)
 
 	gameusers := gameuserManager.Find([]interface{}{
@@ -66,7 +66,7 @@ func Init() {
 	games := gameManager.Find(nil)
 
 	for _, v := range games {
-		g := NewGame(v.Id, v.Count)
+		g := NewGame(v.Id, v.Name, v.Count)
 		SetGame(v.Id, g)
 
 		gameusers := gameuserManager.Find([]interface{}{
@@ -402,7 +402,7 @@ func Make(user int64, item *models.Game) {
 
 	conn.Commit()
 
-	g := NewGame(id, item.Count)
+	g := NewGame(id, item.Name, item.Count)
 	SetGame(id, g)
 
 	Join(user, id)

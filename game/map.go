@@ -27,6 +27,7 @@ func NewMap(count int) *Map {
 
 	item.BridgeList = make([]resources.BridgePosition, 0)
 	item.AnnexList = make([]resources.Position, 0)
+	item.CityList = make([]resources.Position, 0)
 	item.Width = 9
 	item.Height = 13
 	item.Type = 2
@@ -670,14 +671,14 @@ func (p *Map) CheckSolo(user color.Color, x int, y int) bool {
 	}
 
 	for _, v := range p.BridgeList {
-		if x == v.X1 && y == v.X1 {
+		if x == v.X1 && y == v.Y1 {
 			owner := p.GetOwner(v.X2, v.Y2)
 			if owner != color.None && owner != color.River && owner != user {
 				return false
 			}
 		}
 
-		if x == v.X2 && y == v.X2 {
+		if x == v.X2 && y == v.Y2 {
 			owner := p.GetOwner(v.X1, v.Y1)
 			if owner != color.None && owner != color.River && owner != user {
 				return false

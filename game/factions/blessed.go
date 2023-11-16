@@ -3,6 +3,7 @@ package factions
 import (
 	"aoi/game/action"
 	. "aoi/game/resources"
+	"log"
 )
 
 type Blessed struct {
@@ -30,6 +31,7 @@ func (p *Blessed) Income() {
 }
 
 func (p *Blessed) GetScience(pos int) int {
+	log.Println("bless getscience")
 	return p.Faction.GetScience(pos) + 3
 }
 

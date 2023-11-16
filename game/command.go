@@ -39,6 +39,8 @@ func ConvertBuilding(str string) resources.Building {
 		return resources.WHITE_SA
 	} else if str == "WHITE_MT" {
 		return resources.WHITE_MT
+	} else if str == "CITY" {
+		return resources.CITY
 	}
 
 	return resources.None
@@ -93,7 +95,9 @@ func ConvertBookType(str string) resources.BookType {
 }
 
 func Command(p *Game, gameid int64, id int64, str string, update bool) error {
-	log.Println("Command", str)
+	if update == true {
+		log.Println("Command", str)
+	}
 	strs := strings.Split(str, " ")
 
 	user := global.Atoi(strs[0])
