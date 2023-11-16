@@ -5,7 +5,6 @@ import (
 	"aoi/game/factions"
 	"aoi/game/resources"
 	"fmt"
-	"log"
 )
 
 type ScienceType int
@@ -108,11 +107,13 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) int 
 	return inc
 }
 
-func (p *Science) Receive(user *factions.Faction, resource resources.Price) {
-	p.Action(user, Banking, resource.Science.Banking)
-	p.Action(user, Law, resource.Science.Law)
-	p.Action(user, Engineering, resource.Science.Engineering)
-	p.Action(user, Medicine, resource.Science.Medicine)
+func (p *Science) Receive(user *factions.Faction, resource resources.Price) (int, int, int, int) {
+	inc1 := p.Action(user, Banking, resource.Science.Banking)
+	inc2 := p.Action(user, Law, resource.Science.Law)
+	inc3 := p.Action(user, Engineering, resource.Science.Engineering)
+	inc4 := p.Action(user, Medicine, resource.Science.Medicine)
+
+	return inc1, inc2, inc3, inc4
 }
 
 func (p *Science) Print() {
@@ -166,9 +167,6 @@ func (p *Science) RoundEndBonus(user factions.FactionInterface, tile RoundBonusI
 	f := user.GetInstance()
 
 	if tile.Science.Banking > 0 {
-		log.Println("bank")
-
-		log.Println("user", user.GetScience(int(Banking)))
 		value := user.GetScience(int(Banking)) / tile.Science.Banking
 
 		for i := 0; i < value; i++ {

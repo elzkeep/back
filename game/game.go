@@ -1481,7 +1481,12 @@ func (p *Game) City(user int, city resources.CityType) error {
 
 	tile := p.Cities.Use(city)
 	faction.ReceiveCity(tile)
-	p.Sciences.Receive(f, tile.Receive)
+	inc1, inc2, inc3, inc4 := p.Sciences.Receive(f, tile.Receive)
+
+	f.IncScience(int(Banking), inc1)
+	f.IncScience(int(Law), inc2)
+	f.IncScience(int(Engineering), inc3)
+	f.IncScience(int(Medicine), inc4)
 
 	p.Map.AddCityBuildingList(f.CityBuildingList)
 	f.CityBuildingList = make([]resources.Position, 0)
