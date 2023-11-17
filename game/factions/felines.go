@@ -3,15 +3,14 @@ package factions
 import (
 	"aoi/game/action"
 	. "aoi/game/resources"
-	"log"
 )
 
 type Felines struct {
 	Faction
 }
 
-func (p *Felines) Init(tile TileItem) {
-	p.InitFaction("Felines", "Felines", GetFactionTile(TileFactionFelines), tile)
+func (p *Felines) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Felines", GetFactionTile(TileFactionFelines), tile)
 }
 
 func (p *Felines) GetInstance() *Faction {
@@ -82,7 +81,6 @@ func (p *Felines) ReceiveCity(item CityItem) error {
 	err := p.Faction.ReceiveCity(item)
 
 	if err == nil {
-		log.Println(Price{Book: Book{Any: 1}, Science: Science{Any: 3}})
 		p.Faction.ReceiveResource(Price{Book: Book{Any: 1}, Science: Science{Any: 3}})
 	}
 

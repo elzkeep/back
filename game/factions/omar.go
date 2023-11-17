@@ -9,8 +9,8 @@ type Omar struct {
 	Faction
 }
 
-func (p *Omar) Init(tile TileItem) {
-	p.InitFaction("Omar", "Omar", GetFactionTile(TileFactionOmar), tile)
+func (p *Omar) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Omar", GetFactionTile(TileFactionOmar), tile)
 }
 
 func (p *Omar) GetInstance() *Faction {

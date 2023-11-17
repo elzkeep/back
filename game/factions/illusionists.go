@@ -9,8 +9,8 @@ type Illusionists struct {
 	Faction
 }
 
-func (p *Illusionists) Init(tile TileItem) {
-	p.InitFaction("Illusionists", "Illusionists", GetFactionTile(TileFactionIllusionists), tile)
+func (p *Illusionists) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Illusionists", GetFactionTile(TileFactionIllusionists), tile)
 }
 
 func (p *Illusionists) GetInstance() *Faction {

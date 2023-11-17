@@ -688,3 +688,63 @@ func (p *Map) CheckSolo(user color.Color, x int, y int) bool {
 
 	return true
 }
+
+func (p *Map) CheckConnect(user color.Color, distance int, x int, y int, x2 int, y2 int) bool {
+	positions := resources.GetGroundPosition(x, y)
+
+	for _, position := range positions {
+		owner := p.GetOwner(position.X, position.Y)
+
+		if x2 == position.X && y2 == position.Y && owner == user {
+			return true
+		}
+	}
+
+	for _, v := range p.BridgeList {
+		if v.Color != user {
+			continue
+		}
+
+		if x == v.X1 && y == v.Y1 {
+			if x2 == v.X2 && y2 == v.Y2 && p.GetOwner(v.X2, v.Y2) == user {
+				return true
+			}
+		}
+
+		if x == v.X2 && y == v.Y2 {
+			if x2 == v.X1 && y2 == v.Y1 && p.GetOwner(v.X1, v.Y1) == user {
+				return true
+			}
+		}
+	}
+
+	return p.FindRiverConnect(user, x, y, x2, y2, 1, distance+1)
+}
+
+func (p *Map) FindRiverConnect(user color.Color, x int, y int, x2, y2, distance int, maxDistance int) bool {
+	if distance >= maxDistance {
+		return false
+	}
+
+	positions := resources.GetGroundPosition(x, y)
+
+	for _, v := range positions {
+		if p.GetType(v.X, v.Y) != color.River {
+			continue
+		}
+
+		items := resources.GetGroundPosition(v.X, v.Y)
+		for _, item := range items {
+			if item.X == x2 && item.Y == y2 && p.GetType(item.X, item.Y) == user {
+				return true
+			}
+
+		}
+
+		if p.FindRiverConnect(user, v.X, v.Y, x2, y2, distance+1, maxDistance) {
+			return true
+		}
+	}
+
+	return false
+}

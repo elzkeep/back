@@ -3,6 +3,7 @@ package game
 import (
 	"aoi/game/action"
 	"aoi/game/resources"
+	"aoi/global"
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
@@ -39,7 +40,8 @@ func MakeGame(id int64, name string, count int) {
 
 	if count == len(gameusers) {
 		for _, gameuser := range gameusers {
-			g.AddUser(gameuser.User)
+			user := gameuser.Extra["user"].(models.User)
+			g.AddUser(gameuser.User, user.Name)
 		}
 
 		g.CompleteAddUser()
@@ -51,7 +53,6 @@ func MakeGame(id int64, name string, count int) {
 
 		for _, history := range historys {
 			Command(g, history.Game, history.User, history.Command, false)
-			//Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
 		}
 	}
 }
@@ -76,7 +77,8 @@ func Init() {
 
 		if v.Count == len(gameusers) {
 			for _, gameuser := range gameusers {
-				g.AddUser(gameuser.User)
+				user := gameuser.Extra["user"].(models.User)
+				g.AddUser(gameuser.User, user.Name)
 			}
 
 			g.CompleteAddUser()
@@ -88,7 +90,6 @@ func Init() {
 
 			for _, history := range historys {
 				Command(g, history.Game, history.User, history.Command, false)
-				//Command(g, history.Game, history.User, fmt.Sprintf("%v save", history.Command[:1]), false)
 			}
 		}
 	}
@@ -467,13 +468,17 @@ func Join(user int64, id int64) error {
 			v.Order = i + 1
 			gameuserManager.Update(&v)
 
-			g.AddUser(v.User)
+			user := v.Extra["user"].(models.User)
+			g.AddUser(v.User, user.Name)
 		}
 
 		g.CompleteAddUser()
 	}
 
 	Unlock()
+
+	msg := global.Notify{Title: "join"}
+	global.SendNotify(msg)
 
 	return nil
 }

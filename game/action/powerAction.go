@@ -2,7 +2,6 @@ package action
 
 import (
 	"aoi/game/resources"
-	"log"
 )
 
 type PowerActionType int
@@ -42,7 +41,6 @@ func (p *PowerAction) GetNeedPower(pos int) int {
 }
 
 func (p *PowerAction) IsUse(pos int) bool {
-	log.Println("length", len(p.Items), "pos", pos)
 	return p.Items[pos].Use
 }
 

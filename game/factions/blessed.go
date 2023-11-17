@@ -3,15 +3,14 @@ package factions
 import (
 	"aoi/game/action"
 	. "aoi/game/resources"
-	"log"
 )
 
 type Blessed struct {
 	Faction
 }
 
-func (p *Blessed) Init(tile TileItem) {
-	p.InitFaction("Blessed", "Blessed", GetFactionTile(TileFactionBlessed), tile)
+func (p *Blessed) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Blessed", GetFactionTile(TileFactionBlessed), tile)
 }
 
 func (p *Blessed) GetInstance() *Faction {
@@ -31,7 +30,6 @@ func (p *Blessed) Income() {
 }
 
 func (p *Blessed) GetScience(pos int) int {
-	log.Println("bless getscience")
 	return p.Faction.GetScience(pos) + 3
 }
 

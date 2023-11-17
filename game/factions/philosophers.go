@@ -9,8 +9,8 @@ type Philosophers struct {
 	Faction
 }
 
-func (p *Philosophers) Init(tile TileItem) {
-	p.InitFaction("Philosophers", "Philosophers", GetFactionTile(TileFactionPhilosophers), tile)
+func (p *Philosophers) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Philosophers", GetFactionTile(TileFactionPhilosophers), tile)
 }
 
 func (p *Philosophers) GetInstance() *Faction {
@@ -94,17 +94,26 @@ func (p *Philosophers) PalaceTile(tile TileItem) error {
 }
 
 func (p *Philosophers) SchoolTile(tile TileItem, science int) error {
-	if science == 0 {
-		tile.Once.Book.Banking++
-	} else if science == 1 {
-		tile.Once.Book.Law++
-	} else if science == 2 {
-		tile.Once.Book.Engineering++
-	} else if science == 3 {
-		tile.Once.Book.Medicine++
+	err := p.Faction.SchoolTile(tile, science)
+
+	if err != nil {
+		return err
 	}
 
-	return p.Faction.SchoolTile(tile, science)
+	price := Price{}
+	if science == 0 {
+		price.Book.Banking = 1
+	} else if science == 1 {
+		price.Book.Law = 1
+	} else if science == 2 {
+		price.Book.Engineering = 1
+	} else if science == 3 {
+		price.Book.Medicine = 1
+	}
+
+	p.Faction.ReceiveResource(price)
+
+	return nil
 }
 
 func (p *Philosophers) RoundTile(tile TileItem) error {

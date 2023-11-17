@@ -9,8 +9,8 @@ type Navigators struct {
 	Faction
 }
 
-func (p *Navigators) Init(tile TileItem) {
-	p.InitFaction("Navigators", "Navigators", GetFactionTile(TileFactionNavigators), tile)
+func (p *Navigators) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Navigators", GetFactionTile(TileFactionNavigators), tile)
 }
 
 func (p *Navigators) GetInstance() *Faction {

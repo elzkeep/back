@@ -10,8 +10,8 @@ type Psychics struct {
 	Faction
 }
 
-func (p *Psychics) Init(tile TileItem) {
-	p.InitFaction("Psychics", "Psychics", GetFactionTile(TileFactionPsychics), tile)
+func (p *Psychics) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Psychics", GetFactionTile(TileFactionPsychics), tile)
 }
 
 func (p *Psychics) GetInstance() *Faction {

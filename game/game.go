@@ -8,7 +8,6 @@ import (
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
-	"log"
 	"sort"
 	"strings"
 )
@@ -44,6 +43,7 @@ type Game struct {
 	PassOrder       []int                     `json:"passOrder"`
 	TurnOrder       []int                     `json:"turnOrder"`
 	Users           []int64                   `json:"users"`
+	Usernames       []string                  `json:"usernames"`
 	Count           int                       `json:"count"`
 	Command         []string                  `json:"commands"`
 	OldCommand      []string                  `json:"oldCommands"`
@@ -71,8 +71,10 @@ type Turn struct {
 }
 
 func (p *Turn) Print() {
-	titles := []string{"Normal", "Power", "Science", "Spade", "Book", "Tile", "Build", "Resource"}
-	log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
+	/*
+		titles := []string{"Normal", "Power", "Science", "Spade", "Book", "Tile", "Build", "Resource"}
+		log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
+	*/
 }
 
 func NewGame(id int64, name string, count int) *Game {
@@ -99,6 +101,7 @@ func NewGame(id int64, name string, count int) *Game {
 	item.PassOrder = make([]int, 0)
 	item.TurnOrder = make([]int, 0)
 	item.Users = make([]int64, 0)
+	item.Usernames = make([]string, 0)
 
 	item.Command = make([]string, 0)
 	item.OldCommand = make([]string, 0)
@@ -124,11 +127,12 @@ func (p *Game) CheckUser(id int64, user int) bool {
 	return true
 }
 
-func (p *Game) AddUser(user int64) {
+func (p *Game) AddUser(user int64, name string) {
 	p.Users = append(p.Users, user)
+	p.Usernames = append(p.Usernames, name)
 	item := &factions.Basic{}
 	colorTile := p.ColorTiles.Items[0]
-	item.Init(colorTile)
+	item.Init(colorTile, name)
 	p.Factions = append(p.Factions, item)
 }
 
@@ -150,6 +154,7 @@ func (p *Game) CompleteAddUser() {
 	p.UpdateDBRound(int(game.StatusFaction))
 }
 
+/*
 func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileItem) {
 	item.Init(tile)
 
@@ -158,6 +163,7 @@ func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileIte
 	faction := item.GetInstance()
 	p.Sciences.AddUser(faction.Color, faction.Science)
 }
+*/
 
 func (p *Game) SelectFaction(user int, name string) {
 	pos := 0
@@ -200,7 +206,7 @@ func (p *Game) SelectFaction(user int, name string) {
 		item = &factions.Psychics{}
 	}
 
-	item.Init(colorTile)
+	item.Init(colorTile, p.Usernames[user])
 
 	p.Factions[user] = item
 
@@ -305,7 +311,6 @@ func (p *Game) Start() {
 			}
 
 			if p.Round > 1 {
-				log.Println(f.Name)
 				p.Sciences.RoundBonus(f)
 			}
 		}
@@ -430,6 +435,7 @@ func (p *Game) TurnEnd(user int) error {
 	} else if p.Round > 0 {
 		f.CalulateReceive()
 		p.Sciences.CalculateRoundBonus(f)
+
 		if p.Round < 6 {
 			p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 		}
@@ -1648,6 +1654,35 @@ func (p *Game) PalaceTile(user int, pos int) error {
 		f.ReceiveResource(resources.Price{VP: buildVP.Advance * 2})
 	}
 
+	if tile.Type == resources.TilePalace6PowerCity {
+		already := make([]resources.Position, 0)
+
+		for _, v := range f.BuildingList {
+			flag := false
+
+			for _, v2 := range already {
+				if v.X == v2.X && v.Y == v2.Y {
+					flag = true
+					break
+				}
+			}
+
+			if flag == true {
+				continue
+			}
+
+			lists := p.Map.CheckCity(f.Color, v.X, v.Y, f.TownPower)
+
+			if len(lists) > 0 {
+				p.Map.AddCityBuildingList(lists)
+				f.Resource.City++
+				already = append(already, lists...)
+			} else {
+				already = append(already, v)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1937,23 +1972,97 @@ type Score struct {
 }
 
 func (p *Game) EndGame() {
-	log.Println("EndGame *************************")
-
-	scores := make([]Score, 0)
 	// 미션 점수
+	scores := make([]Score, 0)
 	for user, v := range p.Factions {
-		faction := v.GetInstance()
+		f := v.GetInstance()
 
-		total := 0
-		for _, d := range faction.Building {
-			total += d
+		remain := f.BuildingList
+		items := make([]resources.Position, 0)
+		items = append(items, remain[0])
+		remain = remain[1:]
+
+		max := 0
+
+		for {
+			connect := make([]resources.Position, 0)
+			disconnect := make([]resources.Position, 0)
+
+			for _, b := range items {
+				for _, b2 := range remain {
+					if p.Map.CheckConnect(f.Color, f.GetShipDistance(false), b.X, b.Y, b2.X, b2.Y) {
+
+						flag := false
+						for _, v := range connect {
+							if b2.X == v.X && b2.Y == v.Y {
+								flag = true
+								break
+							}
+						}
+
+						if flag == false {
+							connect = append(connect, b2)
+						}
+
+						flag = false
+						for _, v := range disconnect {
+							if b2.X == v.X && b2.Y == v.Y {
+								flag = true
+								break
+							}
+						}
+
+						if flag == false {
+							disconnect = append(disconnect, b2)
+						}
+					}
+				}
+			}
+
+			remain2 := make([]resources.Position, 0)
+			for _, v := range remain {
+				flag := false
+				for _, v2 := range disconnect {
+					if v.X == v2.X && v.Y == v2.Y {
+						flag = true
+						break
+					}
+				}
+
+				if flag == false {
+					remain2 = append(remain2, v)
+				}
+			}
+
+			remain = remain2
+
+			if len(connect) == 0 {
+				count := len(items)
+				if count > max {
+					max = count
+				}
+
+				if len(remain) == 0 {
+					break
+				}
+
+				items = make([]resources.Position, 0)
+				items = append(items, remain[0])
+				remain = remain[1:]
+
+				if len(remain) == 0 {
+					break
+				}
+			} else {
+				items = append(items, connect...)
+			}
 		}
 
-		scores = append(scores, Score{User: user, Score: total})
+		scores = append(scores, Score{User: user, Score: max})
 	}
 
 	sort.Slice(scores, func(i, j int) bool {
-		return scores[i].Score < scores[j].Score
+		return scores[i].Score > scores[j].Score
 	})
 
 	receives := []int{0, 18, 15, 12, 9, 7}
@@ -2012,7 +2121,7 @@ func (p *Game) EndGame() {
 		}
 
 		sort.Slice(scores, func(i, j int) bool {
-			return scores[i].Score < scores[j].Score
+			return scores[i].Score > scores[j].Score
 		})
 
 		receives := []int{0, 8, 4, 2}
@@ -2065,7 +2174,7 @@ func (p *Game) EndGame() {
 	for _, v := range p.Factions {
 		f := v.GetInstance()
 
-		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 2
+		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
 		f.ReceiveResource(resources.Price{VP: receive})
 	}
 }
@@ -2074,18 +2183,94 @@ func (p *Game) CalculateEndGame() {
 	scores := make([]Score, 0)
 	// 미션 점수
 	for user, v := range p.Factions {
-		faction := v.GetInstance()
+		f := v.GetInstance()
 
-		total := 0
-		for _, d := range faction.Building {
-			total += d
+		remain := f.BuildingList
+		items := make([]resources.Position, 0)
+		items = append(items, remain[0])
+		remain = remain[1:]
+
+		max := 0
+
+		for {
+			connect := make([]resources.Position, 0)
+			disconnect := make([]resources.Position, 0)
+
+			for _, b := range items {
+				for _, b2 := range remain {
+					if p.Map.CheckConnect(f.Color, f.GetShipDistance(false), b.X, b.Y, b2.X, b2.Y) {
+
+						flag := false
+						for _, v := range connect {
+							if b2.X == v.X && b2.Y == v.Y {
+								flag = true
+								break
+							}
+						}
+
+						if flag == false {
+							connect = append(connect, b2)
+						}
+
+						flag = false
+						for _, v := range disconnect {
+							if b2.X == v.X && b2.Y == v.Y {
+								flag = true
+								break
+							}
+						}
+
+						if flag == false {
+							disconnect = append(disconnect, b2)
+						}
+					}
+				}
+			}
+
+			remain2 := make([]resources.Position, 0)
+			for _, v := range remain {
+				flag := false
+				for _, v2 := range disconnect {
+					if v.X == v2.X && v.Y == v2.Y {
+						flag = true
+						break
+					}
+				}
+
+				if flag == false {
+					remain2 = append(remain2, v)
+				}
+			}
+
+			remain = remain2
+
+			if len(connect) == 0 {
+				count := len(items)
+				if count > max {
+					max = count
+				}
+
+				if len(remain) == 0 {
+					break
+				}
+
+				items = make([]resources.Position, 0)
+				items = append(items, remain[0])
+				remain = remain[1:]
+
+				if len(remain) == 0 {
+					break
+				}
+			} else {
+				items = append(items, connect...)
+			}
 		}
 
-		scores = append(scores, Score{User: user, Score: total})
+		scores = append(scores, Score{User: user, Score: max})
 	}
 
 	sort.Slice(scores, func(i, j int) bool {
-		return scores[i].Score < scores[j].Score
+		return scores[i].Score > scores[j].Score
 	})
 
 	receives := []int{0, 18, 15, 12, 9, 7}
@@ -2140,7 +2325,7 @@ func (p *Game) CalculateEndGame() {
 		}
 
 		sort.Slice(scores, func(i, j int) bool {
-			return scores[i].Score < scores[j].Score
+			return scores[i].Score > scores[j].Score
 		})
 
 		receives := []int{0, 8, 4, 2}
@@ -2166,7 +2351,6 @@ func (p *Game) CalculateEndGame() {
 				if v.Score == score {
 					faction := p.Factions[v.User]
 					f := faction.GetInstance()
-
 					f.Receive.VP += receive
 				}
 			}
@@ -2190,8 +2374,7 @@ func (p *Game) CalculateEndGame() {
 	for _, v := range p.Factions {
 		f := v.GetInstance()
 
-		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 2
+		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
 		f.Receive.VP += receive
 	}
-
 }

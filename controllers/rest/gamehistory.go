@@ -34,6 +34,10 @@ func (c *GamehistoryController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _round := c.Geti("round")
+    if _round != 0 {
+        args = append(args, models.Where{Column:"round", Value:_round, Compare:"="})    
+    }
     _command := c.Get("command")
     if _command != "" {
         args = append(args, models.Where{Column:"command", Value:_command, Compare:"like"})
@@ -164,6 +168,16 @@ func (c *GamehistoryController) Deletebatch(item *[]models.Gamehistory) {
 }
 
 
+
+// @Put()
+func (c *GamehistoryController) UpdateRound(round int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGamehistoryManager(conn)
+	_manager.UpdateRound(round, id)
+}
 
 // @Put()
 func (c *GamehistoryController) UpdateCommand(command string, id int64) {

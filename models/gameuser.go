@@ -87,7 +87,7 @@ func (p *GameuserManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *GameuserManager) GetQuery() string {
     ret := ""
 
-    str := "select gu_id, gu_order, gu_user, gu_game, gu_date from gameuser_tb "
+    str := "select gu_id, gu_order, gu_user, gu_game, gu_date, u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date from gameuser_tb, user_tb "
 
     if p.Index == "" {
         ret = str
@@ -96,6 +96,8 @@ func (p *GameuserManager) GetQuery() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and gu_user = u_id "
     
 
     return ret;
@@ -104,7 +106,7 @@ func (p *GameuserManager) GetQuery() string {
 func (p *GameuserManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from gameuser_tb "
+    str := "select count(*) from gameuser_tb, user_tb "
 
     if p.Index == "" {
         ret = str
@@ -113,6 +115,8 @@ func (p *GameuserManager) GetQuerySelect() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and gu_user = u_id "
     
 
     return ret;
@@ -257,10 +261,11 @@ func (p *GameuserManager) ReadRow(rows *sql.Rows) *Gameuser {
     var item Gameuser
     var err error
 
+    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date)
+        err = rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Image, &_user.Profile, &_user.Date)
         
         
         
@@ -283,7 +288,9 @@ func (p *GameuserManager) ReadRow(rows *sql.Rows) *Gameuser {
     } else {
 
         item.InitExtra()
-        
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         return &item
     }
 }
@@ -293,9 +300,10 @@ func (p *GameuserManager) ReadRows(rows *sql.Rows) []Gameuser {
 
     for rows.Next() {
         var item Gameuser
-        
+        var _user User
+            
     
-        err := rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date)
+        err := rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Image, &_user.Profile, &_user.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -317,7 +325,9 @@ func (p *GameuserManager) ReadRows(rows *sql.Rows) []Gameuser {
         
         
         item.InitExtra()        
-        
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         items = append(items, item)
     }
 
@@ -332,6 +342,8 @@ func (p *GameuserManager) Get(id int64) *Gameuser {
 
     query := p.GetQuery() + " and gu_id = ?"
 
+    
+    query += " and gu_user = u_id"
     
     
     rows, err := p.Query(query, id)

@@ -297,6 +297,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 				date := global.GetCurrentDatetime()
 
 				var item models.Gamehistory
+				item.Round = p.Round
 				item.Command = str
 				item.User = id
 				item.Game = gameid
@@ -307,7 +308,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 
 			if cmd == "save" {
 				if update == true {
-					msg := global.Notify{Title: "title title"}
+					msg := global.Notify{Title: "command"}
 					global.SendNotify(msg)
 				}
 

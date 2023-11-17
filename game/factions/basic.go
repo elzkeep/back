@@ -9,8 +9,8 @@ type Basic struct {
 	Faction
 }
 
-func (p *Basic) Init(tile TileItem) {
-	p.InitFaction("Basic", "Basic", GetFactionTile(TileFactionBlessed), tile)
+func (p *Basic) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Basic", GetFactionTile(TileFactionBlessed), tile)
 }
 
 func (p *Basic) GetInstance() *Faction {

@@ -32,6 +32,7 @@ linux:
 	env GOOS=linux GOARCH=amd64 go build -o bin/main.linux main.go
 
 dockerbuild:
+	rm -rf web
 	cd ../app && make release-web && cp -rf build/web ../back/
 
 docker: dockerbuild

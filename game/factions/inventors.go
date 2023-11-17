@@ -9,8 +9,8 @@ type Inventors struct {
 	Faction
 }
 
-func (p *Inventors) Init(tile TileItem) {
-	p.InitFaction("Inventors", "Inventors", GetFactionTile(TileFactionInventors), tile)
+func (p *Inventors) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Inventors", GetFactionTile(TileFactionInventors), tile)
 }
 
 func (p *Inventors) GetInstance() *Faction {

@@ -9,8 +9,8 @@ type Monks struct {
 	Faction
 }
 
-func (p *Monks) Init(tile TileItem) {
-	p.InitFaction("Monks", "Monks", GetFactionTile(TileFactionMonks), tile)
+func (p *Monks) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Monks", GetFactionTile(TileFactionMonks), tile)
 	p.FirstBuilding = SA
 }
 

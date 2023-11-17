@@ -5,7 +5,6 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
-	"log"
 	"sort"
 
 	"math"
@@ -14,7 +13,7 @@ import (
 type FactionInterface interface {
 	GetInstance() *Faction
 
-	Init(tile TileItem)
+	Init(tile TileItem, name string)
 	Print()
 	FirstIncome()
 	Income()
@@ -705,7 +704,6 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 		price := p.Price[target]
 		price.Coin += extra
 
-		log.Println(price)
 		err := CheckResource(p.Resource, price)
 		if err != nil {
 			return err
@@ -1131,7 +1129,6 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 	p.Tiles = append(p.Tiles, tile)
 
 	p.ResetResource()
-
 	p.ReceiveResource(tile.Once)
 	p.UsePrice(price)
 
@@ -1222,6 +1219,10 @@ func (p *Faction) CalulateReceive() {
 func (p *Faction) CalulateVP() {
 	p.Receive = Price{}
 	p.Receive.VP = p.VP
+
+	if p.IsPass == true {
+		return
+	}
 
 	for _, v := range p.Tiles {
 		receive := v.Pass

@@ -420,6 +420,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/gamehistory/round", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var round_ int
+			if v, flag := results["round"]; flag {
+				round_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GamehistoryController
+			controller.Init(c)
+			controller.UpdateRound(round_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/gamehistory/command", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()

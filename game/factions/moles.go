@@ -10,8 +10,8 @@ type Moles struct {
 	Faction
 }
 
-func (p *Moles) Init(tile TileItem) {
-	p.InitFaction("Moles", "Moles", GetFactionTile(TileFactionMoles), tile)
+func (p *Moles) Init(tile TileItem, name string) {
+	p.InitFaction(name, "Moles", GetFactionTile(TileFactionMoles), tile)
 }
 
 func (p *Moles) GetInstance() *Faction {

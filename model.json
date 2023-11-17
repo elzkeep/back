@@ -55,7 +55,13 @@
       ]      
     },
     {
-      "name": "gameuser",             
+      "name": "gameuser",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
       "method" : [
         "FindByGame",
         "CountByGame",
