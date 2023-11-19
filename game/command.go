@@ -304,6 +304,8 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 				item.Date = date
 
 				gamehistoryManager.Insert(&item)
+
+				p.Calculate(user)
 			}
 
 			if cmd == "save" {

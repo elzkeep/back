@@ -5,18 +5,23 @@ import (
 	"aoi/game/color"
 	"aoi/game/factions"
 	"aoi/game/resources"
+	"aoi/global"
 	"aoi/models"
 	"aoi/models/game"
+	gm "aoi/models/game"
 	"errors"
+	"math"
 	"sort"
 	"strings"
 )
 
 const (
-	InitRound       = -4
-	FactionRound    = -3
-	BuildRound      = -2
-	BuildExtraRound = -1
+	InitRound       = -6
+	FactionRound    = -5
+	BuildRound      = -4
+	TileRound       = -3
+	ExtraBuildRound = -2
+	SpadeRound      = -1
 	RoundTileRound  = 0
 )
 
@@ -278,14 +283,6 @@ func (p *Game) BuildStart() {
 			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
 		}
 	}
-
-	for i, v := range p.Factions {
-		faction := v.GetInstance()
-
-		if faction.Color == color.Yellow {
-			p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
-		}
-	}
 }
 
 func (p *Game) Start() {
@@ -352,40 +349,41 @@ func (p *Game) RoundProcess() {
 		p.UpdateDBRound(int(game.StatusNormal))
 
 		p.BuildStart()
-	} else if p.Round == BuildRound {
-		p.Round = BuildExtraRound
+		return
+	}
 
-		flag := false
+	if p.Round == BuildRound {
+		p.Round = TileRound
+
+		for i, v := range p.Factions {
+			faction := v.GetInstance()
+			if faction.Type == resources.TileFactionInventors || faction.Type == resources.TileFactionMonks {
+				p.Turn = append(p.Turn, Turn{User: i, Type: TileTurn})
+			}
+		}
+
+		if len(p.Turn) > 0 {
+			return
+		}
+	}
+
+	if p.Round == TileRound {
+		p.Round = SpadeRound
 
 		for i, v := range p.Factions {
 			f := v.GetInstance()
 
 			if f.Resource.Spade > 0 {
-				flag = true
 				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
 			}
-
-			if f.Type == resources.TileFactionOmar {
-				f.Resource.Building = resources.None
-			} else {
-				if f.Resource.Building != resources.None {
-					flag = true
-					p.Turn = append(p.Turn, Turn{User: i, Type: BuildTurn})
-				}
-			}
 		}
 
-		if flag == false {
-			p.Round = 0
-			p.PassOrder = make([]int, 0)
-
-			for i := range p.Factions {
-				p.PassOrder = append(p.PassOrder, i)
-			}
-
-			p.Start()
+		if len(p.Turn) > 0 {
+			return
 		}
-	} else if p.Round == BuildExtraRound {
+	}
+
+	if p.Round == SpadeRound {
 		p.Round = 0
 		p.PassOrder = make([]int, 0)
 
@@ -400,6 +398,27 @@ func (p *Game) RoundProcess() {
 	} else {
 		p.RoundEnd()
 		p.Start()
+	}
+}
+
+func (p *Game) Calculate(user int) {
+	if p.Round >= 6 {
+		for _, v := range p.Factions {
+			f := v.GetInstance()
+			f.CalulateVP()
+		}
+
+		p.CalculateEndGame()
+	} else if p.Round > 0 {
+		faction := p.Factions[user]
+		f := faction.GetInstance()
+
+		f.CalulateReceive()
+		p.Sciences.CalculateRoundBonus(f)
+
+		if p.Round < 6 {
+			p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
+		}
 	}
 }
 
@@ -423,23 +442,7 @@ func (p *Game) TurnEnd(user int) error {
 	p.PowerTurn = make([]Turn, 0)
 
 	faction.TurnEnd(p.Round)
-
-	// income 계산
-	if p.Round >= 6 {
-		for _, v := range p.Factions {
-			f := v.GetInstance()
-			f.CalulateVP()
-		}
-
-		p.CalculateEndGame()
-	} else if p.Round > 0 {
-		f.CalulateReceive()
-		p.Sciences.CalculateRoundBonus(f)
-
-		if p.Round < 6 {
-			p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
-		}
-	}
+	p.Map.TurnEnd()
 
 	if p.Round > 0 {
 		if user >= 0 {
@@ -494,6 +497,18 @@ func (p *Game) IsNormalTurn() bool {
 	}
 
 	if p.Turn[0].Type != NormalTurn {
+		return false
+	}
+
+	return true
+}
+
+func (p *Game) IsTileTurn() bool {
+	if len(p.Turn) == 0 {
+		return false
+	}
+
+	if p.Turn[0].Type != TileTurn {
 		return false
 	}
 
@@ -611,6 +626,8 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 		return true, false, false
 	}
 
+	lastBuild := p.Map.LastBuild
+
 	if f.Type == resources.TileFactionMoles {
 		if (f.Resource.Building != resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
 			if p.Map.CheckDistanceMoles(f.Color, x, y) {
@@ -620,6 +637,10 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 				for _, position := range items {
 					x := position.X
 					y := position.Y
+
+					if lastBuild.X == x && lastBuild.Y == y {
+						continue
+					}
 
 					if p.Map.GetOwner(x, y) == f.Color {
 						flag = true
@@ -632,6 +653,10 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 						}
 
 						if x == v.X1 && y == v.Y1 {
+							if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
+								continue
+							}
+
 							if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
 								flag = true
 								break
@@ -639,6 +664,10 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 						}
 
 						if x == v.X2 && y == v.Y2 {
+							if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
+								continue
+							}
+
 							if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
 								flag = true
 								break
@@ -684,6 +713,10 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 					}
 
 					if x == v.X1 && y == v.Y1 {
+						if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
+							continue
+						}
+
 						if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
 							flag = true
 							break
@@ -691,6 +724,10 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 					}
 
 					if x == v.X2 && y == v.Y2 {
+						if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
+							continue
+						}
+
 						if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
 							flag = true
 							break
@@ -717,7 +754,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 }
 
 func (p *Game) Build(user int, x int, y int, building resources.Building) error {
-	if p.Round < -1 {
+	if p.Round < -1 && p.Round != TileRound {
 		return errors.New("round error")
 	}
 
@@ -728,7 +765,7 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
-	if !p.IsNormalTurn() && !((p.IsBuildTurn() || p.IsResourceTurn()) && f.Resource.Building != resources.None) {
+	if !p.IsNormalTurn() && !((p.IsBuildTurn() || p.IsResourceTurn() || p.IsTileTurn()) && f.Resource.Building != resources.None) {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -1803,7 +1840,7 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 		return errors.New("It's not a turn")
 	}
 
-	if !p.IsNormalTurn() {
+	if !p.IsNormalTurn() && !p.IsTileTurn() {
 		return errors.New("It's not a normal turn")
 	}
 
@@ -2177,6 +2214,40 @@ func (p *Game) EndGame() {
 		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
 		f.ReceiveResource(resources.Price{VP: receive})
 	}
+
+	db := models.NewConnection()
+	defer db.Close()
+
+	conn, _ := db.Begin()
+	defer conn.Rollback()
+
+	gameManager := models.NewGameManager(conn)
+	gameuserManager := models.NewGameuserManager(conn)
+
+	g := gameManager.Get(p.Id)
+	if g.Status != gm.StatusEnd {
+		g.Status = gm.StatusEnd
+		g.Enddate = global.GetCurrentDatetime()
+		gameManager.Update(g)
+
+		gameusers := gameuserManager.Find([]interface{}{
+			models.Where{Column: "game", Value: g.Id, Compare: "="},
+		})
+
+		for i, v := range p.Factions {
+			f := v.GetInstance()
+			for _, v2 := range gameusers {
+				if p.Users[i] == v2.User {
+					gameuserManager.UpdateScore(f.VP, v2.Id)
+				}
+			}
+
+		}
+
+		conn.Commit()
+
+		p.CalculateElo()
+	}
 }
 
 func (p *Game) CalculateEndGame() {
@@ -2377,4 +2448,73 @@ func (p *Game) CalculateEndGame() {
 		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
 		f.Receive.VP += receive
 	}
+}
+
+func (p *Game) Elo(a float64, b float64, rank int) (float64, float64) {
+	elo_k := 16.0
+	//first := 1000
+
+	var1 := 1.0 / (1.0 + math.Pow(10, (b-a)/400.0))
+	var2 := 1.0 / (1.0 + math.Pow(10, (a-b)/400.0))
+
+	s1 := 1.0
+	s2 := 0.0
+	if rank == 1 {
+		s1 = 1.0
+		s2 = 0.0
+	} else if rank == 2 {
+		s1 = 0.0
+		s2 = 1.0
+	} else {
+		s1 = 0.5
+		s2 = 0.5
+	}
+
+	ret1 := a + elo_k*(s1-var1)
+	ret2 := b + elo_k*(s2-var2)
+
+	return ret1, ret2
+}
+
+func (p *Game) CalculateElo() {
+	db := models.NewConnection()
+	defer db.Close()
+
+	conn, _ := db.Begin()
+	defer conn.Rollback()
+
+	gameuserManager := models.NewGameuserManager(conn)
+	userManager := models.NewUserManager(conn)
+
+	items := gameuserManager.Find([]interface{}{
+		models.Where{Column: "game", Value: p.Id, Compare: "="},
+	})
+
+	if len(items) <= 1 {
+		return
+	}
+
+	for _, v := range items {
+		for _, v2 := range items[1:] {
+			if v.User == v2.User {
+				continue
+			}
+
+			rank := 0
+			if v.Score > v2.Score {
+				rank = 1
+			} else if v.Score < v2.Score {
+				rank = 2
+			}
+
+			user1 := v.Extra["user"].(models.User)
+			user2 := v2.Extra["user"].(models.User)
+			elo1, elo2 := p.Elo(float64(user1.Elo), float64(user2.Elo), rank)
+
+			userManager.UpdateElo(models.Double(elo1), v.Id)
+			userManager.UpdateElo(models.Double(elo2), v2.Id)
+		}
+	}
+
+	conn.Commit()
 }

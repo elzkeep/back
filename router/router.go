@@ -266,6 +266,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/game/join", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var join_ int
+			if v, flag := results["join"]; flag {
+				join_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameController
+			controller.Init(c)
+			controller.UpdateJoin(join_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/game/map", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -319,6 +338,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.GameController
 			controller.Init(c)
 			controller.UpdateStatus(status_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/game/enddate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var enddate_ string
+			if v, flag := results["enddate"]; flag {
+				enddate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameController
+			controller.Init(c)
+			controller.UpdateEnddate(enddate_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -793,6 +831,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.GameuserController
 			controller.Init(c)
 			controller.UpdateOrder(order_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameuser/score", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var score_ int
+			if v, flag := results["score"]; flag {
+				score_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.UpdateScore(score_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1511,6 +1568,24 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserController
 			controller.Init(c)
 			controller.UpdateStatus(status_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/user/elo", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var elo_ models.Double
+			elo__ref := &elo_
+			c.BodyParser(elo__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateElo(elo_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

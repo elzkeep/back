@@ -87,7 +87,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Type = factionTile.Type
 
 	item.Resource.Coin = 15
-	item.Resource.Worker = 4
+	item.Resource.Worker = 3
 	item.Resource.Power = [3]int{5, 7, 0}
 	item.Resource.Building = None
 	item.VP = 20

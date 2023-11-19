@@ -19,6 +19,7 @@ type Gameuser struct {
             
     Id                int64 `json:"id"`         
     Order                int `json:"order"`         
+    Score                int `json:"score"`         
     User                int64 `json:"user"`         
     Game                int64 `json:"game"`         
     Date                string `json:"date"` 
@@ -87,7 +88,7 @@ func (p *GameuserManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *GameuserManager) GetQuery() string {
     ret := ""
 
-    str := "select gu_id, gu_order, gu_user, gu_game, gu_date, u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date from gameuser_tb, user_tb "
+    str := "select gu_id, gu_order, gu_score, gu_user, gu_game, gu_date, u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_image, u_profile, u_date from gameuser_tb, user_tb "
 
     if p.Index == "" {
         ret = str
@@ -157,11 +158,11 @@ func (p *GameuserManager) Insert(item *Gameuser) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into gameuser_tb (gu_id, gu_order, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Order, item.User, item.Game, item.Date)
+        query = "insert into gameuser_tb (gu_id, gu_order, gu_score, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Order, item.Score, item.User, item.Game, item.Date)
     } else {
-        query = "insert into gameuser_tb (gu_order, gu_user, gu_game, gu_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Order, item.User, item.Game, item.Date)
+        query = "insert into gameuser_tb (gu_order, gu_score, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Order, item.Score, item.User, item.Game, item.Date)
     }
     
     if err == nil {
@@ -195,8 +196,8 @@ func (p *GameuserManager) Update(item *Gameuser) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update gameuser_tb set gu_order = ?, gu_user = ?, gu_game = ?, gu_date = ? where gu_id = ?"
-	_, err := p.Exec(query , item.Order, item.User, item.Game, item.Date, item.Id)
+	query := "update gameuser_tb set gu_order = ?, gu_score = ?, gu_user = ?, gu_game = ?, gu_date = ? where gu_id = ?"
+	_, err := p.Exec(query , item.Order, item.Score, item.User, item.Game, item.Date, item.Id)
     
         
     return err
@@ -209,6 +210,17 @@ func (p *GameuserManager) UpdateOrder(value int, id int64) error {
     }
 
 	query := "update gameuser_tb set gu_order = ? where gu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameuserManager) UpdateScore(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameuser_tb set gu_score = ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -265,7 +277,9 @@ func (p *GameuserManager) ReadRow(rows *sql.Rows) *Gameuser {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Image, &_user.Profile, &_user.Date)
+        err = rows.Scan(&item.Id, &item.Order, &item.Score, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Image, &_user.Profile, &_user.Date)
+        
+        
         
         
         
@@ -303,26 +317,21 @@ func (p *GameuserManager) ReadRows(rows *sql.Rows) []Gameuser {
         var _user User
             
     
-        err := rows.Scan(&item.Id, &item.Order, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Image, &_user.Profile, &_user.Date)
+        err := rows.Scan(&item.Id, &item.Order, &item.Score, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Image, &_user.Profile, &_user.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
         
-                 
         
-                 
         
-                 
         
-                 
+        
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
-        }         
-        
-        
+        }
         
         item.InitExtra()        
         _user.InitExtra()

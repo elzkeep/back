@@ -20,6 +20,7 @@ type Map struct {
 	BridgeList []resources.BridgePosition `json:"bridge"`
 	AnnexList  []resources.Position       `json:"annex"`
 	CityList   []resources.Position       `json:"city"`
+	LastBuild  resources.Position         `json:"lastBuild"`
 }
 
 func NewMap(count int) *Map {
@@ -344,6 +345,8 @@ func (p *Map) Build(x int, y int, color color.Color, building resources.Building
 	p.Data[x+p.Mx][y+1].Owner = color
 	p.Data[x+p.Mx][y+1].Building = building
 	p.Index++
+
+	p.LastBuild = resources.Position{X: x, Y: y}
 }
 
 func (p *Map) Print() {
@@ -449,6 +452,10 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 	for _, position := range positions {
 		owner := p.GetOwner(position.X, position.Y)
 
+		if position.X == p.LastBuild.X && position.Y == p.LastBuild.Y {
+			continue
+		}
+
 		if owner == user {
 			return true
 		}
@@ -460,12 +467,20 @@ func (p *Map) CheckDistance(user color.Color, distance int, x int, y int) bool {
 		}
 
 		if x == v.X1 && y == v.Y1 {
+			if v.X2 == p.LastBuild.X && v.Y2 == p.LastBuild.Y {
+				continue
+			}
+
 			if p.GetOwner(v.X2, v.Y2) == user {
 				return true
 			}
 		}
 
 		if x == v.X2 && y == v.Y2 {
+			if v.X1 == p.LastBuild.X && v.Y1 == p.LastBuild.Y {
+				continue
+			}
+
 			if p.GetOwner(v.X1, v.Y1) == user {
 				return true
 			}
@@ -489,6 +504,10 @@ func (p *Map) FindRiver(user color.Color, x int, y int, distance int, maxDistanc
 
 		items := resources.GetGroundPosition(v.X, v.Y)
 		for _, item := range items {
+			if item.X == p.LastBuild.X && item.Y == p.LastBuild.Y {
+				continue
+			}
+
 			if p.GetType(item.X, item.Y) == user {
 				return true
 			}
@@ -640,6 +659,10 @@ func (p *Map) CheckDistanceMoles(user color.Color, x int, y int) bool {
 	items = append(items, resources.Position{X: x + 2, Y: y + 1})
 
 	for _, v := range items {
+		if p.LastBuild.X == v.X && p.LastBuild.Y == v.Y {
+			continue
+		}
+
 		if p.GetOwner(v.X, v.Y) == user {
 			return true
 		}
@@ -650,6 +673,10 @@ func (p *Map) CheckDistanceMoles(user color.Color, x int, y int) bool {
 
 func (p *Map) CheckDistanceJump(items []resources.Position, x int, y int) bool {
 	for _, v := range items {
+		if p.LastBuild.X == v.X && p.LastBuild.Y == v.Y {
+			continue
+		}
+
 		distance := p.GetDistance(x, y, v.X, v.Y)
 
 		if distance == 2 || distance == 3 {
@@ -747,4 +774,8 @@ func (p *Map) FindRiverConnect(user color.Color, x int, y int, x2, y2, distance 
 	}
 
 	return false
+}
+
+func (p *Map) TurnEnd() {
+	p.LastBuild = resources.Position{X: -1, Y: -1}
 }

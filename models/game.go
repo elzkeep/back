@@ -22,9 +22,11 @@ type Game struct {
     Id                int64 `json:"id"`         
     Name                string `json:"name"`         
     Count                int `json:"count"`         
+    Join                int `json:"join"`         
     Map                int64 `json:"map"`         
     Type                int `json:"type"`         
     Status                game.Status `json:"status"`         
+    Enddate                string `json:"enddate"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -91,7 +93,7 @@ func (p *GameManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *GameManager) GetQuery() string {
     ret := ""
 
-    str := "select g_id, g_name, g_count, g_map, g_type, g_status, g_date from game_tb "
+    str := "select g_id, g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date from game_tb "
 
     if p.Index == "" {
         ret = str
@@ -149,6 +151,9 @@ func (p *GameManager) Insert(item *Game) error {
     }
 
     
+    if item.Enddate == "" {
+       item.Enddate = "1000-01-01 00:00:00"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -157,11 +162,11 @@ func (p *GameManager) Insert(item *Game) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into game_tb (g_id, g_name, g_count, g_map, g_type, g_status, g_date) values (?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Count, item.Map, item.Type, item.Status, item.Date)
+        query = "insert into game_tb (g_id, g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date)
     } else {
-        query = "insert into game_tb (g_name, g_count, g_map, g_type, g_status, g_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Count, item.Map, item.Type, item.Status, item.Date)
+        query = "insert into game_tb (g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date)
     }
     
     if err == nil {
@@ -191,12 +196,15 @@ func (p *GameManager) Update(item *Game) error {
     }
     
     
+    if item.Enddate == "" {
+       item.Enddate = "1000-01-01 00:00:00"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update game_tb set g_name = ?, g_count = ?, g_map = ?, g_type = ?, g_status = ?, g_date = ? where g_id = ?"
-	_, err := p.Exec(query , item.Name, item.Count, item.Map, item.Type, item.Status, item.Date, item.Id)
+	query := "update game_tb set g_name = ?, g_count = ?, g_join = ?, g_map = ?, g_type = ?, g_status = ?, g_enddate = ?, g_date = ? where g_id = ?"
+	_, err := p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date, item.Id)
     
         
     return err
@@ -220,6 +228,17 @@ func (p *GameManager) UpdateCount(value int, id int64) error {
     }
 
 	query := "update game_tb set g_count = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameManager) UpdateJoin(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_join = ? where g_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -258,6 +277,17 @@ func (p *GameManager) UpdateStatus(value int, id int64) error {
     return err
 }
 
+func (p *GameManager) UpdateEnddate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_enddate = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 func (p *GameManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
@@ -287,7 +317,7 @@ func (p *GameManager) ReadRow(rows *sql.Rows) *Game {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Count, &item.Map, &item.Type, &item.Status, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Type, &item.Status, &item.Enddate, &item.Date)
         
         
         
@@ -300,6 +330,12 @@ func (p *GameManager) ReadRow(rows *sql.Rows) *Game {
         
         
         
+        
+        
+        
+        if item.Enddate == "0000-00-00 00:00:00" || item.Enddate == "1000-01-01 00:00:00" {
+            item.Enddate = ""
+        }
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
@@ -326,30 +362,26 @@ func (p *GameManager) ReadRows(rows *sql.Rows) []Game {
         var item Game
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Count, &item.Map, &item.Type, &item.Status, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Type, &item.Status, &item.Enddate, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
         
+        
+        if item.Enddate == "0000-00-00 00:00:00" || item.Enddate == "1000-01-01 00:00:00" {
+            item.Enddate = ""
+        }
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
-        }         
-        
-        
+        }
         
         item.InitExtra()        
         

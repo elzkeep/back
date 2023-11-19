@@ -1,5 +1,13 @@
 package main_test
 
+import (
+	"log"
+	"math"
+	"testing"
+
+	"github.com/bmizerany/assert"
+)
+
 /*
 func TestBuild(t *testing.T) {
 	g := game.NewGame()
@@ -194,3 +202,35 @@ func TestCityUpgrade(t *testing.T) {
 	g.Sciences.Print()
 }
 */
+
+func TestElo(t *testing.T) {
+	elo_k := 16.0
+	//first := 1000
+	rank := 1
+
+	a := 1480.0
+	b := 1000.0
+
+	var1 := 1.0 / (1.0 + math.Pow(10, (b-a)/400.0))
+	var2 := 1.0 / (1.0 + math.Pow(10, (a-b)/400.0))
+
+	s1 := 1.0
+	s2 := 0.0
+	if rank == 1 {
+		s1 = 1.0
+		s2 = 0.0
+	} else if rank == 2 {
+		s1 = 0.0
+		s2 = 1.0
+	} else {
+		s1 = 0.5
+		s2 = 0.5
+	}
+
+	ret1 := elo_k * (s1 - var1)
+	ret2 := elo_k * (s2 - var2)
+
+	log.Println(ret1, ret2)
+
+	assert.Equal(t, true, ret1 == ret2)
+}

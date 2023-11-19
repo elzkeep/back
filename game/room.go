@@ -54,6 +54,10 @@ func MakeGame(id int64, name string, count int) {
 		for _, history := range historys {
 			Command(g, history.Game, history.User, history.Command, false)
 		}
+
+		for user, _ := range g.Factions {
+			g.Calculate(user)
+		}
 	}
 }
 func Init() {
@@ -91,6 +95,10 @@ func Init() {
 			for _, history := range historys {
 				Command(g, history.Game, history.User, history.Command, false)
 			}
+
+			for user, _ := range g.Factions {
+				g.Calculate(user)
+			}
 		}
 	}
 }
@@ -106,6 +114,7 @@ func Make(user int64, item *models.Game) {
 	gametileManager := models.NewGametileManager(conn)
 
 	item.Status = game.StatusReady
+	item.Join = 1
 	gameManager.Insert(item)
 
 	id := gameManager.GetIdentity()
@@ -456,6 +465,9 @@ func Join(user int64, id int64) error {
 
 	gameuserManager.Insert(&gameuser)
 	count++
+
+	item.Join++
+	gameManager.Update(item)
 
 	items := gameuserManager.FindByGame(id)
 

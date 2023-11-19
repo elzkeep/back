@@ -25,6 +25,7 @@ type User struct {
     Name                string `json:"name"`         
     Level                user.Level `json:"level"`         
     Status                user.Status `json:"status"`         
+    Elo                Double `json:"elo"`         
     Image                string `json:"image"`         
     Profile                string `json:"profile"`         
     Date                string `json:"date"` 
@@ -93,7 +94,7 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *UserManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date from user_tb "
+    str := "select u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_image, u_profile, u_date from user_tb "
 
     if p.Index == "" {
         ret = str
@@ -159,11 +160,11 @@ func (p *UserManager) Insert(item *User) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into user_tb (u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date)
+        query = "insert into user_tb (u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Image, item.Profile, item.Date)
     } else {
-        query = "insert into user_tb (u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date)
+        query = "insert into user_tb (u_email, u_passwd, u_name, u_level, u_status, u_elo, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Image, item.Profile, item.Date)
     }
     
     if err == nil {
@@ -197,8 +198,8 @@ func (p *UserManager) Update(item *User) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update user_tb set u_email = ?, u_passwd = ?, u_name = ?, u_level = ?, u_status = ?, u_image = ?, u_profile = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date, item.Id)
+	query := "update user_tb set u_email = ?, u_passwd = ?, u_name = ?, u_level = ?, u_status = ?, u_elo = ?, u_image = ?, u_profile = ?, u_date = ? where u_id = ?"
+	_, err := p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Image, item.Profile, item.Date, item.Id)
     
         
     return err
@@ -260,6 +261,17 @@ func (p *UserManager) UpdateStatus(value int, id int64) error {
     return err
 }
 
+func (p *UserManager) UpdateElo(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_elo = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *UserManager) UpdateImage(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -312,7 +324,9 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Image, &item.Profile, &item.Date)
+        err = rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Elo, &item.Image, &item.Profile, &item.Date)
+        
+        
         
         
         
@@ -355,34 +369,25 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         var item User
         
     
-        err := rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Image, &item.Profile, &item.Date)
+        err := rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Elo, &item.Image, &item.Profile, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
         
-                 
+        
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
-        }         
-        
-        
+        }
         
         item.InitExtra()        
         

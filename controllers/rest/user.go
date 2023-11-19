@@ -57,6 +57,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
     }
+    _elo := c.Geti("elo")
+    if _elo != 0 {
+        args = append(args, models.Where{Column:"elo", Value:_elo, Compare:"="})    
+    }
     _image := c.Get("image")
     if _image != "" {
         args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
@@ -294,6 +298,16 @@ func (c *UserController) UpdateStatus(status int, id int64) {
 
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateStatus(status, id)
+}
+
+// @Put()
+func (c *UserController) UpdateElo(elo models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateElo(elo, id)
 }
 
 // @Put()

@@ -146,7 +146,6 @@ func CheckResource(have Resource, need Price) error {
 	}
 
 	if have.Worker < need.Worker {
-		log.Println(have.Worker, need.Worker)
 		return errors.New("not enough worker")
 	}
 

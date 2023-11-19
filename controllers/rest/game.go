@@ -43,6 +43,10 @@ func (c *GameController) Index(page int, pagesize int) {
     if _count != 0 {
         args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
     }
+    _join := c.Geti("join")
+    if _join != 0 {
+        args = append(args, models.Where{Column:"join", Value:_join, Compare:"="})    
+    }
     _map := c.Geti64("map")
     if _map != 0 {
         args = append(args, models.Where{Column:"map", Value:_map, Compare:"="})    
@@ -54,6 +58,18 @@ func (c *GameController) Index(page int, pagesize int) {
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _startenddate := c.Get("startenddate")
+    _endenddate := c.Get("endenddate")
+    if _startenddate != "" && _endenddate != "" {        
+        var v [2]string
+        v[0] = _startenddate
+        v[1] = _endenddate  
+        args = append(args, models.Where{Column:"enddate", Value:v, Compare:"between"})    
+    } else if  _startenddate != "" {          
+        args = append(args, models.Where{Column:"enddate", Value:_startenddate, Compare:">="})
+    } else if  _endenddate != "" {          
+        args = append(args, models.Where{Column:"enddate", Value:_endenddate, Compare:"<="})            
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -195,6 +211,16 @@ func (c *GameController) UpdateCount(count int, id int64) {
 }
 
 // @Put()
+func (c *GameController) UpdateJoin(join int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameManager(conn)
+	_manager.UpdateJoin(join, id)
+}
+
+// @Put()
 func (c *GameController) UpdateMap(mapid int64, id int64) {
     
     
@@ -224,6 +250,16 @@ func (c *GameController) UpdateStatus(status int, id int64) {
 	_manager.UpdateStatus(status, id)
 }
 
+// @Put()
+func (c *GameController) UpdateEnddate(enddate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameManager(conn)
+	_manager.UpdateEnddate(enddate, id)
+}
+
 
 
 
@@ -247,6 +283,10 @@ func (c *GameController) Sum() {
     if _count != 0 {
         args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
     }
+    _join := c.Geti("join")
+    if _join != 0 {
+        args = append(args, models.Where{Column:"join", Value:_join, Compare:"="})    
+    }
     _map := c.Geti64("map")
     if _map != 0 {
         args = append(args, models.Where{Column:"map", Value:_map, Compare:"="})    
@@ -258,6 +298,18 @@ func (c *GameController) Sum() {
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _startenddate := c.Get("startenddate")
+    _endenddate := c.Get("endenddate")
+    if _startenddate != "" && _endenddate != "" {        
+        var v [2]string
+        v[0] = _startenddate
+        v[1] = _endenddate  
+        args = append(args, models.Where{Column:"enddate", Value:v, Compare:"between"})    
+    } else if  _startenddate != "" {          
+        args = append(args, models.Where{Column:"enddate", Value:_startenddate, Compare:">="})
+    } else if  _endenddate != "" {          
+        args = append(args, models.Where{Column:"enddate", Value:_endenddate, Compare:"<="})            
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
