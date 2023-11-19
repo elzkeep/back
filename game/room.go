@@ -23,14 +23,17 @@ func SetGame(id int64, game *Game) {
 	_rooms[id] = game
 }
 
-func MakeGame(id int64, name string, count int) {
+func MakeGame(id int64) {
 	conn := models.NewConnection()
 	defer conn.Close()
 
+	gameManager := models.NewGameManager(conn)
 	gameuserManager := models.NewGameuserManager(conn)
 	gamehistoryManager := models.NewGamehistoryManager(conn)
 
-	g := NewGame(id, name, count)
+	game := gameManager.Get(id)
+
+	g := NewGame(game)
 	SetGame(id, g)
 
 	gameusers := gameuserManager.Find([]interface{}{
@@ -38,7 +41,7 @@ func MakeGame(id int64, name string, count int) {
 		models.Ordering("gu_order"),
 	})
 
-	if count == len(gameusers) {
+	if game.Count == len(gameusers) {
 		for _, gameuser := range gameusers {
 			user := gameuser.Extra["user"].(models.User)
 			g.AddUser(gameuser.User, user.Name)
@@ -71,7 +74,7 @@ func Init() {
 	games := gameManager.Find(nil)
 
 	for _, v := range games {
-		g := NewGame(v.Id, v.Name, v.Count)
+		g := NewGame(&v)
 		SetGame(v.Id, g)
 
 		gameusers := gameuserManager.Find([]interface{}{
@@ -118,6 +121,7 @@ func Make(user int64, item *models.Game) {
 	gameManager.Insert(item)
 
 	id := gameManager.GetIdentity()
+	item.Id = id
 
 	{
 		items := []int{
@@ -412,7 +416,7 @@ func Make(user int64, item *models.Game) {
 
 	conn.Commit()
 
-	g := NewGame(id, item.Name, item.Count)
+	g := NewGame(item)
 	SetGame(id, g)
 
 	Join(user, id)

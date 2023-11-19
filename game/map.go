@@ -23,7 +23,7 @@ type Map struct {
 	LastBuild  resources.Position         `json:"lastBuild"`
 }
 
-func NewMap(count int) *Map {
+func NewMap(typeid int64) *Map {
 	var item Map
 
 	item.BridgeList = make([]resources.BridgePosition, 0)
@@ -66,7 +66,7 @@ func NewMap(count int) *Map {
 		"GWRXYWBSGWRYB",
 	}
 
-	if count <= 3 {
+	if typeid == 1 {
 		maps = []string{
 			"GWYBXSGWRX",
 			"KSKRXKBSXG",

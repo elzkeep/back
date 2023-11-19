@@ -10,6 +10,7 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
+	"log"
 	"math"
 	"sort"
 	"strings"
@@ -25,9 +26,19 @@ const (
 	RoundTileRound  = 0
 )
 
+type GameType int
+
+const (
+	NoneType GameType = iota
+	BasicType
+	DraftBasicType
+	DraftSnakeType
+)
+
 type Game struct {
 	Id       int64                       `json:"id"`
 	Name     string                      `json:"name"`
+	Type     GameType                    `json:"type"`
 	Map      *Map                        `json:"map"`
 	Sciences *Science                    `json:"sciences"`
 	Factions []factions.FactionInterface `json:"factions"`
@@ -82,22 +93,25 @@ func (p *Turn) Print() {
 	*/
 }
 
-func NewGame(id int64, name string, count int) *Game {
+func NewGame(game *models.Game) *Game {
 	var item Game
+	id := game.Id
+	log.Println("id", id)
 	item.Id = id
-	item.Name = name
+	item.Name = game.Name
+	item.Type = GameType(game.Type)
 	item.PowerActions = action.NewPowerAction()
 	item.BookActions = action.NewBookAction(id)
 	item.RoundTiles = resources.NewRoundTile(id)
 	item.RoundBonuss = NewRoundBonus(id)
 	item.PalaceTiles = resources.NewPalaceTile(id)
-	item.SchoolTiles = resources.NewSchoolTile(id, count)
-	item.InnovationTiles = resources.NewInnovationTile(id, count)
+	item.SchoolTiles = resources.NewSchoolTile(id, game.Count)
+	item.InnovationTiles = resources.NewInnovationTile(id, game.Count)
 	item.FactionTiles = resources.NewFactionTile(id)
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
 
-	item.Map = NewMap(count)
+	item.Map = NewMap(game.Map)
 	item.Sciences = NewScience()
 	item.Factions = make([]factions.FactionInterface, 0)
 
@@ -111,7 +125,7 @@ func NewGame(id int64, name string, count int) *Game {
 	item.Command = make([]string, 0)
 	item.OldCommand = make([]string, 0)
 
-	item.Count = count
+	item.Count = game.Count
 
 	item.Round = InitRound
 
@@ -158,17 +172,6 @@ func (p *Game) CompleteAddUser() {
 
 	p.UpdateDBRound(int(game.StatusFaction))
 }
-
-/*
-func (p *Game) AddFaction(item factions.FactionInterface, tile resources.TileItem) {
-	item.Init(tile)
-
-	p.Factions = append(p.Factions, item)
-
-	faction := item.GetInstance()
-	p.Sciences.AddUser(faction.Color, faction.Science)
-}
-*/
 
 func (p *Game) SelectFaction(user int, name string) {
 	pos := 0
@@ -1998,7 +2001,7 @@ func (p *Game) Undo(user int) error {
 
 	gamehistoryManager.Delete(last.Id)
 
-	MakeGame(p.Id, p.Name, p.Count)
+	MakeGame(p.Id)
 
 	return nil
 }
