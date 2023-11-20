@@ -55,7 +55,7 @@ func NewRoundTile(id int64) *RoundTile {
 			}
 		}
 
-		if flag == false {
+		if flag == true {
 			item.Items = append(item.Items, tile)
 		}
 	}

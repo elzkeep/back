@@ -10,20 +10,19 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
-	"log"
 	"math"
 	"sort"
 	"strings"
 )
 
 const (
-	InitRound       = -6
-	FactionRound    = -5
+	InitRound       = -7
+	FactionRound    = -6
+	RoundTileRound  = -5
 	BuildRound      = -4
 	TileRound       = -3
 	ExtraBuildRound = -2
 	SpadeRound      = -1
-	RoundTileRound  = 0
 )
 
 type GameType int
@@ -96,7 +95,6 @@ func (p *Turn) Print() {
 func NewGame(game *models.Game) *Game {
 	var item Game
 	id := game.Id
-	log.Println("id", id)
 	item.Id = id
 	item.Name = game.Name
 	item.Type = GameType(game.Type)
@@ -166,8 +164,34 @@ func (p *Game) UpdateDBRound(value int) {
 func (p *Game) CompleteAddUser() {
 	p.Round = FactionRound
 
-	for i := 0; i < p.Count; i++ {
-		p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
+	if p.Type == BasicType {
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
+		}
+	} else if p.Type == DraftBasicType {
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+	} else if p.Type == DraftSnakeType {
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
+
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: p.Count - i - 1, Type: NormalTurn})
+		}
+
+		for i := 0; i < p.Count; i++ {
+			p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+		}
 	}
 
 	p.UpdateDBRound(int(game.StatusFaction))
@@ -346,6 +370,29 @@ func (p *Game) Start() {
 
 func (p *Game) RoundProcess() {
 	if p.Round == FactionRound {
+		if p.Type != BasicType {
+			p.InitDraft()
+
+			p.Round = RoundTileRound
+			p.PassOrder = make([]int, 0)
+
+			for i := len(p.Factions) - 1; i >= 0; i-- {
+				p.Turn = append(p.Turn, Turn{User: i, Type: NormalTurn})
+			}
+
+			return
+		}
+
+		p.Round = BuildRound
+		p.PassOrder = make([]int, 0)
+
+		p.UpdateDBRound(int(game.StatusNormal))
+
+		p.BuildStart()
+		return
+	}
+
+	if p.Round == RoundTileRound {
 		p.Round = BuildRound
 		p.PassOrder = make([]int, 0)
 
@@ -1334,11 +1381,12 @@ func (p *Game) GetRoundTile(user int, pos int) error {
 	}
 
 	faction := p.Factions[user]
+	f := faction.GetInstance()
+
 	tile := p.RoundTiles.Pass(pos)
 
-	faction.RoundTile(tile)
-
-	p.TurnEnd(user)
+	f.AddTile(tile)
+	f.Action = true
 
 	return nil
 }
@@ -2520,4 +2568,149 @@ func (p *Game) CalculateElo() {
 	}
 
 	conn.Commit()
+}
+
+func (p *Game) SelectFactionTile(user int, name string) error {
+	pos := 0
+
+	for i, v := range p.FactionTiles.Items {
+		if strings.ToLower(v.Name) == name {
+			pos = i
+		}
+	}
+
+	tile := p.FactionTiles.Items[pos]
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if !f.AddTile(tile) {
+		return errors.New("already been selected")
+	}
+
+	p.FactionTiles.Items[pos].Use = true
+	f.Action = true
+
+	return nil
+}
+
+func (p *Game) SelectColorTile(user int, name string) error {
+	pos := 0
+
+	for i, v := range p.ColorTiles.Items {
+		if strings.ToLower(v.Name) == name {
+			pos = i
+		}
+	}
+
+	tile := p.ColorTiles.Items[pos]
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if !f.AddTile(tile) {
+		return errors.New("already been selected")
+	}
+
+	p.ColorTiles.Items[pos].Use = true
+	f.Action = true
+
+	return nil
+}
+
+func (p *Game) SelectPalaceTile(user int, pos int) error {
+	tile := p.PalaceTiles.Items[pos]
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if !f.AddTile(tile) {
+		return errors.New("already been selected")
+	}
+
+	p.PalaceTiles.Items[pos].Use = true
+	f.Action = true
+
+	return nil
+}
+
+func (p *Game) InitDraft() {
+	p.PalaceTiles.Items = make([]resources.TileItem, 0)
+	for user, v := range p.Factions {
+		f := v.GetInstance()
+
+		var factionTile resources.TileItem
+		var colorTile resources.TileItem
+		var palaceTile resources.TileItem
+
+		for _, tile := range f.Tiles {
+			if tile.Category == resources.TileFaction {
+				factionTile = tile
+			}
+
+			if tile.Category == resources.TileColor {
+				colorTile = tile
+			}
+
+			if tile.Category == resources.TilePalace {
+				palaceTile = tile
+			}
+		}
+
+		factionTile.Use = false
+		colorTile.Use = false
+		palaceTile.Use = false
+
+		var item factions.FactionInterface
+
+		if factionTile.Type == resources.TileFactionBlessed {
+			item = &factions.Blessed{}
+		} else if factionTile.Type == resources.TileFactionFelines {
+			item = &factions.Felines{}
+		} else if factionTile.Type == resources.TileFactionGoblins {
+			item = &factions.Goblins{}
+		} else if factionTile.Type == resources.TileFactionIllusionists {
+			item = &factions.Illusionists{}
+		} else if factionTile.Type == resources.TileFactionInventors {
+			item = &factions.Inventors{}
+		} else if factionTile.Type == resources.TileFactionLizards {
+			item = &factions.Lizards{}
+		} else if factionTile.Type == resources.TileFactionMoles {
+			item = &factions.Moles{}
+		} else if factionTile.Type == resources.TileFactionMonks {
+			item = &factions.Monks{}
+		} else if factionTile.Type == resources.TileFactionNavigators {
+			item = &factions.Navigators{}
+		} else if factionTile.Type == resources.TileFactionOmar {
+			item = &factions.Omar{}
+		} else if factionTile.Type == resources.TileFactionPhilosophers {
+			item = &factions.Philosophers{}
+		} else if factionTile.Type == resources.TileFactionPsychics {
+			item = &factions.Psychics{}
+		}
+
+		item.Init(colorTile, p.Usernames[user])
+		p.Factions[user] = item
+
+		palaceTile.Color = colorTile.Color
+
+		f = item.GetInstance()
+
+		f.ReceiveResource(factionTile.Once)
+		f.ReceiveResource(colorTile.Once)
+
+		f.IncScience(int(Banking), p.Sciences.Action(f, Banking, factionTile.Once.Science.Banking))
+		f.IncScience(int(Law), p.Sciences.Action(f, Law, factionTile.Once.Science.Law))
+		f.IncScience(int(Engineering), p.Sciences.Action(f, Engineering, factionTile.Once.Science.Engineering))
+		f.IncScience(int(Medicine), p.Sciences.Action(f, Medicine, factionTile.Once.Science.Medicine))
+
+		f.IncScience(int(Banking), p.Sciences.Action(f, Banking, colorTile.Once.Science.Banking))
+		f.IncScience(int(Law), p.Sciences.Action(f, Law, colorTile.Once.Science.Law))
+		f.IncScience(int(Engineering), p.Sciences.Action(f, Engineering, colorTile.Once.Science.Engineering))
+		f.IncScience(int(Medicine), p.Sciences.Action(f, Medicine, colorTile.Once.Science.Medicine))
+
+		p.Sciences.AddUser(f.Color, f.Science)
+
+		p.PalaceTiles.Items = append(p.PalaceTiles.Items, palaceTile)
+	}
 }

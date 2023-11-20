@@ -272,7 +272,20 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		err = p.Annex(user, x, y)
 	} else if cmd == "faction" {
 		faction := strs[2]
-		p.SelectFaction(user, faction)
+
+		if p.Type == BasicType {
+			p.SelectFaction(user, faction)
+		} else {
+			p.SelectFactionTile(user, faction)
+		}
+	} else if cmd == "color" {
+		color := strs[2]
+
+		p.SelectColorTile(user, color)
+	} else if cmd == "palace" {
+		pos := global.Atoi(strs[2])
+
+		p.SelectPalaceTile(user, pos)
 	} else if cmd == "leech" {
 		p.PowerConfirm(user, true)
 	} else if cmd == "decline" {

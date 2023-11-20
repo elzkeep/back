@@ -7,6 +7,7 @@ import (
 	"aoi/models"
 	"aoi/models/game"
 	"errors"
+	"log"
 	"math/rand"
 	"sync"
 )
@@ -117,11 +118,21 @@ func Make(user int64, item *models.Game) {
 	gametileManager := models.NewGametileManager(conn)
 
 	item.Status = game.StatusReady
-	item.Join = 1
+	item.Join = 0
 	gameManager.Insert(item)
 
 	id := gameManager.GetIdentity()
 	item.Id = id
+
+	factionCount := 7
+	colorCount := 7
+	roundCount := 7
+
+	if GameType(item.Type) != BasicType {
+		factionCount = item.Count + 1
+		colorCount = 6
+		roundCount = item.Count + 3
+	}
 
 	{
 		items := []int{
@@ -140,7 +151,7 @@ func Make(user int64, item *models.Game) {
 		}
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
-		for i, v := range items[:7] {
+		for i, v := range items[:factionCount] {
 			var tile models.Gametile
 
 			tile.Type = int(resources.TileFaction)
@@ -164,7 +175,7 @@ func Make(user int64, item *models.Game) {
 		}
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
-		for i, v := range items {
+		for i, v := range items[:colorCount] {
 			var tile models.Gametile
 
 			tile.Type = int(resources.TileColor)
@@ -192,10 +203,12 @@ func Make(user int64, item *models.Game) {
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
-		for i, v := range items[:7] {
+		for i, v := range items[:roundCount] {
+
 			var tile models.Gametile
 
 			tile.Type = int(resources.TileRound)
+			log.Println("round", tile.Type)
 			tile.Number = v
 			tile.Order = i + 1
 			tile.Game = id
@@ -237,14 +250,16 @@ func Make(user int64, item *models.Game) {
 			gametileManager.Insert(&tile)
 		}
 
-		var tile models.Gametile
+		if item.Type == int(BasicType) {
+			var tile models.Gametile
 
-		tile.Type = int(resources.TilePalace)
-		tile.Number = int(resources.TilePalaceVp)
-		tile.Order = item.Count + 1 + 1
-		tile.Game = id
+			tile.Type = int(resources.TilePalace)
+			tile.Number = int(resources.TilePalaceVp)
+			tile.Order = item.Count + 1 + 1
+			tile.Game = id
 
-		gametileManager.Insert(&tile)
+			gametileManager.Insert(&tile)
+		}
 	}
 
 	{

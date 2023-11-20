@@ -10,7 +10,7 @@ type Basic struct {
 }
 
 func (p *Basic) Init(tile TileItem, name string) {
-	p.InitFaction(name, "Basic", GetFactionTile(TileFactionBlessed), tile)
+	p.InitFaction(name, "", GetFactionTile(TileFactionBlessed), tile)
 }
 
 func (p *Basic) GetInstance() *Faction {

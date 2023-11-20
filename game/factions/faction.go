@@ -83,7 +83,6 @@ type Faction struct {
 func (item *Faction) InitFaction(name string, ename string, factionTile TileItem, colorTile TileItem) {
 	item.Name = name
 	item.Ename = ename
-	item.Color = colorTile.Color
 	item.Type = factionTile.Type
 
 	item.Resource.Coin = 15
@@ -107,8 +106,16 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.DigPosition = make([]Position, 0)
 	item.Cities = make([]CityItem, 0)
 	item.Tiles = make([]TileItem, 0)
-	item.Tiles = append(item.Tiles, colorTile)
-	item.Tiles = append(item.Tiles, factionTile)
+	if ename != "" {
+		colorTile.Use = false
+		factionTile.Use = false
+
+		item.Color = colorTile.Color
+		item.Tiles = append(item.Tiles, colorTile)
+		item.Tiles = append(item.Tiles, factionTile)
+	} else {
+		item.Color = color.None
+	}
 
 	item.MaxBuilding = [13]int{0, 9, 4, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1}
 	item.Building = [13]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -941,6 +948,8 @@ func (p *Faction) PalaceTile(tile TileItem) error {
 			return errors.New("already")
 		}
 	}
+
+	tile.Color = color.None
 	p.Tiles = append(p.Tiles, tile)
 
 	p.ReceiveResource(tile.Once)
@@ -950,6 +959,8 @@ func (p *Faction) PalaceTile(tile TileItem) error {
 	if tile.Type == TilePalace6PowerCity {
 		p.TownPower--
 	}
+
+	p.Action = true
 
 	return nil
 }
@@ -970,6 +981,8 @@ func (p *Faction) SchoolTile(tile TileItem, science int) error {
 	p.ReceiveResource(tile.Once)
 
 	p.Resource.SchoolTile--
+
+	p.Action = true
 
 	return nil
 }
@@ -1254,4 +1267,20 @@ func (p *Faction) CheckTile(tile TileType) bool {
 	}
 
 	return false
+}
+
+func (p *Faction) AddTile(tile TileItem) bool {
+	for _, v := range p.Tiles {
+		if v.Category == tile.Category {
+			return false
+		}
+
+		if v.Type == tile.Type {
+			return false
+		}
+	}
+
+	p.Tiles = append(p.Tiles, tile)
+
+	return true
 }
