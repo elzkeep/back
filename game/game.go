@@ -60,8 +60,11 @@ type Game struct {
 	Users           []int64                   `json:"users"`
 	Usernames       []string                  `json:"usernames"`
 	Count           int                       `json:"count"`
+	Logs            []Log                     `json:"logs"`
 	Command         []string                  `json:"commands"`
 	OldCommand      []string                  `json:"oldCommands"`
+	Network         int                       `json:"network"`
+	DummyNetwork    int                       `json:"-"`
 }
 
 type TurnType int
@@ -85,6 +88,13 @@ type Turn struct {
 	Science resources.Science `json:"science"`
 }
 
+type Log struct {
+	User    int      `json:"user"`
+	Round   int      `json:"round"`
+	Command []string `json:"command"`
+	VP      int      `json:"vp"`
+}
+
 func (p *Turn) Print() {
 	/*
 		titles := []string{"Normal", "Power", "Science", "Spade", "Book", "Tile", "Build", "Resource"}
@@ -100,7 +110,7 @@ func NewGame(game *models.Game) *Game {
 	item.Type = GameType(game.Type)
 	item.PowerActions = action.NewPowerAction()
 	item.BookActions = action.NewBookAction(id)
-	item.RoundTiles = resources.NewRoundTile(id)
+	item.RoundTiles = resources.NewRoundTile(id, game.Type)
 	item.RoundBonuss = NewRoundBonus(id)
 	item.PalaceTiles = resources.NewPalaceTile(id)
 	item.SchoolTiles = resources.NewSchoolTile(id, game.Count)
@@ -109,8 +119,16 @@ func NewGame(game *models.Game) *Game {
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
 
+	item.Network = 0
+	network := 0
+	for _, v := range item.PalaceTiles.Items {
+		network += int(v.Type)
+	}
+
+	item.DummyNetwork = network%4 + 12
+
 	item.Map = NewMap(game.Map)
-	item.Sciences = NewScience()
+	item.Sciences = NewScience(game.Count)
 	item.Factions = make([]factions.FactionInterface, 0)
 
 	item.Turn = make([]Turn, 0)
@@ -122,6 +140,7 @@ func NewGame(game *models.Game) *Game {
 
 	item.Command = make([]string, 0)
 	item.OldCommand = make([]string, 0)
+	item.Logs = make([]Log, 0)
 
 	item.Count = game.Count
 
@@ -158,7 +177,10 @@ func (p *Game) UpdateDBRound(value int) {
 	defer conn.Close()
 
 	gameManager := models.NewGameManager(conn)
-	gameManager.UpdateStatus(value, p.Id)
+	game := gameManager.Get(p.Id)
+	if int(game.Status) < value {
+		gameManager.UpdateStatus(value, p.Id)
+	}
 }
 
 func (p *Game) CompleteAddUser() {
@@ -317,6 +339,10 @@ func (p *Game) Start() {
 
 	p.Round++
 
+	if p.Round == 6 {
+		p.Network = p.DummyNetwork
+	}
+
 	p.TurnOrder = p.PassOrder
 	p.PassOrder = make([]int, 0)
 
@@ -423,6 +449,8 @@ func (p *Game) RoundProcess() {
 		for i, v := range p.Factions {
 			f := v.GetInstance()
 
+			f.Resource.Building = resources.None
+
 			if f.Resource.Spade > 0 {
 				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
 			}
@@ -440,6 +468,16 @@ func (p *Game) RoundProcess() {
 		for i := range p.Factions {
 			p.PassOrder = append(p.PassOrder, i)
 		}
+
+		science := resources.Science{Banking: 2, Law: 2, Engineering: 2, Medicine: 2}
+		for i := 1; i <= 5; i++ {
+			item := p.RoundBonuss.Get(i)
+			science.Banking += item.Science.Banking
+			science.Law += item.Science.Law
+			science.Engineering += item.Science.Engineering
+			science.Medicine += item.Science.Medicine
+		}
+		p.Sciences.Init([]int{science.Banking, science.Law, science.Engineering, science.Medicine})
 
 		p.Start()
 	} else if p.Round == 6 {
@@ -677,13 +715,14 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 	}
 
 	lastBuild := p.Map.LastBuild
+	molesFlag := false
 
 	if f.Type == resources.TileFactionMoles {
 		if (f.Resource.Building != resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
 			if p.Map.CheckDistanceMoles(f.Color, x, y) {
 				items := resources.GetGroundPosition(x, y)
 
-				flag := false
+				molesFlag = true
 				for _, position := range items {
 					x := position.X
 					y := position.Y
@@ -693,7 +732,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 					}
 
 					if p.Map.GetOwner(x, y) == f.Color {
-						flag = true
+						molesFlag = false
 						break
 					}
 
@@ -708,7 +747,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 							}
 
 							if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
-								flag = true
+								molesFlag = false
 								break
 							}
 						}
@@ -719,13 +758,13 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 							}
 
 							if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
-								flag = true
+								molesFlag = false
 								break
 							}
 						}
 					}
 
-					if flag == true {
+					if molesFlag == false {
 						break
 					}
 				}
@@ -733,7 +772,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 		}
 	}
 
-	if flag == true {
+	if molesFlag == true {
 		return true, true, false
 	}
 
@@ -747,13 +786,12 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 		if p.Map.CheckDistanceJump(f.BuildingList, x, y) {
 			items := resources.GetGroundPosition(x, y)
 
-			flag := false
 			for _, position := range items {
 				x := position.X
 				y := position.Y
 
 				if p.Map.GetOwner(x, y) == f.Color {
-					flag = true
+					jumpFlag = false
 					break
 				}
 
@@ -768,7 +806,7 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 						}
 
 						if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
-							flag = true
+							jumpFlag = false
 							break
 						}
 					}
@@ -779,19 +817,15 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool
 						}
 
 						if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
-							flag = true
+							jumpFlag = false
 							break
 						}
 					}
 				}
 
-				if flag == true {
+				if jumpFlag == false {
 					break
 				}
-			}
-
-			if flag == false {
-				jump = true
 			}
 		}
 	}
@@ -919,6 +953,8 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 	} else if building == resources.WHITE_SH || building == resources.WHITE_SA {
 		f.ReceiveResource(resources.Price{VP: buildVP.SHSA})
 	}
+
+	f.ReceiveResource(resources.Price{VP: buildVP.Spade * needSpade})
 
 	if p.Round == 6 {
 		buildVP = p.RoundBonuss.FinalRound.Build
@@ -2009,7 +2045,12 @@ func (p *Game) Annex(user int, x int, y int) error {
 	return nil
 }
 
-func (p *Game) ClearHistory() {
+func (p *Game) ClearHistory(user int) {
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	p.Logs = append(p.Logs, Log{User: user, VP: f.VP, Round: p.Round, Command: p.Command})
+
 	p.OldCommand = make([]string, 0)
 	p.OldCommand = append(p.OldCommand, p.Command...)
 	p.Command = make([]string, 0)
@@ -2057,9 +2098,10 @@ func (p *Game) Undo(user int) error {
 type Score struct {
 	User  int
 	Score int
+	Rank  int
 }
 
-func (p *Game) EndGame() {
+func (p *Game) LastRoundVP(calculate bool) {
 	// 미션 점수
 	scores := make([]Score, 0)
 	for user, v := range p.Factions {
@@ -2149,6 +2191,10 @@ func (p *Game) EndGame() {
 		scores = append(scores, Score{User: user, Score: max})
 	}
 
+	if p.Count <= 2 {
+		scores = append(scores, Score{User: -1, Score: p.DummyNetwork})
+	}
+
 	sort.Slice(scores, func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
@@ -2174,9 +2220,16 @@ func (p *Game) EndGame() {
 
 		for _, v := range scores {
 			if v.Score == score {
+				if v.User == -1 {
+					continue
+				}
 				faction := p.Factions[v.User]
 				f := faction.GetInstance()
-				f.ReceiveResource(resources.Price{VP: receive})
+				if calculate == true {
+					f.Receive.VP += receive
+				} else {
+					f.ReceiveResource(resources.Price{VP: receive})
+				}
 			}
 		}
 
@@ -2203,9 +2256,17 @@ func (p *Game) EndGame() {
 		scores = make([]Score, 0)
 
 		for user, v := range p.Factions {
-			faction := v.GetInstance()
+			f := v.GetInstance()
 
-			scores = append(scores, Score{User: user, Score: faction.Science[k]})
+			if f.Science[k] == 0 {
+				continue
+			}
+
+			scores = append(scores, Score{User: user, Score: f.Science[k]})
+		}
+
+		if p.Count <= 2 {
+			scores = append(scores, Score{User: -1, Score: p.Sciences.Value[k][color.None]})
 		}
 
 		sort.Slice(scores, func(i, j int) bool {
@@ -2233,9 +2294,16 @@ func (p *Game) EndGame() {
 
 			for _, v := range scores {
 				if v.Score == score {
+					if v.User == -1 {
+						continue
+					}
 					faction := p.Factions[v.User]
 					f := faction.GetInstance()
-					f.ReceiveResource(resources.Price{VP: receive})
+					if calculate == true {
+						f.Receive.VP += receive
+					} else {
+						f.ReceiveResource(resources.Price{VP: receive})
+					}
 				}
 			}
 
@@ -2263,7 +2331,38 @@ func (p *Game) EndGame() {
 		f := v.GetInstance()
 
 		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
-		f.ReceiveResource(resources.Price{VP: receive})
+		if calculate == true {
+			f.Receive.VP += receive
+		} else {
+			f.ReceiveResource(resources.Price{VP: receive})
+		}
+	}
+}
+
+func (p *Game) EndGame() {
+	p.LastRoundVP(false)
+
+	ranks := make([]Score, 0)
+	for i, v := range p.Factions {
+		f := v.GetInstance()
+
+		ranks = append(ranks, Score{User: i, Score: f.VP})
+	}
+
+	sort.Slice(ranks, func(i, j int) bool {
+		return ranks[i].Score > ranks[j].Score
+	})
+
+	rank := 1
+	ranks[0].Rank = rank
+	if len(ranks) > 1 {
+		for i := 1; i < len(ranks); i++ {
+			if ranks[i].Score != ranks[i-1].Score {
+				rank = i + 1
+			}
+
+			ranks[i].Rank = rank
+		}
 	}
 
 	db := models.NewConnection()
@@ -2276,6 +2375,7 @@ func (p *Game) EndGame() {
 	gameuserManager := models.NewGameuserManager(conn)
 
 	g := gameManager.Get(p.Id)
+
 	if g.Status != gm.StatusEnd {
 		g.Status = gm.StatusEnd
 		g.Enddate = global.GetCurrentDatetime()
@@ -2287,9 +2387,20 @@ func (p *Game) EndGame() {
 
 		for i, v := range p.Factions {
 			f := v.GetInstance()
+
+			rank := 0
+			for _, v3 := range ranks {
+				if i == v3.User {
+					rank = v3.Rank
+					break
+				}
+			}
+
 			for _, v2 := range gameusers {
 				if p.Users[i] == v2.User {
-					gameuserManager.UpdateScore(f.VP, v2.Id)
+					v2.Score = f.VP
+					v2.Rank = rank
+					gameuserManager.Update(&v2)
 				}
 			}
 
@@ -2302,203 +2413,7 @@ func (p *Game) EndGame() {
 }
 
 func (p *Game) CalculateEndGame() {
-	scores := make([]Score, 0)
-	// 미션 점수
-	for user, v := range p.Factions {
-		f := v.GetInstance()
-
-		remain := f.BuildingList
-		items := make([]resources.Position, 0)
-		items = append(items, remain[0])
-		remain = remain[1:]
-
-		max := 0
-
-		for {
-			connect := make([]resources.Position, 0)
-			disconnect := make([]resources.Position, 0)
-
-			for _, b := range items {
-				for _, b2 := range remain {
-					if p.Map.CheckConnect(f.Color, f.GetShipDistance(false), b.X, b.Y, b2.X, b2.Y) {
-
-						flag := false
-						for _, v := range connect {
-							if b2.X == v.X && b2.Y == v.Y {
-								flag = true
-								break
-							}
-						}
-
-						if flag == false {
-							connect = append(connect, b2)
-						}
-
-						flag = false
-						for _, v := range disconnect {
-							if b2.X == v.X && b2.Y == v.Y {
-								flag = true
-								break
-							}
-						}
-
-						if flag == false {
-							disconnect = append(disconnect, b2)
-						}
-					}
-				}
-			}
-
-			remain2 := make([]resources.Position, 0)
-			for _, v := range remain {
-				flag := false
-				for _, v2 := range disconnect {
-					if v.X == v2.X && v.Y == v2.Y {
-						flag = true
-						break
-					}
-				}
-
-				if flag == false {
-					remain2 = append(remain2, v)
-				}
-			}
-
-			remain = remain2
-
-			if len(connect) == 0 {
-				count := len(items)
-				if count > max {
-					max = count
-				}
-
-				if len(remain) == 0 {
-					break
-				}
-
-				items = make([]resources.Position, 0)
-				items = append(items, remain[0])
-				remain = remain[1:]
-
-				if len(remain) == 0 {
-					break
-				}
-			} else {
-				items = append(items, connect...)
-			}
-		}
-
-		scores = append(scores, Score{User: user, Score: max})
-	}
-
-	sort.Slice(scores, func(i, j int) bool {
-		return scores[i].Score > scores[j].Score
-	})
-
-	receives := []int{0, 18, 15, 12, 9, 7}
-	receiveCount := 0
-
-	for i := 0; i < 3; i++ {
-		if len(scores) == 0 {
-			break
-		}
-
-		score := scores[0].Score
-
-		cnt := 0
-		for _, v := range scores {
-			if v.Score == score {
-				cnt++
-			}
-		}
-
-		receive := receives[cnt]
-
-		for _, v := range scores {
-			if v.Score == score {
-				faction := p.Factions[v.User]
-				f := faction.GetInstance()
-				f.Receive.VP += receive
-			}
-		}
-
-		scores = scores[cnt:]
-		receiveCount += cnt
-
-		if receiveCount >= 3 {
-			break
-		}
-
-		if receiveCount == 1 {
-			receives = []int{0, 12, 9, 6, 4}
-		} else if receiveCount == 2 {
-			receives = []int{0, 6, 3, 2}
-		}
-	}
-
-	// 과학 점수
-	for k := 0; k < 4; k++ {
-		scores = make([]Score, 0)
-
-		for user, v := range p.Factions {
-			faction := v.GetInstance()
-
-			scores = append(scores, Score{User: user, Score: faction.Science[k]})
-		}
-
-		sort.Slice(scores, func(i, j int) bool {
-			return scores[i].Score > scores[j].Score
-		})
-
-		receives := []int{0, 8, 4, 2}
-		receiveCount := 0
-
-		for i := 0; i < 3; i++ {
-			if len(scores) == 0 {
-				break
-			}
-
-			score := scores[0].Score
-
-			cnt := 0
-			for _, v := range scores {
-				if v.Score == score {
-					cnt++
-				}
-			}
-
-			receive := receives[cnt]
-
-			for _, v := range scores {
-				if v.Score == score {
-					faction := p.Factions[v.User]
-					f := faction.GetInstance()
-					f.Receive.VP += receive
-				}
-			}
-
-			scores = scores[cnt:]
-			receiveCount += cnt
-
-			if receiveCount >= 3 {
-				break
-			}
-
-			if receiveCount == 1 {
-				receives = []int{0, 4, 2, 1}
-			} else if receiveCount == 2 {
-				receives = []int{0, 2, 1, 0}
-			}
-		}
-	}
-
-	// 남은 자원
-	for _, v := range p.Factions {
-		f := v.GetInstance()
-
-		receive := (f.Resource.Coin + f.Resource.Worker + f.Resource.Prist + f.Resource.Book.Count() + f.Resource.Power[2] + f.Resource.Power[1]/2) / 5
-		f.Receive.VP += receive
-	}
+	p.LastRoundVP(true)
 }
 
 func (p *Game) Elo(a float64, b float64, rank int) (float64, float64) {
@@ -2521,8 +2436,8 @@ func (p *Game) Elo(a float64, b float64, rank int) (float64, float64) {
 		s2 = 0.5
 	}
 
-	ret1 := a + elo_k*(s1-var1)
-	ret2 := b + elo_k*(s2-var2)
+	ret1 := elo_k * (s1 - var1)
+	ret2 := elo_k * (s2 - var2)
 
 	return ret1, ret2
 }
@@ -2545,11 +2460,27 @@ func (p *Game) CalculateElo() {
 		return
 	}
 
+	users := make([][]int64, 0)
+
 	for _, v := range items {
 		for _, v2 := range items[1:] {
 			if v.User == v2.User {
 				continue
 			}
+
+			flag := false
+			for _, k := range users {
+				if (k[0] == v.User && k[1] == v2.User) || (k[0] == v2.User && k[1] == v.User) {
+					flag = true
+					break
+				}
+			}
+
+			if flag == true {
+				continue
+			}
+
+			users = append(users, []int64{v.User, v2.User})
 
 			rank := 0
 			if v.Score > v2.Score {
@@ -2562,9 +2493,11 @@ func (p *Game) CalculateElo() {
 			user2 := v2.Extra["user"].(models.User)
 			elo1, elo2 := p.Elo(float64(user1.Elo), float64(user2.Elo), rank)
 
-			userManager.UpdateElo(models.Double(elo1), v.Id)
-			userManager.UpdateElo(models.Double(elo2), v2.Id)
+			userManager.IncreaseElo(models.Double(elo1), v.User)
+			userManager.IncreaseElo(models.Double(elo2), v2.User)
 		}
+
+		userManager.IncreaseCount(1, v.User)
 	}
 
 	conn.Commit()

@@ -135,6 +135,17 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/user/elo/:name", func(c *fiber.Ctx) error {
+			name_ := c.Params("name")
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.UserController
+			controller.Init(c)
+			controller.Elo(name_, page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 	}
 
 	{
@@ -496,6 +507,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/gamehistory/vp", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var vp_ int
+			if v, flag := results["vp"]; flag {
+				vp_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GamehistoryController
+			controller.Init(c)
+			controller.UpdateVp(vp_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/gamehistory/user", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -835,6 +865,44 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/gameuser/faction", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var faction_ int
+			if v, flag := results["faction"]; flag {
+				faction_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.UpdateFaction(faction_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameuser/color", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var color_ int
+			if v, flag := results["color"]; flag {
+				color_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.UpdateColor(color_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/gameuser/score", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -850,6 +918,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.GameuserController
 			controller.Init(c)
 			controller.UpdateScore(score_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameuser/rank", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var rank_ int
+			if v, flag := results["rank"]; flag {
+				rank_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.UpdateRank(rank_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1590,6 +1677,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/user/count", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var count_ int
+			if v, flag := results["count"]; flag {
+				count_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateCount(count_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/user/image", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1624,6 +1730,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserController
 			controller.Init(c)
 			controller.UpdateProfile(profile_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/sum", func(c *fiber.Ctx) error {
+			var controller rest.UserController
+			controller.Init(c)
+			controller.Sum()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

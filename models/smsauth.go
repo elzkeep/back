@@ -221,6 +221,8 @@ func (p *SmsauthManager) UpdateNumber(value string, id int64) error {
 }
 
 
+
+
 func (p *SmsauthManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0

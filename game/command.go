@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 )
 
 func ConvertPosition(str string) (int, int) {
@@ -109,6 +110,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 	cmd := strs[1]
 
 	var err error = nil
+	round := p.Round
 
 	if cmd == "build" {
 		x, y := ConvertPosition(strs[2])
@@ -302,21 +304,30 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		if cmd == "undo" {
 		} else {
 			if update == true {
-				conn := models.NewConnection()
-				defer conn.Close()
+				for i := 0; i < 3; i++ {
+					conn := models.NewConnection()
 
-				gamehistoryManager := models.NewGamehistoryManager(conn)
+					gamehistoryManager := models.NewGamehistoryManager(conn)
 
-				date := global.GetCurrentDatetime()
+					date := global.GetCurrentDatetime()
 
-				var item models.Gamehistory
-				item.Round = p.Round
-				item.Command = str
-				item.User = id
-				item.Game = gameid
-				item.Date = date
+					var item models.Gamehistory
+					item.Round = round
+					item.Command = str
+					item.Vp = p.Factions[user].GetInstance().VP
+					item.User = id
+					item.Game = gameid
+					item.Date = date
 
-				gamehistoryManager.Insert(&item)
+					err := gamehistoryManager.Insert(&item)
+					conn.Close()
+
+					if err == nil {
+						break
+					}
+
+					time.Sleep(2 * time.Second)
+				}
 
 				p.Calculate(user)
 			}
@@ -327,7 +338,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 					global.SendNotify(msg)
 				}
 
-				p.ClearHistory()
+				p.ClearHistory(user)
 			} else {
 				p.AddHistory(str)
 			}

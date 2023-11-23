@@ -38,9 +38,21 @@ func (c *GameuserController) Index(page int, pagesize int) {
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
+    _faction := c.Geti("faction")
+    if _faction != 0 {
+        args = append(args, models.Where{Column:"faction", Value:_faction, Compare:"="})    
+    }
+    _color := c.Geti("color")
+    if _color != 0 {
+        args = append(args, models.Where{Column:"color", Value:_color, Compare:"="})    
+    }
     _score := c.Geti("score")
     if _score != 0 {
         args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
+    _rank := c.Geti("rank")
+    if _rank != 0 {
+        args = append(args, models.Where{Column:"rank", Value:_rank, Compare:"="})    
     }
     _user := c.Geti64("user")
     if _user != 0 {
@@ -231,6 +243,26 @@ func (c *GameuserController) UpdateOrder(order int, id int64) {
 }
 
 // @Put()
+func (c *GameuserController) UpdateFaction(faction int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+	_manager.UpdateFaction(faction, id)
+}
+
+// @Put()
+func (c *GameuserController) UpdateColor(color int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+	_manager.UpdateColor(color, id)
+}
+
+// @Put()
 func (c *GameuserController) UpdateScore(score int, id int64) {
     
     
@@ -238,6 +270,16 @@ func (c *GameuserController) UpdateScore(score int, id int64) {
 
 	_manager := models.NewGameuserManager(conn)
 	_manager.UpdateScore(score, id)
+}
+
+// @Put()
+func (c *GameuserController) UpdateRank(rank int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+	_manager.UpdateRank(rank, id)
 }
 
 // @Put()

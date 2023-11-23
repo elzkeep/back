@@ -9,7 +9,7 @@ type RoundTile struct {
 	Reserved []TileItem `json:"reserved"`
 }
 
-func NewRoundTile(id int64) *RoundTile {
+func NewRoundTile(id int64, typeid int) *RoundTile {
 	var item RoundTile
 
 	item.Items = make([]TileItem, 0)
@@ -38,25 +38,51 @@ func NewRoundTile(id int64) *RoundTile {
 		models.Ordering("gt_order"),
 	})
 
-	for _, v := range items {
-		for _, tile := range tiles {
-			if v.Number == int(tile.Type) {
-				item.Reserved = append(item.Reserved, tile)
-			}
-		}
-	}
-
-	for _, tile := range tiles {
-		flag := false
-
+	if id <= 10 {
 		for _, v := range items {
-			if v.Number == int(tile.Type) {
-				flag = true
+			for _, tile := range tiles {
+				if v.Number == int(tile.Type) {
+					item.Reserved = append(item.Reserved, tile)
+				}
 			}
 		}
 
-		if flag == true {
-			item.Items = append(item.Items, tile)
+		for _, tile := range tiles {
+			flag := false
+
+			for _, v := range items {
+				if v.Number == int(tile.Type) {
+					flag = true
+				}
+			}
+
+			if flag == true {
+				item.Items = append(item.Items, tile)
+			}
+		}
+	} else {
+		if typeid != 1 {
+			for _, v := range items {
+				for _, tile := range tiles {
+					if v.Number == int(tile.Type) {
+						item.Items = append(item.Items, tile)
+					}
+				}
+			}
+		} else {
+			pos := 0
+			for _, v := range items {
+				for _, tile := range tiles {
+					if v.Number == int(tile.Type) {
+						if pos < 7 {
+							item.Reserved = append(item.Reserved, tile)
+						} else {
+							item.Items = append(item.Items, tile)
+						}
+						pos++
+					}
+				}
+			}
 		}
 	}
 

@@ -20,6 +20,7 @@ type Gamehistory struct {
     Id                int64 `json:"id"`         
     Round                int `json:"round"`         
     Command                string `json:"command"`         
+    Vp                int `json:"vp"`         
     User                int64 `json:"user"`         
     Game                int64 `json:"game"`         
     Date                string `json:"date"` 
@@ -88,7 +89,7 @@ func (p *GamehistoryManager) Query(query string, params ...interface{}) (*sql.Ro
 func (p *GamehistoryManager) GetQuery() string {
     ret := ""
 
-    str := "select gh_id, gh_round, gh_command, gh_user, gh_game, gh_date from gamehistory_tb "
+    str := "select gh_id, gh_round, gh_command, gh_vp, gh_user, gh_game, gh_date from gamehistory_tb "
 
     if p.Index == "" {
         ret = str
@@ -154,11 +155,11 @@ func (p *GamehistoryManager) Insert(item *Gamehistory) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into gamehistory_tb (gh_id, gh_round, gh_command, gh_user, gh_game, gh_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Round, item.Command, item.User, item.Game, item.Date)
+        query = "insert into gamehistory_tb (gh_id, gh_round, gh_command, gh_vp, gh_user, gh_game, gh_date) values (?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Round, item.Command, item.Vp, item.User, item.Game, item.Date)
     } else {
-        query = "insert into gamehistory_tb (gh_round, gh_command, gh_user, gh_game, gh_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Round, item.Command, item.User, item.Game, item.Date)
+        query = "insert into gamehistory_tb (gh_round, gh_command, gh_vp, gh_user, gh_game, gh_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Round, item.Command, item.Vp, item.User, item.Game, item.Date)
     }
     
     if err == nil {
@@ -192,8 +193,8 @@ func (p *GamehistoryManager) Update(item *Gamehistory) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update gamehistory_tb set gh_round = ?, gh_command = ?, gh_user = ?, gh_game = ?, gh_date = ? where gh_id = ?"
-	_, err := p.Exec(query , item.Round, item.Command, item.User, item.Game, item.Date, item.Id)
+	query := "update gamehistory_tb set gh_round = ?, gh_command = ?, gh_vp = ?, gh_user = ?, gh_game = ?, gh_date = ? where gh_id = ?"
+	_, err := p.Exec(query , item.Round, item.Command, item.Vp, item.User, item.Game, item.Date, item.Id)
     
         
     return err
@@ -222,6 +223,17 @@ func (p *GamehistoryManager) UpdateCommand(value string, id int64) error {
     return err
 }
 
+func (p *GamehistoryManager) UpdateVp(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gamehistory_tb set gh_vp = ? where gh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *GamehistoryManager) UpdateUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -239,6 +251,52 @@ func (p *GamehistoryManager) UpdateGame(value int64, id int64) error {
     }
 
 	query := "update gamehistory_tb set gh_game = ? where gh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
+
+func (p *GamehistoryManager) IncreaseRound(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gamehistory_tb set gh_round = gh_round + ? where gh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GamehistoryManager) IncreaseVp(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gamehistory_tb set gh_vp = gh_vp + ? where gh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GamehistoryManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gamehistory_tb set gh_user = gh_user + ? where gh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GamehistoryManager) IncreaseGame(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gamehistory_tb set gh_game = gh_game + ? where gh_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -272,7 +330,9 @@ func (p *GamehistoryManager) ReadRow(rows *sql.Rows) *Gamehistory {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Round, &item.Command, &item.User, &item.Game, &item.Date)
+        err = rows.Scan(&item.Id, &item.Round, &item.Command, &item.Vp, &item.User, &item.Game, &item.Date)
+        
+        
         
         
         
@@ -309,12 +369,13 @@ func (p *GamehistoryManager) ReadRows(rows *sql.Rows) []Gamehistory {
         var item Gamehistory
         
     
-        err := rows.Scan(&item.Id, &item.Round, &item.Command, &item.User, &item.Game, &item.Date)
+        err := rows.Scan(&item.Id, &item.Round, &item.Command, &item.Vp, &item.User, &item.Game, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         

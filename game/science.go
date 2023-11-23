@@ -17,13 +17,15 @@ const (
 )
 
 type Science struct {
-	Count [][]color.Color       `json:"count"`
-	Value []map[color.Color]int `json:"value"`
+	Count     [][]color.Color       `json:"count"`
+	Value     []map[color.Color]int `json:"value"`
+	UserCount int                   `json:"-"`
 }
 
-func NewScience() *Science {
+func NewScience(count int) *Science {
 	var item Science
 
+	item.UserCount = count
 	item.Count = make([][]color.Color, 4)
 	item.Value = make([]map[color.Color]int, 4)
 
@@ -45,10 +47,18 @@ func (p *Science) Send(user *factions.Faction, pos ScienceType) int {
 	step := 2
 
 	count := len(p.Count[pos])
-	if count == 0 {
-		step = 3
-	} else if count >= 4 {
-		step = 1
+	if p.UserCount > 2 {
+		if count == 0 {
+			step = 3
+		} else if count >= 4 {
+			step = 1
+		}
+	} else {
+		if count == 1 {
+			step = 3
+		} else if count >= 4 {
+			step = 1
+		}
 	}
 
 	if count < 4 {
@@ -102,6 +112,10 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) int 
 		}
 
 		inc++
+
+		if p.Value[pos][user.Color] == 12 {
+			break
+		}
 	}
 
 	return inc
@@ -251,4 +265,16 @@ func (p *Science) CalculateRoundBonus(user *factions.Faction) {
 			user.ReceiveIncome(resources.Price{VP: 3})
 		}
 	}
+}
+
+func (p *Science) Init(value []int) {
+	if p.UserCount >= 2 {
+		return
+	}
+
+	for i := 0; i < 4; i++ {
+		p.Count[i] = append(p.Count[i], color.None)
+	}
+
+	p.AddUser(color.None, value)
 }

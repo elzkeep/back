@@ -289,6 +289,52 @@ func (p *GameManager) UpdateEnddate(value string, id int64) error {
 }
 
 
+
+func (p *GameManager) IncreaseCount(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_count = g_count + ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameManager) IncreaseJoin(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_join = g_join + ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameManager) IncreaseMap(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_map = g_map + ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameManager) IncreaseType(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_type = g_type + ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
 func (p *GameManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0

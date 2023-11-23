@@ -42,6 +42,10 @@ func (c *GamehistoryController) Index(page int, pagesize int) {
     if _command != "" {
         args = append(args, models.Where{Column:"command", Value:_command, Compare:"like"})
     }
+    _vp := c.Geti("vp")
+    if _vp != 0 {
+        args = append(args, models.Where{Column:"vp", Value:_vp, Compare:"="})    
+    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
@@ -187,6 +191,16 @@ func (c *GamehistoryController) UpdateCommand(command string, id int64) {
 
 	_manager := models.NewGamehistoryManager(conn)
 	_manager.UpdateCommand(command, id)
+}
+
+// @Put()
+func (c *GamehistoryController) UpdateVp(vp int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGamehistoryManager(conn)
+	_manager.UpdateVp(vp, id)
 }
 
 // @Put()

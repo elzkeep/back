@@ -245,6 +245,52 @@ func (p *GametileManager) UpdateGame(value int64, id int64) error {
 }
 
 
+
+func (p *GametileManager) IncreaseType(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gametile_tb set gt_type = gt_type + ? where gt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GametileManager) IncreaseNumber(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gametile_tb set gt_number = gt_number + ? where gt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GametileManager) IncreaseOrder(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gametile_tb set gt_order = gt_order + ? where gt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GametileManager) IncreaseGame(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gametile_tb set gt_game = gt_game + ? where gt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
 func (p *GametileManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0

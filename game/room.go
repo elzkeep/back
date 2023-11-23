@@ -126,7 +126,7 @@ func Make(user int64, item *models.Game) {
 
 	factionCount := 7
 	colorCount := 7
-	roundCount := 7
+	roundCount := 10
 
 	if GameType(item.Type) != BasicType {
 		factionCount = item.Count + 1
@@ -335,12 +335,50 @@ func Make(user int64, item *models.Game) {
 
 		items := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
+		sciences := []resources.Science{
+			resources.Science{Law: 3},
+			resources.Science{Banking: 3},
+			resources.Science{Law: 3},
+			resources.Science{Medicine: 4},
+			resources.Science{Banking: 1},
+			resources.Science{Medicine: 2},
+			resources.Science{Banking: 2},
+			resources.Science{Engineering: 1},
+			resources.Science{Medicine: 3},
+			resources.Science{Engineering: 4},
+			resources.Science{Engineering: 3},
+			resources.Science{Law: 2},
+		}
+
 		for {
 			rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
-			if items[4] != 7 && items[5] != 7 {
-				break
+			if items[4] == 7 || items[5] == 7 {
+				continue
 			}
+
+			science := resources.Science{Banking: 0, Law: 0, Engineering: 0, Medicine: 0}
+			for i := range items[:6] {
+				item := sciences[i]
+				if item.Banking > 0 {
+					science.Banking++
+				} else if item.Law > 0 {
+					science.Law++
+				} else if item.Engineering > 0 {
+					science.Engineering++
+				} else if item.Medicine > 0 {
+					science.Medicine++
+				}
+			}
+
+			if science.Banking >= 3 ||
+				science.Law >= 3 ||
+				science.Engineering >= 3 ||
+				science.Medicine >= 3 {
+				continue
+			}
+
+			break
 		}
 
 		for i, v := range items[:6] {

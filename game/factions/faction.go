@@ -273,6 +273,7 @@ func (p *Faction) ReceiveResource(receive Price) {
 
 	if receive.Building != None {
 		p.Resource.Building = receive.Building
+		p.BuildAction = false
 	}
 
 	if p.Resource.Bridge > p.MaxBridge {

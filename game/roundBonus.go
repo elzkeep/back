@@ -31,6 +31,7 @@ type RoundBonusItem struct {
 type RoundBonus struct {
 	Items      []RoundBonusItem `json:"items"`
 	FinalRound RoundBonusItem   `json:"final"`
+	Tiles      []RoundBonusItem `json:"-"`
 }
 
 func NewRoundBonus(id int64) *RoundBonus {
@@ -75,6 +76,8 @@ func NewRoundBonus(id int64) *RoundBonus {
 	}
 
 	item.FinalRound = finalRound[items[6].Number]
+
+	item.Tiles = tiles
 
 	return &item
 }

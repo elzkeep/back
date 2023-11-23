@@ -233,6 +233,19 @@ func (p *MapManager) UpdateOrder(value int, id int64) error {
 }
 
 
+
+func (p *MapManager) IncreaseOrder(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update map_tb set m_order = m_order + ? where m_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
 func (p *MapManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0

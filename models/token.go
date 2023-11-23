@@ -233,6 +233,30 @@ func (p *TokenManager) UpdateStatus(value int, id int64) error {
 }
 
 
+
+func (p *TokenManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update token_tb set a_user = a_user + ? where a_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *TokenManager) IncreaseStatus(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update token_tb set a_status = a_status + ? where a_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
 func (p *TokenManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
