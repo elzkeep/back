@@ -22,6 +22,7 @@ type FactionInterface interface {
 	FirstBuild(x int, y int, building Building) error
 	Build(x int, y int, needSpade int, building Building) error
 	Upgrade(x int, y int, target Building, extra int) error
+	Downgrade(x int, y int) error
 	AdvanceShip() error
 	AdvanceSpade() error
 	SendScholar(pos int, inc int) error
@@ -268,6 +269,7 @@ func (p *Faction) ReceiveResource(receive Price) {
 	p.Resource.Bridge += receive.Bridge
 
 	p.Resource.TpUpgrade += receive.TpUpgrade
+	p.Resource.Downgrade += receive.Downgrade
 
 	p.Resource.SchoolTile += receive.Tile
 
@@ -631,6 +633,10 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 		p.ReceiveShsaVP()
 	}
 
+	if p.Type == TileFactionGoblins {
+		p.ReceiveResource(Price{Coin: needSpade * 2})
+	}
+
 	p.Building[building]++
 
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
@@ -744,6 +750,52 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 		p.ReceiveShsaVP()
 	}
 
+	p.Action = true
+	p.ResetResource()
+
+	p.Print()
+
+	return nil
+}
+
+func (p *Faction) Downgrade(x int, y int) error {
+	current := None
+
+	for _, item := range p.BuildingList {
+		if item.X == x && item.Y == y {
+			current = item.Building
+			if current != TE {
+				return errors.New("can not upgrade")
+			}
+		}
+	}
+
+	if current == None {
+		return errors.New("not found building")
+	}
+
+	if p.MaxBuilding[TP] <= p.Building[TP] {
+		return errors.New("full building")
+	}
+
+	p.Building[TE]--
+	p.Building[TP]++
+
+	for i, item := range p.BuildingList {
+		if item.X == x && item.Y == y {
+			// 요소 삭제
+			p.BuildingList = append(p.BuildingList[:i], p.BuildingList[i+1:]...)
+			break
+		}
+	}
+
+	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: TP})
+
+	p.ReceiveTpVP()
+
+	p.ReceiveResource(Price{Worker: 1, VP: 3})
+
+	p.Resource.Downgrade--
 	p.Action = true
 	p.ResetResource()
 

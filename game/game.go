@@ -105,6 +105,8 @@ func (p *Turn) Print() {
 func NewGame(game *models.Game) *Game {
 	var item Game
 	id := game.Id
+	count := game.Count
+
 	item.Id = id
 	item.Name = game.Name
 	item.Type = GameType(game.Type)
@@ -113,8 +115,8 @@ func NewGame(game *models.Game) *Game {
 	item.RoundTiles = resources.NewRoundTile(id, game.Type)
 	item.RoundBonuss = NewRoundBonus(id)
 	item.PalaceTiles = resources.NewPalaceTile(id)
-	item.SchoolTiles = resources.NewSchoolTile(id, game.Count)
-	item.InnovationTiles = resources.NewInnovationTile(id, game.Count)
+	item.SchoolTiles = resources.NewSchoolTile(id, count)
+	item.InnovationTiles = resources.NewInnovationTile(id, count)
 	item.FactionTiles = resources.NewFactionTile(id)
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
@@ -128,7 +130,7 @@ func NewGame(game *models.Game) *Game {
 	item.DummyNetwork = network%4 + 12
 
 	item.Map = NewMap(game.Map)
-	item.Sciences = NewScience(game.Count)
+	item.Sciences = NewScience(count)
 	item.Factions = make([]factions.FactionInterface, 0)
 
 	item.Turn = make([]Turn, 0)
@@ -142,7 +144,7 @@ func NewGame(game *models.Game) *Game {
 	item.OldCommand = make([]string, 0)
 	item.Logs = make([]Log, 0)
 
-	item.Count = game.Count
+	item.Count = count
 
 	item.Round = InitRound
 
@@ -1054,6 +1056,53 @@ func (p *Game) Upgrade(user int, x int, y int, target resources.Building) error 
 	return nil
 }
 
+func (p *Game) Downgrade(user int, x int, y int) error {
+	if p.Round < 1 {
+		return errors.New("round error")
+	}
+
+	if !p.IsTurn(user) {
+		return errors.New("It's not a turn")
+	}
+
+	if !p.IsNormalTurn() {
+		return errors.New("It's not a normal turn")
+	}
+
+	faction := p.Factions[user]
+	f := faction.GetInstance()
+
+	if f.Resource.Downgrade == 0 || p.Map.GetBuilding(x, y) != resources.TE {
+		return errors.New("Already completed the action")
+	}
+
+	if p.Map.GetOwner(x, y) != f.Color {
+		return errors.New("not owner")
+	}
+
+	err := faction.Downgrade(x, y)
+
+	if err != nil {
+		return err
+	}
+
+	p.Map.SetBuilding(x, y, resources.TP)
+
+	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+
+	f.ReceiveResource(resources.Price{VP: buildVP.TP})
+
+	if p.Round == 6 {
+		buildVP = p.RoundBonuss.FinalRound.Build
+
+		f.ReceiveResource(resources.Price{VP: buildVP.TP})
+	}
+
+	p.PowerDiffusion(user, x, y)
+
+	return nil
+}
+
 func (p *Game) PowerAction(user int, pos int) error {
 	if p.Round < 1 {
 		return errors.New("round error")
@@ -1888,6 +1937,9 @@ func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book)
 
 		f.ReceiveResource(resources.Price{VP: buildVP.Advance * 2})
 	}
+
+	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+	f.ReceiveResource(resources.Price{VP: buildVP.Innovation})
 
 	f.Action = true
 

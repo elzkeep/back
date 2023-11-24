@@ -46,6 +46,10 @@ func (p *Monks) Upgrade(x int, y int, target Building, extra int) error {
 	return p.Faction.Upgrade(x, y, target, extra)
 }
 
+func (p *Monks) Downgrade(x int, y int) error {
+	return p.Faction.Downgrade(x, y)
+}
+
 func (p *Monks) AdvanceShip() error {
 	return p.Faction.AdvanceShip()
 }

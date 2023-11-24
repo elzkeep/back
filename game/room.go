@@ -100,9 +100,21 @@ func Init() {
 				Command(g, history.Game, history.User, history.Command, false)
 			}
 
-			for user, _ := range g.Factions {
-				g.Calculate(user)
+			if g.Round > 0 && g.Round <= 6 {
+				for user, _ := range g.Factions {
+					g.Calculate(user)
+				}
 			}
+
+			/*
+				for i, v := range g.Users {
+					if v == 1 {
+						if g.IsTurn(i) {
+							AICommand(g, i)
+						}
+					}
+				}
+			*/
 		}
 	}
 }
@@ -124,14 +136,20 @@ func Make(user int64, item *models.Game) {
 	id := gameManager.GetIdentity()
 	item.Id = id
 
+	count := item.Count
+
+	if count == 1 {
+		count = 2
+	}
+
 	factionCount := 7
 	colorCount := 7
 	roundCount := 10
 
 	if GameType(item.Type) != BasicType {
-		factionCount = item.Count + 1
+		factionCount = count + 1
 		colorCount = 6
-		roundCount = item.Count + 3
+		roundCount = count + 3
 	}
 
 	{
@@ -239,7 +257,7 @@ func Make(user int64, item *models.Game) {
 
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
-		for i, v := range items[:item.Count+1] {
+		for i, v := range items[:count+1] {
 			var tile models.Gametile
 
 			tile.Type = int(resources.TilePalace)
@@ -255,7 +273,7 @@ func Make(user int64, item *models.Game) {
 
 			tile.Type = int(resources.TilePalace)
 			tile.Number = int(resources.TilePalaceVp)
-			tile.Order = item.Count + 1 + 1
+			tile.Order = count + 1 + 1
 			tile.Game = id
 
 			gametileManager.Insert(&tile)
@@ -358,8 +376,8 @@ func Make(user int64, item *models.Game) {
 			}
 
 			science := resources.Science{Banking: 0, Law: 0, Engineering: 0, Medicine: 0}
-			for i := range items[:6] {
-				item := sciences[i]
+			for _, v := range items[:6] {
+				item := sciences[v]
 				if item.Banking > 0 {
 					science.Banking++
 				} else if item.Law > 0 {
@@ -455,7 +473,7 @@ func Make(user int64, item *models.Game) {
 
 		counts := []int{4, 6, 8, 10, 12}
 
-		for i, v := range items[:counts[item.Count-1]] {
+		for i, v := range items[:counts[count-1]] {
 			var tile models.Gametile
 
 			tile.Type = int(resources.TileInnovation)
@@ -473,6 +491,19 @@ func Make(user int64, item *models.Game) {
 	SetGame(id, g)
 
 	Join(user, id)
+	/*
+		if g.Count == 1 {
+			Join(1, id)
+
+			for i, v := range g.Users {
+				if v == 1 {
+					if g.IsTurn(i) {
+						AICommand(g, i)
+					}
+				}
+			}
+		}
+	*/
 }
 
 func Lock() {
@@ -510,6 +541,9 @@ func Join(user int64, id int64) error {
 		return errors.New("already")
 	}
 
+	if item.Count == 1 {
+		item.Count = 2
+	}
 	count := gameuserManager.CountByGame(id)
 	if count >= item.Count {
 		Unlock()

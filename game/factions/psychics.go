@@ -46,6 +46,10 @@ func (p *Psychics) Upgrade(x int, y int, target Building, extra int) error {
 	return p.Faction.Upgrade(x, y, target, extra)
 }
 
+func (p *Psychics) Downgrade(x int, y int) error {
+	return p.Faction.Downgrade(x, y)
+}
+
 func (p *Psychics) AdvanceShip() error {
 	return p.Faction.AdvanceShip()
 }

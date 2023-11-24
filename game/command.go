@@ -131,6 +131,10 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 		target := ConvertBuilding(strs[3])
 
 		err = p.Upgrade(user, x, y, target)
+	} else if cmd == "downgrade" {
+		x, y := ConvertPosition(strs[2])
+
+		err = p.Downgrade(user, x, y)
 	} else if cmd == "advance" {
 		if strs[2] == "ship" {
 			err = p.AdvanceShip(user)
@@ -343,6 +347,18 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 				p.AddHistory(str)
 			}
 		}
+
+		/*
+			if cmd == "save" && update == true {
+				for i, v := range p.Users {
+					if v == 1 {
+						if p.IsTurn(i) {
+							AICommand(p, i)
+						}
+					}
+				}
+			}
+		*/
 	}
 
 	return err

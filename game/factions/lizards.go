@@ -45,6 +45,10 @@ func (p *Lizards) Upgrade(x int, y int, target Building, extra int) error {
 	return p.Faction.Upgrade(x, y, target, extra)
 }
 
+func (p *Lizards) Downgrade(x int, y int) error {
+	return p.Faction.Downgrade(x, y)
+}
+
 func (p *Lizards) AdvanceShip() error {
 	return p.Faction.AdvanceShip()
 }
