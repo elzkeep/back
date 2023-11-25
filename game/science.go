@@ -268,7 +268,7 @@ func (p *Science) CalculateRoundBonus(user *factions.Faction) {
 }
 
 func (p *Science) Init(value []int) {
-	if p.UserCount >= 2 {
+	if p.UserCount > 2 {
 		return
 	}
 

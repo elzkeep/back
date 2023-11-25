@@ -6,12 +6,14 @@ import (
 	"aoi/models"
 	"aoi/services"
 	"math/rand"
+	"runtime"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	rand.Seed(time.Now().UnixNano())
 
 	log.SetFormatter(&log.TextFormatter{

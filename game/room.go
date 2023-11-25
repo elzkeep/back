@@ -6,6 +6,7 @@ import (
 	"aoi/global"
 	"aoi/models"
 	"aoi/models/game"
+	"aoi/models/gameundo"
 	"errors"
 	"log"
 	"math/rand"
@@ -13,11 +14,11 @@ import (
 )
 
 var _rooms map[int64]*Game
-var _mutex sync.Mutex
+var _mutex map[int64]*sync.Mutex
 
 func init() {
-	_mutex = sync.Mutex{}
-	_rooms = make(map[int64]*Game, 0)
+	_mutex = make(map[int64]*sync.Mutex)
+	_rooms = make(map[int64]*Game)
 }
 
 func SetGame(id int64, game *Game) {
@@ -25,16 +26,22 @@ func SetGame(id int64, game *Game) {
 }
 
 func MakeGame(id int64) {
+	log.Println("MakeGame")
 	conn := models.NewConnection()
 	defer conn.Close()
 
 	gameManager := models.NewGameManager(conn)
 	gameuserManager := models.NewGameuserManager(conn)
 	gamehistoryManager := models.NewGamehistoryManager(conn)
+	gameundoManager := models.NewGameundoManager(conn)
+	gameundoitemManager := models.NewGameundoitemManager(conn)
 
-	game := gameManager.Get(id)
+	gameItem := gameManager.Get(id)
 
-	g := NewGame(game)
+	Lock(id)
+	defer Unlock(id)
+
+	g := NewGame(gameItem)
 	SetGame(id, g)
 
 	gameusers := gameuserManager.Find([]interface{}{
@@ -42,7 +49,7 @@ func MakeGame(id int64) {
 		models.Ordering("gu_order"),
 	})
 
-	if game.Count == len(gameusers) {
+	if gameItem.Count == len(gameusers) {
 		for _, gameuser := range gameusers {
 			user := gameuser.Extra["user"].(models.User)
 			g.AddUser(gameuser.User, user.Name)
@@ -56,67 +63,119 @@ func MakeGame(id int64) {
 		})
 
 		for _, history := range historys {
-			Command(g, history.Game, history.User, history.Command, false)
+			err := Command(g, history.Game, history.User, history.Command, false, history.Id)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
-		for user, _ := range g.Factions {
-			g.Calculate(user)
+		if g.Round > 0 && g.Round <= 6 {
+			for user, _ := range g.Factions {
+				g.Calculate(user)
+			}
+		}
+
+		if gameItem.Status != game.StatusEnd {
+			gameundos := gameundoManager.Find([]interface{}{
+				models.Where{Column: "game", Value: id, Compare: "="},
+				models.Where{Column: "status", Value: gameundo.StatusWait, Compare: "="},
+			})
+
+			for _, gameundo := range gameundos {
+				user := g.GetUserPos(gameundo.User)
+				g.UndoRequest = UndoRequest{Id: gameundo.Id, User: user, History: gameundo.Gamehistory, Status: 1, Command: "", Users: make([]int, 0)}
+
+				gameundoitems := gameundoitemManager.Find([]interface{}{
+					models.Where{Column: "gameundo", Value: gameundo.Id, Compare: "="},
+				})
+
+				for _, gameundoitem := range gameundoitems {
+					g.AddUndoConfirm(gameundoitem.User)
+				}
+			}
 		}
 	}
 }
 func Init() {
-	conn := models.NewConnection()
-	defer conn.Close()
+	/*
+		conn := models.NewConnection()
+		defer conn.Close()
 
-	gameManager := models.NewGameManager(conn)
-	gameuserManager := models.NewGameuserManager(conn)
-	gamehistoryManager := models.NewGamehistoryManager(conn)
+		gameManager := models.NewGameManager(conn)
+		gameuserManager := models.NewGameuserManager(conn)
+		gamehistoryManager := models.NewGamehistoryManager(conn)
+		gameundoManager := models.NewGameundoManager(conn)
+		gameundoitemManager := models.NewGameundoitemManager(conn)
 
-	games := gameManager.Find(nil)
+		games := gameManager.Find([]interface{}{models.Where{Column: "status", Value: game.StatusEnd, Compare: "<>"}})
 
-	for _, v := range games {
-		g := NewGame(&v)
-		SetGame(v.Id, g)
+		for _, v := range games {
+			g := NewGame(&v)
+			SetGame(v.Id, g)
 
-		gameusers := gameuserManager.Find([]interface{}{
-			models.Where{Column: "game", Value: v.Id, Compare: "="},
-			models.Ordering("gu_order"),
-		})
-
-		if v.Count == len(gameusers) {
-			for _, gameuser := range gameusers {
-				user := gameuser.Extra["user"].(models.User)
-				g.AddUser(gameuser.User, user.Name)
-			}
-
-			g.CompleteAddUser()
-
-			historys := gamehistoryManager.Find([]interface{}{
+			gameusers := gameuserManager.Find([]interface{}{
 				models.Where{Column: "game", Value: v.Id, Compare: "="},
-				models.Ordering("gh_id"),
+				models.Ordering("gu_order"),
 			})
 
-			for _, history := range historys {
-				Command(g, history.Game, history.User, history.Command, false)
-			}
-
-			if g.Round > 0 && g.Round <= 6 {
-				for user, _ := range g.Factions {
-					g.Calculate(user)
+			if v.Count == len(gameusers) {
+				for _, gameuser := range gameusers {
+					user := gameuser.Extra["user"].(models.User)
+					g.AddUser(gameuser.User, user.Name)
 				}
-			}
 
-			/*
-				for i, v := range g.Users {
-					if v == 1 {
-						if g.IsTurn(i) {
-							AICommand(g, i)
+				g.CompleteAddUser()
+
+				historys := gamehistoryManager.Find([]interface{}{
+					models.Where{Column: "game", Value: v.Id, Compare: "="},
+					models.Ordering("gh_id"),
+				})
+
+				for _, history := range historys {
+					err := Command(g, history.Game, history.User, history.Command, false, history.Id)
+					if err != nil {
+						log.Println(err)
+					}
+				}
+
+				if g.Round > 0 && g.Round <= 6 {
+					for user, _ := range g.Factions {
+						g.Calculate(user)
+					}
+				}
+
+				if v.Status != game.StatusEnd {
+					gameundos := gameundoManager.Find([]interface{}{
+						models.Where{Column: "game", Value: v.Id, Compare: "="},
+						models.Where{Column: "status", Value: gameundo.StatusWait, Compare: "="},
+					})
+
+					for _, gameundo := range gameundos {
+						user := g.GetUserPos(gameundo.User)
+						g.UndoRequest = UndoRequest{Id: gameundo.Id, User: user, History: gameundo.Gamehistory, Status: 1, Command: "", Users: make([]int, 0)}
+
+						gameundoitems := gameundoitemManager.Find([]interface{}{
+							models.Where{Column: "gameundo", Value: gameundo.Id, Compare: "="},
+						})
+
+						for _, gameundoitem := range gameundoitems {
+							g.AddUndoConfirm(gameundoitem.User)
 						}
 					}
 				}
-			*/
+
+
+					//for i, v := range g.Users {
+					//	if v == 1 {
+					//		if g.IsTurn(i) {
+					//			AICommand(g, i)
+					//		}
+					//	}
+					//}
+
+			}
 		}
-	}
+	*/
 }
 
 func Make(user int64, item *models.Game) {
@@ -506,12 +565,17 @@ func Make(user int64, item *models.Game) {
 	*/
 }
 
-func Lock() {
-	_mutex.Lock()
+func Lock(id int64) {
+	_, exists := _mutex[id]
+	if !exists {
+		_mutex[id] = &sync.Mutex{}
+	}
+
+	_mutex[id].Lock()
 }
 
-func Unlock() {
-	_mutex.Unlock()
+func Unlock(id int64) {
+	_mutex[id].Unlock()
 }
 
 func Join(user int64, id int64) error {
@@ -527,26 +591,21 @@ func Join(user int64, id int64) error {
 	gameManager := models.NewGameManager(conn)
 	gameuserManager := models.NewGameuserManager(conn)
 
-	Lock()
+	Lock(id)
+	defer Unlock(id)
 
 	item := gameManager.Get(id)
 
 	if item.Status != game.StatusReady {
-		Unlock()
 		return errors.New("status error")
 	}
 
 	if gameuserManager.CountByGameUser(id, user) > 0 {
-		Unlock()
 		return errors.New("already")
 	}
 
-	if item.Count == 1 {
-		item.Count = 2
-	}
 	count := gameuserManager.CountByGame(id)
 	if count >= item.Count {
-		Unlock()
 		return errors.New("full")
 	}
 
@@ -577,8 +636,6 @@ func Join(user int64, id int64) error {
 
 		g.CompleteAddUser()
 	}
-
-	Unlock()
 
 	msg := global.Notify{Title: "join"}
 	global.SendNotify(msg)

@@ -67,6 +67,24 @@
         "CountByGame",
         "CountByGameUser"        
       ]      
-    }    
+    },
+    {
+      "name": "gameundo",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "wait:Wait", "complete:Complete"]
+        }
+      ]
+    },
+    {
+      "name": "gameundoitem",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "accept:Accept", "reject:Reject"]
+        }        
+      ]
+    }
   ]   
 }

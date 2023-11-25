@@ -3,6 +3,7 @@ package api
 import (
 	"aoi/controllers"
 	"aoi/game"
+	"aoi/global"
 	"aoi/models"
 	"log"
 )
@@ -33,8 +34,13 @@ func (c *GameController) Game(id int64) {
 	g := game.Get(id)
 
 	if g == nil {
-		c.Set("code", "not found game")
-		return
+		game.MakeGame(id)
+
+		g = game.Get(id)
+		if g == nil {
+			c.Set("code", "not found game")
+			return
+		}
 	}
 
 	c.Set("item", g)
@@ -62,14 +68,57 @@ func (c *GameController) Command(id int64, cmd string) {
 		return
 	}
 
-	ret := game.Command(g, id, user, cmd, true)
+	ret := game.Command(g, id, user, cmd, true, 0)
 
 	if ret != nil {
 		log.Println("-------------------------")
 		log.Println(ret)
 		log.Println("-------------------------")
 		c.Error(ret.Error())
+	}
+}
 
+// @Post()
+func (c *GameController) Undo(id int64, history int64) {
+	log.Println("undo call", id, history)
+	user := c.Session.Id
+
+	g := game.Get(id)
+
+	if g == nil {
+		log.Println("not found")
+		c.Set("code", "not found game")
+		return
 	}
 
+	ret := game.Undo(g, id, history, user)
+
+	if ret != nil {
+		log.Println("-------------------------")
+		log.Println(ret)
+		log.Println("-------------------------")
+		c.Error(ret.Error())
+	} else {
+		msg := global.Notify{Title: "undo"}
+		global.SendNotify(msg)
+	}
+}
+
+// @Post()
+func (c *GameController) Undoconfirm(id int64, undo int64, status int) {
+	user := c.Session.Id
+
+	g := game.Get(id)
+
+	ret := game.UndoConfirm(g, id, undo, user, status)
+
+	if ret != nil {
+		log.Println("-------------------------")
+		log.Println(ret)
+		log.Println("-------------------------")
+		c.Error(ret.Error())
+	} else {
+		msg := global.Notify{Title: "undo"}
+		global.SendNotify(msg)
+	}
 }

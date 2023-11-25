@@ -3,6 +3,8 @@ package models
 import (
     //"aoi/config"
     
+    "aoi/models/gameundo"
+    
     "database/sql"
     "errors"
     "fmt"
@@ -15,31 +17,32 @@ import (
     
 )
 
-type Token struct {
+type Gameundo struct {
             
     Id                int64 `json:"id"`         
+    Status                gameundo.Status `json:"status"`         
+    Gamehistory                int64 `json:"gamehistory"`         
+    Game                int64 `json:"game"`         
     User                int64 `json:"user"`         
-    Token                string `json:"token"`         
-    Status                int `json:"status"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type TokenManager struct {
+type GameundoManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Token) AddExtra(key string, value interface{}) {    
+func (c *Gameundo) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewTokenManager(conn interface{}) *TokenManager {
-    var item TokenManager
+func NewGameundoManager(conn interface{}) *GameundoManager {
+    var item GameundoManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -58,17 +61,17 @@ func NewTokenManager(conn interface{}) *TokenManager {
     return &item
 }
 
-func (p *TokenManager) Close() {
+func (p *GameundoManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *TokenManager) SetIndex(index string) {
+func (p *GameundoManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *TokenManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *GameundoManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -76,7 +79,7 @@ func (p *TokenManager) Exec(query string, params ...interface{}) (sql.Result, er
     }
 }
 
-func (p *TokenManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *GameundoManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -84,10 +87,10 @@ func (p *TokenManager) Query(query string, params ...interface{}) (*sql.Rows, er
     }
 }
 
-func (p *TokenManager) GetQuery() string {
+func (p *GameundoManager) GetQuery() string {
     ret := ""
 
-    str := "select a_id, a_user, a_token, a_status, a_date from token_tb "
+    str := "select gn_id, gn_status, gn_gamehistory, gn_game, gn_user, gn_date from gameundo_tb "
 
     if p.Index == "" {
         ret = str
@@ -101,10 +104,10 @@ func (p *TokenManager) GetQuery() string {
     return ret;
 }
 
-func (p *TokenManager) GetQuerySelect() string {
+func (p *GameundoManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from token_tb "
+    str := "select count(*) from gameundo_tb "
 
     if p.Index == "" {
         ret = str
@@ -118,12 +121,12 @@ func (p *TokenManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *TokenManager) Truncate() error {
+func (p *GameundoManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate token_tb "
+    query := "truncate gameundo_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -133,7 +136,7 @@ func (p *TokenManager) Truncate() error {
     return nil
 }
 
-func (p *TokenManager) Insert(item *Token) error {
+func (p *GameundoManager) Insert(item *Gameundo) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -153,11 +156,11 @@ func (p *TokenManager) Insert(item *Token) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into token_tb (a_id, a_user, a_token, a_status, a_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.User, item.Token, item.Status, item.Date)
+        query = "insert into gameundo_tb (gn_id, gn_status, gn_gamehistory, gn_game, gn_user, gn_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Status, item.Gamehistory, item.Game, item.User, item.Date)
     } else {
-        query = "insert into token_tb (a_user, a_token, a_status, a_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query , item.User, item.Token, item.Status, item.Date)
+        query = "insert into gameundo_tb (gn_status, gn_gamehistory, gn_game, gn_user, gn_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Status, item.Gamehistory, item.Game, item.User, item.Date)
     }
     
     if err == nil {
@@ -170,19 +173,19 @@ func (p *TokenManager) Insert(item *Token) error {
 
     return err
 }
-func (p *TokenManager) Delete(id int64) error {
+func (p *GameundoManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from token_tb where a_id = ?"
+    query := "delete from gameundo_tb where gn_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *TokenManager) DeleteWhere(args []interface{}) error {
+func (p *GameundoManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -196,15 +199,15 @@ func (p *TokenManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and a_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and a_" + item.Column + " between ? and ?"
+                query += " and gn_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and a_" + item.Column + " " + item.Compare + " ?"
+                query += " and gn_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -218,14 +221,14 @@ func (p *TokenManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from token_tb where " + query[5:]
+    query = "delete from gameundo_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *TokenManager) Update(item *Token) error {
+func (p *GameundoManager) Update(item *Gameundo) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -235,73 +238,95 @@ func (p *TokenManager) Update(item *Token) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update token_tb set a_user = ?, a_token = ?, a_status = ?, a_date = ? where a_id = ?"
-	_, err := p.Exec(query , item.User, item.Token, item.Status, item.Date, item.Id)
+	query := "update gameundo_tb set gn_status = ?, gn_gamehistory = ?, gn_game = ?, gn_user = ?, gn_date = ? where gn_id = ?"
+	_, err := p.Exec(query , item.Status, item.Gamehistory, item.Game, item.User, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *TokenManager) UpdateUser(value int64, id int64) error {
+func (p *GameundoManager) UpdateStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update token_tb set a_user = ? where a_id = ?"
+	query := "update gameundo_tb set gn_status = ? where gn_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *TokenManager) UpdateToken(value string, id int64) error {
+func (p *GameundoManager) UpdateGamehistory(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update token_tb set a_token = ? where a_id = ?"
+	query := "update gameundo_tb set gn_gamehistory = ? where gn_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *TokenManager) UpdateStatus(value int, id int64) error {
+func (p *GameundoManager) UpdateGame(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update token_tb set a_status = ? where a_id = ?"
+	query := "update gameundo_tb set gn_game = ? where gn_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-
-
-func (p *TokenManager) IncreaseUser(value int64, id int64) error {
+func (p *GameundoManager) UpdateUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update token_tb set a_user = a_user + ? where a_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *TokenManager) IncreaseStatus(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update token_tb set a_status = a_status + ? where a_id = ?"
+	query := "update gameundo_tb set gn_user = ? where gn_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *TokenManager) GetIdentity() int64 {
+
+func (p *GameundoManager) IncreaseGamehistory(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameundo_tb set gn_gamehistory = gn_gamehistory + ? where gn_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameundoManager) IncreaseGame(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameundo_tb set gn_game = gn_game + ? where gn_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameundoManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameundo_tb set gn_user = gn_user + ? where gn_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
+func (p *GameundoManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -315,20 +340,23 @@ func (p *TokenManager) GetIdentity() int64 {
     }
 }
 
-func (p *Token) InitExtra() {
+func (p *Gameundo) InitExtra() {
     p.Extra = map[string]interface{}{
+            "status":     gameundo.GetStatus(p.Status),
 
     }
 }
 
-func (p *TokenManager) ReadRow(rows *sql.Rows) *Token {
-    var item Token
+func (p *GameundoManager) ReadRow(rows *sql.Rows) *Gameundo {
+    var item Gameundo
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date)
+        err = rows.Scan(&item.Id, &item.Status, &item.Gamehistory, &item.Game, &item.User, &item.Date)
+        
+        
         
         
         
@@ -356,19 +384,20 @@ func (p *TokenManager) ReadRow(rows *sql.Rows) *Token {
     }
 }
 
-func (p *TokenManager) ReadRows(rows *sql.Rows) []Token {
-    var items []Token
+func (p *GameundoManager) ReadRows(rows *sql.Rows) []Gameundo {
+    var items []Gameundo
 
     for rows.Next() {
-        var item Token
+        var item Gameundo
         
     
-        err := rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date)
+        err := rows.Scan(&item.Id, &item.Status, &item.Gamehistory, &item.Game, &item.User, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         
@@ -387,12 +416,12 @@ func (p *TokenManager) ReadRows(rows *sql.Rows) []Token {
      return items
 }
 
-func (p *TokenManager) Get(id int64) *Token {
+func (p *GameundoManager) Get(id int64) *Gameundo {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and a_id = ?"
+    query := p.GetQuery() + " and gn_id = ?"
 
     
     
@@ -408,7 +437,7 @@ func (p *TokenManager) Get(id int64) *Token {
     return p.ReadRow(rows)
 }
 
-func (p *TokenManager) Count(args []interface{}) int {
+func (p *GameundoManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -422,15 +451,15 @@ func (p *TokenManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and a_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and a_" + item.Column + " between ? and ?"
+                query += " and gn_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and a_" + item.Column + " " + item.Compare + " ?"
+                query += " and gn_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -467,9 +496,9 @@ func (p *TokenManager) Count(args []interface{}) int {
     }
 }
 
-func (p *TokenManager) Find(args []interface{}) []Token {
+func (p *GameundoManager) Find(args []interface{}) []Gameundo {
     if p.Conn == nil && p.Tx == nil {
-        var items []Token
+        var items []Gameundo
         return items
     }
 
@@ -507,15 +536,15 @@ func (p *TokenManager) Find(args []interface{}) []Token {
             item := v
 
             if item.Compare == "in" {
-                query += " and a_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and a_" + item.Column + " between ? and ?"
+                query += " and gn_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and a_" + item.Column + " " + item.Compare + " ?"
+                query += " and gn_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -533,10 +562,10 @@ func (p *TokenManager) Find(args []interface{}) []Token {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "a_id desc"
+            orderby = "gn_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "a_" + orderby
+                orderby = "gn_" + orderby
             }
             
         }
@@ -554,10 +583,10 @@ func (p *TokenManager) Find(args []interface{}) []Token {
         */
     } else {
         if orderby == "" {
-            orderby = "a_id"
+            orderby = "gn_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "a_" + orderby
+                orderby = "gn_" + orderby
             }
         }
         query += " order by " + orderby
@@ -567,7 +596,7 @@ func (p *TokenManager) Find(args []interface{}) []Token {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Token
+        var items []Gameundo
         return items
     }
 
@@ -576,20 +605,6 @@ func (p *TokenManager) Find(args []interface{}) []Token {
     return p.ReadRows(rows)
 }
 
-
-func (p *TokenManager) GetByUser(user int64, args ...interface{}) *Token {
-    if user != 0 {
-        args = append(args, Where{Column:"user", Value:user, Compare:"="})        
-    }
-    
-    items := p.Find(args)
-
-    if len(items) > 0 {
-        return &items[0]
-    } else {
-        return nil
-    }
-}
 
 
 

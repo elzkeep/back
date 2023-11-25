@@ -190,6 +190,50 @@ func (p *GameManager) Delete(id int64) error {
     
     return err
 }
+
+func (p *GameManager) DeleteWhere(args []interface{}) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := ""
+    var params []interface{}
+
+    for _, arg := range args {
+        switch v := arg.(type) {        
+        case Where:
+            item := v
+
+            if item.Compare == "in" {
+                query += " and g_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+            } else if item.Compare == "between" {
+                query += " and g_" + item.Column + " between ? and ?"
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                query += " and g_" + item.Column + " " + item.Compare + " ?"
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+             query += " and " + item.Query
+        }        
+    }
+
+    query = "delete from game_tb where " + query[5:]
+    _, err := p.Exec(query, params...)
+
+    
+    return err
+}
+
 func (p *GameManager) Update(item *Game) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")

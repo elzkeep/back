@@ -117,6 +117,48 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Post("/game/undo", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var history_ int64
+			if v, flag := results["history"]; flag {
+				history_ = int64(v.(float64))
+			}
+			var controller api.GameController
+			controller.Init(c)
+			controller.Undo(id_, history_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/game/undoconfirm", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var undo_ int64
+			if v, flag := results["undo"]; flag {
+				undo_ = int64(v.(float64))
+			}
+			var status_ int
+			if v, flag := results["status"]; flag {
+				status_ = int(v.(float64))
+			}
+			var controller api.GameController
+			controller.Init(c)
+			controller.Undoconfirm(id_, undo_, status_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/sms", func(c *fiber.Ctx) error {
 			to_ := c.Query("to")
 			message_ := c.Query("message")
@@ -725,6 +767,336 @@ func SetRouter(r *fiber.App) {
 			var controller rest.GametileController
 			controller.Init(c)
 			controller.UpdateGame(game_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundo/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundo", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/gameundo", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/gameundo/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundo", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundo", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundo/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundo/status", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var status_ int
+			if v, flag := results["status"]; flag {
+				status_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.UpdateStatus(status_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundo/gamehistory", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var gamehistory_ int64
+			if v, flag := results["gamehistory"]; flag {
+				gamehistory_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.UpdateGamehistory(gamehistory_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundo/game", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var game_ int64
+			if v, flag := results["game"]; flag {
+				game_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.UpdateGame(game_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundo/user", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var user_ int64
+			if v, flag := results["user"]; flag {
+				user_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.UpdateUser(user_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundoitem/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundoitem", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/gameundoitem", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/gameundoitem/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundoitem", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundoitem", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundoitem/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundoitem/status", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var status_ int
+			if v, flag := results["status"]; flag {
+				status_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.UpdateStatus(status_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundoitem/gameundo", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var gameundo_ int64
+			if v, flag := results["gameundo"]; flag {
+				gameundo_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.UpdateGameundo(gameundo_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundoitem/game", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var game_ int64
+			if v, flag := results["game"]; flag {
+				game_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.UpdateGame(game_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameundoitem/user", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var user_ int64
+			if v, flag := results["user"]; flag {
+				user_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.UpdateUser(user_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

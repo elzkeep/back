@@ -51,18 +51,18 @@ func AICommand(p *Game, user int) {
 }
 
 func AIRunCommand(p *Game, user int, str string) {
-	Command(p, p.Id, 1, str, true)
+	Command(p, p.Id, 1, str, true, 0)
 	command := fmt.Sprintf("%v save", user)
-	Command(p, p.Id, 1, command, true)
+	Command(p, p.Id, 1, command, true, 0)
 }
 
 func AIRunOnlyCommand(p *Game, user int, str string) {
-	Command(p, p.Id, 1, str, true)
+	Command(p, p.Id, 1, str, true, 0)
 }
 
 func AIRunSave(p *Game, user int) {
 	command := fmt.Sprintf("%v save", user)
-	Command(p, p.Id, 1, command, true)
+	Command(p, p.Id, 1, command, true, 0)
 }
 
 func AIFaction(p *Game, user int) {

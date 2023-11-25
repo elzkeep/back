@@ -95,7 +95,7 @@ func ConvertBookType(str string) resources.BookType {
 	return resources.BookMedicine
 }
 
-func Command(p *Game, gameid int64, id int64, str string, update bool) error {
+func Command(p *Game, gameid int64, id int64, str string, update bool, historyId int64) error {
 	if update == true {
 		log.Println("Command", str)
 	}
@@ -324,6 +324,10 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 					item.Date = date
 
 					err := gamehistoryManager.Insert(&item)
+					if err == nil {
+						historyId = gamehistoryManager.GetIdentity()
+					}
+
 					conn.Close()
 
 					if err == nil {
@@ -344,7 +348,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool) error {
 
 				p.ClearHistory(user)
 			} else {
-				p.AddHistory(str)
+				p.AddHistory(historyId, str)
 			}
 		}
 

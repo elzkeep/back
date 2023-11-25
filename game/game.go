@@ -34,6 +34,15 @@ const (
 	DraftSnakeType
 )
 
+type UndoRequest struct {
+	Id      int64  `json:"id"`
+	User    int    `json:"user"`
+	History int64  `json:"history"`
+	Status  int    `json:"status"`
+	Command string `json:"command"`
+	Users   []int  `json:"users"`
+}
+
 type Game struct {
 	Id       int64                       `json:"id"`
 	Name     string                      `json:"name"`
@@ -64,42 +73,18 @@ type Game struct {
 	Command         []string                  `json:"commands"`
 	OldCommand      []string                  `json:"oldCommands"`
 	Network         int                       `json:"network"`
+	UndoRequest     UndoRequest               `json:"undo"`
 	DummyNetwork    int                       `json:"-"`
-}
-
-type TurnType int
-
-const (
-	NormalTurn TurnType = iota
-	PowerTurn
-	ScienceTurn
-	SpadeTurn
-	BookTurn
-	TileTurn
-	BuildTurn
-	ResourceTurn
-)
-
-type Turn struct {
-	User    int               `json:"user"`
-	Type    TurnType          `json:"type"`
-	From    int               `json:"from"`
-	Power   int               `json:"power"`
-	Science resources.Science `json:"science"`
+	HistoryId       int64                     `json:"-"`
 }
 
 type Log struct {
-	User    int      `json:"user"`
+	Id   int64 `json:"id"`
+	User int   `json:"user"`
+
 	Round   int      `json:"round"`
 	Command []string `json:"command"`
 	VP      int      `json:"vp"`
-}
-
-func (p *Turn) Print() {
-	/*
-		titles := []string{"Normal", "Power", "Science", "Spade", "Book", "Tile", "Build", "Resource"}
-		log.Printf("user = %v, type = %v\n", p.User, titles[int(p.Type)])
-	*/
 }
 
 func NewGame(game *models.Game) *Game {
@@ -143,6 +128,7 @@ func NewGame(game *models.Game) *Game {
 	item.Command = make([]string, 0)
 	item.OldCommand = make([]string, 0)
 	item.Logs = make([]Log, 0)
+	item.UndoRequest = UndoRequest{Users: make([]int, 0)}
 
 	item.Count = count
 
@@ -163,6 +149,16 @@ func (p *Game) CheckUser(id int64, user int) bool {
 	}
 
 	return true
+}
+
+func (p *Game) GetUserPos(user int64) int {
+	for i, v := range p.Users {
+		if v == user {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func (p *Game) AddUser(user int64, name string) {
@@ -1130,6 +1126,7 @@ func (p *Game) PowerAction(user int, pos int) error {
 	if f.Type == resources.TileFactionIllusionists {
 		have++
 	}
+
 	if have < p.PowerActions.GetNeedPower(pos) {
 		return errors.New("not enough power")
 	}
@@ -2101,14 +2098,17 @@ func (p *Game) ClearHistory(user int) {
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
-	p.Logs = append(p.Logs, Log{User: user, VP: f.VP, Round: p.Round, Command: p.Command})
+	p.Logs = append(p.Logs, Log{Id: p.HistoryId, User: user, VP: f.VP, Round: p.Round, Command: p.Command})
 
 	p.OldCommand = make([]string, 0)
 	p.OldCommand = append(p.OldCommand, p.Command...)
 	p.Command = make([]string, 0)
 }
 
-func (p *Game) AddHistory(str string) {
+func (p *Game) AddHistory(id int64, str string) {
+	if len(p.Command) == 0 {
+		p.HistoryId = id
+	}
 	p.Command = append(p.Command, str)
 }
 
@@ -2698,4 +2698,16 @@ func (p *Game) InitDraft() {
 
 		p.PalaceTiles.Items = append(p.PalaceTiles.Items, palaceTile)
 	}
+}
+
+func (p *Game) MakeUndo(id int64, history int64, userid int64) {
+	user := p.GetUserPos(userid)
+
+	p.UndoRequest = UndoRequest{Id: id, User: user, History: history, Status: 1, Command: "", Users: []int{user}}
+}
+
+func (p *Game) AddUndoConfirm(userid int64) {
+	user := p.GetUserPos(userid)
+
+	p.UndoRequest.Users = append(p.UndoRequest.Users, user)
 }

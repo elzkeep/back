@@ -9,6 +9,7 @@ import (
 
 	"github.com/antoniodipinto/ikisocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/websocket/v2"
@@ -37,6 +38,10 @@ func Http() {
 		Format:     "[${time}] ${ip}:${port} ${status} - ${method} ${path}\n",
 		TimeFormat: "2006-01-02 15:04:05",
 		TimeZone:   "Asia/Seoul",
+	}))
+
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestCompression, // 1
 	}))
 
 	if chat.Use == true {
