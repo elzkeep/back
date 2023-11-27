@@ -90,7 +90,7 @@ func (p *Moles) Dig(x int, y int, dig int) error {
 	return p.Faction.Dig(x, y, dig)
 }
 
-func (p *Moles) TurnEnd(round int) error {
+func (p *Moles) TurnEnd(round int, pass bool) error {
 	for i, v := range p.Tiles {
 		if v.Type == TileFactionMoles {
 			tile := &p.Tiles[i]
@@ -99,7 +99,7 @@ func (p *Moles) TurnEnd(round int) error {
 		}
 	}
 
-	return p.Faction.TurnEnd(round)
+	return p.Faction.TurnEnd(round, pass)
 }
 
 func (p *Moles) PalaceTile(tile TileItem) error {

@@ -358,23 +358,36 @@ func (p *Game) Start() {
 				p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 			}
 
-			if p.Round > 1 {
-				p.Sciences.RoundBonus(f)
-			}
+			/*
+				if p.Round > 1 {
+					p.Sciences.RoundBonus(f)
+				}
+			*/
 		}
 	}
 
 	for i := range p.Factions {
 		user := p.TurnOrder[i]
-		faction := p.Factions[user].GetInstance()
+		faction := p.Factions[user]
+		f := faction.GetInstance()
 
-		if faction.Resource.Book.Any > 0 ||
-			!faction.Resource.Science.IsEmpty() ||
-			faction.Resource.Spade > 0 ||
-			faction.Resource.Building != resources.None {
+		if f.Resource.Book.Any > 0 ||
+			!f.Resource.Science.IsEmpty() ||
+			f.Resource.Spade > 0 ||
+			f.Resource.Building != resources.None {
 
 			turn := Turn{User: user, Type: ResourceTurn}
 			p.Turn = append(p.Turn, turn)
+
+			if p.Round > 1 {
+				if f.Resource.Science.IsEmpty() {
+					p.Sciences.RoundBonus(f)
+				}
+			}
+		} else {
+			if p.Round > 1 {
+				p.Sciences.RoundBonus(f)
+			}
 		}
 	}
 
@@ -516,8 +529,15 @@ func (p *Game) TurnEnd(user int) error {
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
-	if f.Action == false {
-		return errors.New("must action")
+	err := faction.TurnEnd(p.Round, p.IsNormalTurn())
+	if err != nil {
+		return err
+	}
+
+	if p.IsResourceTurn() && p.Round > 1 {
+		if !f.Resource.Science.IsEmpty() {
+			p.Sciences.RoundBonus(f)
+		}
 	}
 
 	turnType := p.Turn[0].Type
@@ -527,7 +547,6 @@ func (p *Game) TurnEnd(user int) error {
 	p.Turn = append(p.PowerTurn, p.Turn...)
 	p.PowerTurn = make([]Turn, 0)
 
-	faction.TurnEnd(p.Round)
 	p.Map.TurnEnd()
 
 	if p.Round > 0 {
@@ -1434,7 +1453,7 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	}
 
 	faction.Dig(x, y, spade)
-	p.Map.SetType(x, y, color.Color(change))
+	p.Map.Dig(x, y, color.Color(change))
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
@@ -1603,8 +1622,22 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 		power := powers[v]
 		if power > 0 {
 			target := p.Factions[user].GetInstance()
-			if target.VP >= power {
-				p.PowerTurn = append(p.PowerTurn, Turn{User: v, Type: PowerTurn, Power: power, From: user})
+
+			max := target.Resource.Power[0]*2 + target.Resource.Power[1]
+			if max > 0 {
+				if power > max {
+					power = max
+				}
+
+				if target.VP >= power {
+					if p.Round == 6 && target.IsPass == true {
+						if power == 1 {
+							target.ReceivePower(1, false)
+						}
+					} else {
+						p.PowerTurn = append(p.PowerTurn, Turn{User: v, Type: PowerTurn, Power: power, From: user})
+					}
+				}
 			}
 		}
 	}
@@ -2710,4 +2743,12 @@ func (p *Game) AddUndoConfirm(userid int64) {
 	user := p.GetUserPos(userid)
 
 	p.UndoRequest.Users = append(p.UndoRequest.Users, user)
+}
+
+func (p *Game) Lock() {
+	Lock(p.Id)
+}
+
+func (p *Game) Unlock() {
+	Unlock(p.Id)
 }

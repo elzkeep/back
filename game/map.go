@@ -21,6 +21,7 @@ type Map struct {
 	AnnexList  []resources.Position       `json:"annex"`
 	CityList   []resources.Position       `json:"city"`
 	LastBuild  resources.Position         `json:"lastBuild"`
+	LastDig    resources.Position         `json:"lastDig"`
 }
 
 func NewMap(typeid int64) *Map {
@@ -33,6 +34,9 @@ func NewMap(typeid int64) *Map {
 	item.Height = 13
 	item.Type = 2
 	item.Mx = 1
+	item.LastBuild = resources.Position{X: -1, Y: -1}
+	item.LastDig = resources.Position{X: -1, Y: -1}
+
 	width := item.Width
 
 	if item.Type == 2 {
@@ -778,4 +782,13 @@ func (p *Map) FindRiverConnect(user color.Color, x int, y int, x2, y2, distance 
 
 func (p *Map) TurnEnd() {
 	p.LastBuild = resources.Position{X: -1, Y: -1}
+	p.LastDig = resources.Position{X: -1, Y: -1}
+}
+
+func (p *Map) Dig(x int, y int, value color.Color) {
+	p.SetType(x, y, color.Color(value))
+
+	if p.LastDig.X == -1 {
+		p.LastDig = resources.Position{X: x, Y: y}
+	}
 }

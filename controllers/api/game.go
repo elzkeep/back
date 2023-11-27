@@ -21,6 +21,9 @@ func (c *GameController) Make(item *models.Game) {
 
 // @Post()
 func (c *GameController) Join(id int64) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	user := c.Session.Id
 
 	err := game.Join(user, id)
@@ -68,6 +71,8 @@ func (c *GameController) Command(id int64, cmd string) {
 		return
 	}
 
+	g.Lock()
+
 	ret := game.Command(g, id, user, cmd, true, 0)
 
 	if ret != nil {
@@ -76,6 +81,8 @@ func (c *GameController) Command(id int64, cmd string) {
 		log.Println("-------------------------")
 		c.Error(ret.Error())
 	}
+
+	g.Unlock()
 }
 
 // @Post()

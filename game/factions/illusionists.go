@@ -90,8 +90,8 @@ func (p *Illusionists) Dig(x int, y int, dig int) error {
 	return p.Faction.Dig(x, y, dig)
 }
 
-func (p *Illusionists) TurnEnd(round int) error {
-	return p.Faction.TurnEnd(round)
+func (p *Illusionists) TurnEnd(round int, pass bool) error {
+	return p.Faction.TurnEnd(round, pass)
 }
 
 func (p *Illusionists) PalaceTile(tile TileItem) error {

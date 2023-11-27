@@ -33,7 +33,7 @@ type FactionInterface interface {
 	Pass(tile TileItem) (error, TileItem)
 	ReceiveCity(item CityItem) error
 	Dig(x int, y int, dig int) error
-	TurnEnd(round int) error
+	TurnEnd(round int, pass bool) error
 	PalaceTile(tile TileItem) error
 	SchoolTile(tile TileItem, science int) error
 	InnovationTile(tile TileItem, book Book) error
@@ -77,7 +77,7 @@ type Faction struct {
 	CityBuildingList  []Position       `json:"cityBuildingList"`
 	Cities            []CityItem       `json:"cities"`
 	Type              TileType         `json:"type"`
-	IsPass            bool             `json:"-"`
+	IsPass            bool             `json:"isPass"`
 	FirstBuilding     Building         `json:"-"`
 }
 
@@ -793,8 +793,6 @@ func (p *Faction) Downgrade(x int, y int) error {
 
 	p.ReceiveTpVP()
 
-	p.ReceiveResource(Price{Worker: 1, VP: 3})
-
 	p.Resource.Downgrade--
 	p.Action = true
 	p.ResetResource()
@@ -825,6 +823,8 @@ func (p *Faction) SupployScholar(pos int, inc int) error {
 
 	p.Action = true
 	p.ResetResource()
+
+	p.ReceivePristVP()
 
 	p.Print()
 
@@ -897,10 +897,6 @@ func (p *Faction) ResetResource() {
 }
 
 func (p *Faction) Pass(tile TileItem) (error, TileItem) {
-	if p.Resource.Downgrade > 0 {
-		return errors.New("have to downgrade"), TileItem{}
-	}
-
 	p.ResetResource()
 
 	for i, v := range p.Tiles {
@@ -909,7 +905,9 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 			v.Pass.Science.Any = 0
 		}
 
-		p.ReceiveResource(v.Pass)
+		if v.Category == TileRound {
+			p.ReceiveResource(v.Pass)
+		}
 		p.Tiles[i].Use = false
 
 	}
@@ -980,7 +978,26 @@ func (p *Faction) ConvertDig(spade int) error {
 	return nil
 }
 
-func (p *Faction) TurnEnd(round int) error {
+func (p *Faction) TurnEnd(round int, pass bool) error {
+	if p.Action == false {
+		return errors.New("must action")
+	}
+
+	if p.Resource.Downgrade > 0 {
+		return errors.New("did not act on the downgrade")
+	}
+
+	if pass == true && p.IsPass == true {
+		for i, v := range p.Tiles {
+			if v.Category == TileRound {
+				continue
+			}
+
+			p.ReceiveResource(v.Pass)
+			p.Tiles[i].Use = false
+		}
+	}
+
 	p.Action = false
 	p.BuildAction = false
 

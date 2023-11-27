@@ -81,6 +81,14 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) int 
 		return 0
 	}
 
+	top := false
+	for _, v := range p.Value[pos] {
+		if v >= 12 {
+			top = true
+			break
+		}
+	}
+
 	inc := 0
 
 	for i := 0; i < step; i++ {
@@ -95,6 +103,12 @@ func (p *Science) Action(user *factions.Faction, pos ScienceType, step int) int 
 					user.Cities[i].Use = false
 					break
 				}
+			}
+		}
+
+		if p.Value[pos][user.Color] == 11 {
+			if top == true {
+				break
 			}
 		}
 

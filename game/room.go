@@ -38,9 +38,6 @@ func MakeGame(id int64) {
 
 	gameItem := gameManager.Get(id)
 
-	Lock(id)
-	defer Unlock(id)
-
 	g := NewGame(gameItem)
 	SetGame(id, g)
 
@@ -590,9 +587,6 @@ func Join(user int64, id int64) error {
 
 	gameManager := models.NewGameManager(conn)
 	gameuserManager := models.NewGameuserManager(conn)
-
-	Lock(id)
-	defer Unlock(id)
 
 	item := gameManager.Get(id)
 
