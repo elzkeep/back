@@ -24,7 +24,7 @@ type Map struct {
 	LastDig    resources.Position         `json:"lastDig"`
 }
 
-func NewMap(typeid int64) *Map {
+func NewMap(id int64, typeid int64) *Map {
 	var item Map
 
 	item.BridgeList = make([]resources.BridgePosition, 0)
@@ -71,20 +71,37 @@ func NewMap(typeid int64) *Map {
 	}
 
 	if typeid == 1 {
-		maps = []string{
-			"GWYBXSGWRX",
-			"KSKRXKBSXG",
-			"XBWGXXYXXY",
-			"XRYXGXXWBK",
-			"XXXXKBSYRW",
-			"XSBXRWXGSY",
-			"XXKWXXXXXX",
-			"XYGRYGSKGX",
-			"XRBWSKBYRW",
-		}
+		if id > 87 {
+			maps = []string{
+				"XGWYBXSGWRX",
+				"XKSKRXKBSXG",
+				"XXBWGXXYXXY",
+				"XXRYXGXXWBK",
+				"XXXXXKBSYRW",
+				"XXSBXRWXGSY",
+				"XXXKWXXXXXX",
+				"XXYGRYGSKGX",
+				"XXRBWSKBYRW",
+			}
 
-		item.Width = 9
-		item.Height = 10
+			item.Width = 9
+			item.Height = 11
+		} else {
+			maps = []string{
+				"GWYBXSGWRX",
+				"KSKRXKBSXG",
+				"XBWGXXYXXY",
+				"XRYXGXXWBK",
+				"XXXXKBSYRW",
+				"XSBXRWXGSY",
+				"XXKWXXXXXX",
+				"XYGRYGSKGX",
+				"XRBWSKBYRW",
+			}
+
+			item.Width = 9
+			item.Height = 10
+		}
 	}
 
 	y := 0

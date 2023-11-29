@@ -6,6 +6,7 @@ import (
 	"aoi/global"
 	"aoi/models"
 	"log"
+	"strings"
 )
 
 type GameController struct {
@@ -73,13 +74,17 @@ func (c *GameController) Command(id int64, cmd string) {
 
 	g.Lock()
 
-	ret := game.Command(g, id, user, cmd, true, 0)
+	cmds := strings.Split(cmd, ", ")
 
-	if ret != nil {
-		log.Println("-------------------------")
-		log.Println(ret)
-		log.Println("-------------------------")
-		c.Error(ret.Error())
+	for _, v := range cmds {
+		ret := game.Command(g, id, user, v, true, 0)
+
+		if ret != nil {
+			log.Println("-------------------------")
+			log.Println(ret)
+			log.Println("-------------------------")
+			c.Error(ret.Error())
+		}
 	}
 
 	g.Unlock()
@@ -106,7 +111,7 @@ func (c *GameController) Undo(id int64, history int64) {
 		log.Println("-------------------------")
 		c.Error(ret.Error())
 	} else {
-		msg := global.Notify{Title: "undo"}
+		msg := global.Notify{Id: id, Title: "undo"}
 		global.SendNotify(msg)
 	}
 }
@@ -125,7 +130,7 @@ func (c *GameController) Undoconfirm(id int64, undo int64, status int) {
 		log.Println("-------------------------")
 		c.Error(ret.Error())
 	} else {
-		msg := global.Notify{Title: "undo"}
+		msg := global.Notify{Id: id, Title: "undo"}
 		global.SendNotify(msg)
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
+	"log"
 	"math"
 	"sort"
 	"strings"
@@ -32,6 +33,14 @@ const (
 	BasicType
 	DraftBasicType
 	DraftSnakeType
+)
+
+type BuildType int
+
+const (
+	NormalBuild BuildType = iota
+	FlyBuild
+	TunnelingBuild
 )
 
 type UndoRequest struct {
@@ -114,7 +123,7 @@ func NewGame(game *models.Game) *Game {
 
 	item.DummyNetwork = network%4 + 12
 
-	item.Map = NewMap(game.Map)
+	item.Map = NewMap(id, game.Map)
 	item.Sciences = NewScience(count)
 	item.Factions = make([]factions.FactionInterface, 0)
 
@@ -337,6 +346,8 @@ func (p *Game) Start() {
 
 	p.Round++
 
+	log.Println("round :", p.Round, "-----------------------")
+
 	if p.Round == 6 {
 		p.Network = p.DummyNetwork
 	}
@@ -379,11 +390,13 @@ func (p *Game) Start() {
 			turn := Turn{User: user, Type: ResourceTurn}
 			p.Turn = append(p.Turn, turn)
 
-			if p.Round > 1 {
-				if f.Resource.Science.IsEmpty() {
-					p.Sciences.RoundBonus(f)
+			/*
+				if p.Round > 1 {
+					if f.Resource.Science.IsEmpty() {
+						p.Sciences.RoundBonus(f)
+					}
 				}
-			}
+			*/
 		} else {
 			if p.Round > 1 {
 				p.Sciences.RoundBonus(f)
@@ -535,9 +548,7 @@ func (p *Game) TurnEnd(user int) error {
 	}
 
 	if p.IsResourceTurn() && p.Round > 1 {
-		if !f.Resource.Science.IsEmpty() {
-			p.Sciences.RoundBonus(f)
-		}
+		p.Sciences.RoundBonus(f)
 	}
 
 	turnType := p.Turn[0].Type
@@ -718,143 +729,143 @@ func (p *Game) FirstBuild(user int, x int, y int, building resources.Building) e
 	return nil
 }
 
-func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) (bool, bool, bool) {
-	jump := false
-
+func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) bool {
 	if p.Round < 1 {
 		tile = false
 	}
 
 	flag := p.Map.CheckDistance(f.Color, f.GetShipDistance(tile), x, y)
 
-	if flag == true {
-		return true, false, false
+	return flag
+}
+
+func (p *Game) CheckDistanceMoles(f *factions.Faction, x int, y int) bool {
+	if f.Type != resources.TileFactionMoles {
+		return false
+	}
+
+	if !p.Map.CheckDistanceMoles(f.Color, x, y) {
+		return false
+	}
+
+	items := resources.GetGroundPosition(x, y)
+
+	lastBuild := p.Map.LastBuild
+	flag := true
+
+	for _, position := range items {
+		x := position.X
+		y := position.Y
+
+		if lastBuild.X == x && lastBuild.Y == y {
+			continue
+		}
+
+		if p.Map.GetOwner(x, y) == f.Color {
+			flag = false
+			break
+		}
+
+		for _, v := range p.Map.BridgeList {
+			if v.Color != f.Color {
+				continue
+			}
+
+			if x == v.X1 && y == v.Y1 {
+				if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
+					continue
+				}
+
+				if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
+					flag = false
+					break
+				}
+			}
+
+			if x == v.X2 && y == v.Y2 {
+				if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
+					continue
+				}
+
+				if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
+					flag = false
+					break
+				}
+			}
+		}
+
+		if flag == false {
+			break
+		}
+	}
+
+	return flag
+}
+
+func (p *Game) CheckDistanceJump(f *factions.Faction, x int, y int) bool {
+	if !f.CheckTile(resources.TilePalaceJump) {
+		return false
+	}
+
+	if !p.Map.CheckDistanceJump(f.BuildingList, x, y) {
+		return false
 	}
 
 	lastBuild := p.Map.LastBuild
-	molesFlag := false
+	flag := true
 
-	if f.Type == resources.TileFactionMoles {
-		if (f.Resource.Building != resources.None && f.Resource.Worker > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2) {
-			if p.Map.CheckDistanceMoles(f.Color, x, y) {
-				items := resources.GetGroundPosition(x, y)
+	items := resources.GetGroundPosition(x, y)
 
-				molesFlag = true
-				for _, position := range items {
-					x := position.X
-					y := position.Y
+	for _, position := range items {
+		x := position.X
+		y := position.Y
 
-					if lastBuild.X == x && lastBuild.Y == y {
-						continue
-					}
-
-					if p.Map.GetOwner(x, y) == f.Color {
-						molesFlag = false
-						break
-					}
-
-					for _, v := range p.Map.BridgeList {
-						if v.Color != f.Color {
-							continue
-						}
-
-						if x == v.X1 && y == v.Y1 {
-							if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
-								continue
-							}
-
-							if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
-								molesFlag = false
-								break
-							}
-						}
-
-						if x == v.X2 && y == v.Y2 {
-							if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
-								continue
-							}
-
-							if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
-								molesFlag = false
-								break
-							}
-						}
-					}
-
-					if molesFlag == false {
-						break
-					}
-				}
-			}
+		if lastBuild.X == x && lastBuild.Y == y {
+			continue
 		}
-	}
 
-	if molesFlag == true {
-		return true, true, false
-	}
+		if p.Map.GetOwner(x, y) == f.Color {
+			flag = false
+			break
+		}
 
-	jumpFlag := f.CheckTile(resources.TilePalaceJump)
+		for _, v := range p.Map.BridgeList {
+			if v.Color != f.Color {
+				continue
+			}
 
-	if jumpFlag != true {
-		return false, false, false
-	}
+			if x == v.X1 && y == v.Y1 {
+				if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
+					continue
+				}
 
-	if (f.Resource.Building != resources.None && f.Resource.Prist > 0) || (f.Resource.Worker > 0 && f.Resource.Coin >= 2 && f.Resource.Prist > 0) {
-		if p.Map.CheckDistanceJump(f.BuildingList, x, y) {
-			items := resources.GetGroundPosition(x, y)
-
-			for _, position := range items {
-				x := position.X
-				y := position.Y
-
-				if p.Map.GetOwner(x, y) == f.Color {
-					jumpFlag = false
+				if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
+					flag = false
 					break
 				}
+			}
 
-				for _, v := range p.Map.BridgeList {
-					if v.Color != f.Color {
-						continue
-					}
-
-					if x == v.X1 && y == v.Y1 {
-						if lastBuild.X == v.X2 && lastBuild.Y == v.Y2 {
-							continue
-						}
-
-						if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
-							jumpFlag = false
-							break
-						}
-					}
-
-					if x == v.X2 && y == v.Y2 {
-						if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
-							continue
-						}
-
-						if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
-							jumpFlag = false
-							break
-						}
-					}
+			if x == v.X2 && y == v.Y2 {
+				if lastBuild.X == v.X1 && lastBuild.Y == v.Y1 {
+					continue
 				}
 
-				if jumpFlag == false {
+				if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
+					flag = false
 					break
 				}
 			}
 		}
+
+		if flag == false {
+			break
+		}
 	}
 
-	if jump == true {
-		return true, false, true
-	}
-
-	return false, false, false
+	return flag
 }
 
-func (p *Game) Build(user int, x int, y int, building resources.Building) error {
+func (p *Game) Build(user int, x int, y int, building resources.Building, extra BuildType) error {
 	if p.Round < -1 && p.Round != TileRound {
 		return errors.New("round error")
 	}
@@ -881,23 +892,27 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		}
 	}
 
-	flag, moles, jump := p.CheckDistance(f, x, y, true)
-	if flag == false {
-		if f.Resource.Building == resources.TP {
-			if p.Map.GetType(x, y) == f.Color {
-				flag = true
-			}
+	if p.Turn[0].Type == SpadeTurn {
+		extra = NormalBuild
+	}
+
+	flag := false
+	if extra == FlyBuild {
+		flag = p.CheckDistanceJump(f, x, y)
+	} else if extra == TunnelingBuild {
+		flag = p.CheckDistanceMoles(f, x, y)
+	} else {
+		flag = p.CheckDistance(f, x, y, true)
+	}
+
+	if f.Resource.Building == resources.TP {
+		if p.Map.GetType(x, y) == f.Color {
+			flag = true
 		}
 	}
 
 	if flag == false {
 		return errors.New("ship distance error")
-	}
-
-	if p.Turn[0].Type == SpadeTurn {
-		if moles || jump {
-			return errors.New("ship distance error")
-		}
 	}
 
 	if riverCity {
@@ -932,12 +947,12 @@ func (p *Game) Build(user int, x int, y int, building resources.Building) error 
 		return err
 	}
 
-	if moles == true {
+	if extra == TunnelingBuild {
 		f.Resource.Worker--
 		f.VP += 4
 	}
 
-	if jump == true {
+	if extra == FlyBuild {
 		f.Resource.Prist--
 		f.VP += 5
 	}
@@ -1374,7 +1389,7 @@ func (p *Game) Pass(user int, pos int) error {
 func (p *Game) FactionAction() {
 }
 
-func (p *Game) Dig(user int, x int, y int, dig int) error {
+func (p *Game) Dig(user int, x int, y int, dig int, extra BuildType) error {
 	if !p.IsTurn(user) {
 		return errors.New("It's not a turn")
 	}
@@ -1402,20 +1417,28 @@ func (p *Game) Dig(user int, x int, y int, dig int) error {
 	tile := true
 	if p.IsSpadeTurn() || p.IsResourceTurn() {
 		tile = false
+		extra = NormalBuild
 	}
 
-	flag, moles, jump := p.CheckDistance(f, x, y, tile)
+	flag := false
+	if extra == FlyBuild {
+		flag = p.CheckDistanceJump(f, x, y)
+	} else if extra == TunnelingBuild {
+		flag = p.CheckDistanceMoles(f, x, y)
+	} else {
+		flag = p.CheckDistance(f, x, y, tile)
+	}
 
 	if flag == false {
 		return errors.New("ship distance error")
 	}
 
-	if moles == true {
+	if extra == TunnelingBuild {
 		f.Resource.Worker--
 		f.VP += 4
 	}
 
-	if jump == true {
+	if extra == FlyBuild {
 		f.Resource.Prist--
 		f.VP += 5
 	}
@@ -1607,6 +1630,24 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 				powers[i] += p.Map.GetPower(position.X, position.Y)
 			}
 		}
+
+		for _, v := range p.Map.BridgeList {
+			if x == v.X1 && y == v.Y1 {
+				if p.Map.GetOwner(v.X2, v.Y2) == f.Color {
+					powers[i] += p.Map.GetPower(v.X2, v.Y2)
+				}
+
+				break
+			}
+
+			if x == v.X2 && y == v.Y2 {
+				if p.Map.GetOwner(v.X1, v.Y1) == f.Color {
+					powers[i] += p.Map.GetPower(v.X1, v.Y1)
+				}
+
+				break
+			}
+		}
 	}
 
 	users := make([]int, 0)
@@ -1621,7 +1662,7 @@ func (p *Game) PowerDiffusion(user int, x int, y int) {
 	for _, v := range users {
 		power := powers[v]
 		if power > 0 {
-			target := p.Factions[user].GetInstance()
+			target := p.Factions[v].GetInstance()
 
 			max := target.Resource.Power[0]*2 + target.Resource.Power[1]
 			if max > 0 {

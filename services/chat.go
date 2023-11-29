@@ -1,6 +1,7 @@
 package services
 
 import (
+	"aoi/global"
 	"fmt"
 
 	"github.com/antoniodipinto/ikisocket"
@@ -9,6 +10,7 @@ import (
 type ChatService struct {
 	Use     bool
 	Clients map[string]string
+	Rooms   map[int64]map[string]string
 }
 
 type MessageObject struct {
@@ -19,17 +21,39 @@ type MessageObject struct {
 
 var chat ChatService
 
+func (p *ChatService) Broadcast(room int64, message []byte) {
+	for _, v := range p.Rooms[room] {
+		err := ikisocket.EmitTo(v, message)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 func Chat() {
 	chat.Use = true
 	chat.Clients = make(map[string]string)
+	chat.Rooms = make(map[int64]map[string]string)
 
 	ikisocket.On(ikisocket.EventConnect, func(ep *ikisocket.EventPayload) {
 		//fmt.Println(fmt.Sprintf("Connection event 1 - User: %s", ep.Kws.GetStringAttribute("id")))
+		//
+		//id := ep.Kws.GetStringAttribute("id")
+		err := ep.Kws.EmitTo(ep.Kws.UUID, []byte("pong"))
+		if err != nil {
+			fmt.Println(err)
+		}
 	})
 
 	ikisocket.On(ikisocket.EventMessage, func(ep *ikisocket.EventPayload) {
 		//id := ep.Kws.GetStringAttribute("id")
 		//fmt.Println(fmt.Sprintf("Message event - User: %s - Message: %s", id, string(ep.Data)))
+		if string(ep.Data) == "ping" {
+			err := ep.Kws.EmitTo(ep.Kws.UUID, []byte("pong"))
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 
 		/*
 			message := MessageObject{}
@@ -55,17 +79,15 @@ func Chat() {
 	})
 
 	ikisocket.On(ikisocket.EventDisconnect, func(ep *ikisocket.EventPayload) {
-		id := ep.Kws.GetStringAttribute("id")
+		id := global.Atol(ep.Kws.GetStringAttribute("id"))
 
-		delete(chat.Clients, id)
-		fmt.Println(fmt.Sprintf("Disconnection event - User: %s", id))
+		delete(chat.Rooms[id], ep.Kws.UUID)
 	})
 
 	ikisocket.On(ikisocket.EventClose, func(ep *ikisocket.EventPayload) {
-		id := ep.Kws.GetStringAttribute("id")
+		id := global.Atol(ep.Kws.GetStringAttribute("id"))
 
-		delete(chat.Clients, id)
-		fmt.Println(fmt.Sprintf("Close event - User: %s", id))
+		delete(chat.Rooms[id], ep.Kws.UUID)
 	})
 
 	ikisocket.On(ikisocket.EventError, func(ep *ikisocket.EventPayload) {

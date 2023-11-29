@@ -15,6 +15,16 @@ func ConvertPosition(str string) (int, int) {
 	return int(str[0]) - 'A', global.Atoi(str[1:]) - 1
 }
 
+func ConvertBuildType(str string) BuildType {
+	if str == "fly" {
+		return FlyBuild
+	} else if str == "tunneling" {
+		return TunnelingBuild
+	}
+
+	return NormalBuild
+}
+
 func ConvertBuilding(str string) resources.Building {
 	if str == "D" {
 		return resources.D
@@ -99,6 +109,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 	if update == true {
 		log.Println("Command", str)
 	}
+
 	strs := strings.Split(str, " ")
 
 	user := global.Atoi(strs[0])
@@ -119,13 +130,23 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 		if p.Round == BuildRound {
 			err = p.FirstBuild(user, x, y, target)
 		} else {
-			err = p.Build(user, x, y, target)
+			extra := NormalBuild
+			if len(strs) == 5 {
+				extra = ConvertBuildType(strs[4])
+			}
+
+			err = p.Build(user, x, y, target, extra)
 		}
 	} else if cmd == "dig" {
 		x, y := ConvertPosition(strs[2])
 		dig := global.Atoi(strs[3])
 
-		err = p.Dig(user, x, y, dig)
+		extra := NormalBuild
+		if len(strs) == 5 {
+			extra = ConvertBuildType(strs[4])
+		}
+
+		err = p.Dig(user, x, y, dig, extra)
 	} else if cmd == "upgrade" {
 		x, y := ConvertPosition(strs[2])
 		target := ConvertBuilding(strs[3])
@@ -193,11 +214,6 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 		pos := global.Atoi(strs[2])
 
 		err = p.GetRoundTile(user, pos)
-	} else if cmd == "transform" {
-		x, y := ConvertPosition(strs[2])
-		dig := global.Atoi(strs[3])
-
-		err = p.Dig(user, x, y, dig)
 	} else if cmd == "spade" {
 		dig := global.Atoi(strs[2])
 
@@ -342,7 +358,7 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 
 			if cmd == "save" {
 				if update == true {
-					msg := global.Notify{Title: "command"}
+					msg := global.Notify{Id: gameid, Title: "command"}
 					global.SendNotify(msg)
 				}
 

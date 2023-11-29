@@ -3,7 +3,6 @@ package services
 import (
 	"aoi/global"
 
-	"github.com/antoniodipinto/ikisocket"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +14,7 @@ func Notify() {
 		for {
 			select {
 			case item := <-ch:
-				ikisocket.Broadcast([]byte(item.Title))
+				chat.Broadcast(item.Id, []byte(item.Title))
 			}
 		}
 	}()

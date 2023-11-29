@@ -2,6 +2,7 @@ package services
 
 import (
 	"aoi/config"
+	"aoi/global"
 	"aoi/router"
 	"encoding/json"
 	"log"
@@ -56,9 +57,18 @@ func Http() {
 
 		app.Get("/ws/:id", ikisocket.New(func(kws *ikisocket.Websocket) {
 			id := kws.Params("id")
+			kws.SetAttribute("id", id)
+
+			room := global.Atol(id)
 
 			chat.Clients[id] = kws.UUID
-			kws.SetAttribute("id", id)
+			log.Println("Join root : ", id, "user = ", kws.UUID)
+			if _, exists := chat.Rooms[room]; !exists {
+				chat.Rooms[room] = make(map[string]string)
+			}
+			chat.Rooms[room][kws.UUID] = kws.UUID
+			log.Println(kws.UUID)
+
 		}))
 	}
 

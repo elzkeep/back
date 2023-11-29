@@ -594,9 +594,11 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	}
 
 	if building == D {
-		err := CheckResource(p.Resource, p.Price[D])
-		if err != nil {
-			return err
+		if p.Resource.Building != D {
+			err := CheckResource(p.Resource, p.Price[D])
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -621,7 +623,9 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	p.Resource.ConvertSpade = 0
 
 	if building == D {
-		p.UsePrice(p.Price[D])
+		if p.Resource.Building != D {
+			p.UsePrice(p.Price[D])
+		}
 		p.ReceiveDVP()
 	} else if building == WHITE_D {
 		p.ReceiveDVP()

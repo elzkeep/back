@@ -631,7 +631,7 @@ func Join(user int64, id int64) error {
 		g.CompleteAddUser()
 	}
 
-	msg := global.Notify{Title: "join"}
+	msg := global.Notify{Id: id, Title: "join"}
 	global.SendNotify(msg)
 
 	return nil
