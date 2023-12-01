@@ -3,8 +3,6 @@ package models
 import (
     //"aoi/config"
     
-    "aoi/models/gameundoitem"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -17,32 +15,30 @@ import (
     
 )
 
-type Gameundoitem struct {
+type Notice struct {
             
     Id                int64 `json:"id"`         
-    Status                gameundoitem.Status `json:"status"`         
-    Gameundo                int64 `json:"gameundo"`         
-    Game                int64 `json:"game"`         
-    User                int64 `json:"user"`         
+    Content                string `json:"content"`         
+    Status                int `json:"status"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type GameundoitemManager struct {
+type NoticeManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Gameundoitem) AddExtra(key string, value interface{}) {    
+func (c *Notice) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewGameundoitemManager(conn interface{}) *GameundoitemManager {
-    var item GameundoitemManager
+func NewNoticeManager(conn interface{}) *NoticeManager {
+    var item NoticeManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -61,17 +57,17 @@ func NewGameundoitemManager(conn interface{}) *GameundoitemManager {
     return &item
 }
 
-func (p *GameundoitemManager) Close() {
+func (p *NoticeManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *GameundoitemManager) SetIndex(index string) {
+func (p *NoticeManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *GameundoitemManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *NoticeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -79,7 +75,7 @@ func (p *GameundoitemManager) Exec(query string, params ...interface{}) (sql.Res
     }
 }
 
-func (p *GameundoitemManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *NoticeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -87,10 +83,10 @@ func (p *GameundoitemManager) Query(query string, params ...interface{}) (*sql.R
     }
 }
 
-func (p *GameundoitemManager) GetQuery() string {
+func (p *NoticeManager) GetQuery() string {
     ret := ""
 
-    str := "select gi_id, gi_status, gi_gameundo, gi_game, gi_user, gi_date from gameundoitem_tb "
+    str := "select n_id, n_content, n_status, n_date from notice_tb "
 
     if p.Index == "" {
         ret = str
@@ -104,10 +100,10 @@ func (p *GameundoitemManager) GetQuery() string {
     return ret;
 }
 
-func (p *GameundoitemManager) GetQuerySelect() string {
+func (p *NoticeManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from gameundoitem_tb "
+    str := "select count(*) from notice_tb "
 
     if p.Index == "" {
         ret = str
@@ -121,12 +117,12 @@ func (p *GameundoitemManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *GameundoitemManager) Truncate() error {
+func (p *NoticeManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate gameundoitem_tb "
+    query := "truncate notice_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -136,7 +132,7 @@ func (p *GameundoitemManager) Truncate() error {
     return nil
 }
 
-func (p *GameundoitemManager) Insert(item *Gameundoitem) error {
+func (p *NoticeManager) Insert(item *Notice) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -156,11 +152,11 @@ func (p *GameundoitemManager) Insert(item *Gameundoitem) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into gameundoitem_tb (gi_id, gi_status, gi_gameundo, gi_game, gi_user, gi_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Status, item.Gameundo, item.Game, item.User, item.Date)
+        query = "insert into notice_tb (n_id, n_content, n_status, n_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Content, item.Status, item.Date)
     } else {
-        query = "insert into gameundoitem_tb (gi_status, gi_gameundo, gi_game, gi_user, gi_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Status, item.Gameundo, item.Game, item.User, item.Date)
+        query = "insert into notice_tb (n_content, n_status, n_date) values (?, ?, ?)"
+        res, err = p.Exec(query , item.Content, item.Status, item.Date)
     }
     
     if err == nil {
@@ -174,19 +170,19 @@ func (p *GameundoitemManager) Insert(item *Gameundoitem) error {
     return err
 }
 
-func (p *GameundoitemManager) Delete(id int64) error {
+func (p *NoticeManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from gameundoitem_tb where gi_id = ?"
+    query := "delete from notice_tb where n_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
+func (p *NoticeManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -200,15 +196,15 @@ func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and n_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and n_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and n_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -222,14 +218,14 @@ func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from gameundoitem_tb where " + query[5:]
+    query = "delete from notice_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *GameundoitemManager) Update(item *Gameundoitem) error {
+func (p *NoticeManager) Update(item *Notice) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -239,53 +235,31 @@ func (p *GameundoitemManager) Update(item *Gameundoitem) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update gameundoitem_tb set gi_status = ?, gi_gameundo = ?, gi_game = ?, gi_user = ?, gi_date = ? where gi_id = ?"
-	_, err := p.Exec(query , item.Status, item.Gameundo, item.Game, item.User, item.Date, item.Id)
+	query := "update notice_tb set n_content = ?, n_status = ?, n_date = ? where n_id = ?"
+	_, err := p.Exec(query , item.Content, item.Status, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *GameundoitemManager) UpdateStatus(value int, id int64) error {
+func (p *NoticeManager) UpdateContent(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_status = ? where gi_id = ?"
+	query := "update notice_tb set n_content = ? where n_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) UpdateGameundo(value int64, id int64) error {
+func (p *NoticeManager) UpdateStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_gameundo = ? where gi_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *GameundoitemManager) UpdateGame(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update gameundoitem_tb set gi_game = ? where gi_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *GameundoitemManager) UpdateUser(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update gameundoitem_tb set gi_user = ? where gi_id = ?"
+	query := "update notice_tb set n_status = ? where n_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -293,41 +267,19 @@ func (p *GameundoitemManager) UpdateUser(value int64, id int64) error {
 
 
 
-func (p *GameundoitemManager) IncreaseGameundo(value int64, id int64) error {
+func (p *NoticeManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_gameundo = gi_gameundo + ? where gi_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *GameundoitemManager) IncreaseGame(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update gameundoitem_tb set gi_game = gi_game + ? where gi_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *GameundoitemManager) IncreaseUser(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update gameundoitem_tb set gi_user = gi_user + ? where gi_id = ?"
+	query := "update notice_tb set n_status = n_status + ? where n_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *GameundoitemManager) GetIdentity() int64 {
+func (p *NoticeManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -341,25 +293,20 @@ func (p *GameundoitemManager) GetIdentity() int64 {
     }
 }
 
-func (p *Gameundoitem) InitExtra() {
+func (p *Notice) InitExtra() {
     p.Extra = map[string]interface{}{
-            "status":     gameundoitem.GetStatus(p.Status),
 
     }
 }
 
-func (p *GameundoitemManager) ReadRow(rows *sql.Rows) *Gameundoitem {
-    var item Gameundoitem
+func (p *NoticeManager) ReadRow(rows *sql.Rows) *Notice {
+    var item Notice
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Status, &item.Gameundo, &item.Game, &item.User, &item.Date)
-        
-        
-        
-        
+        err = rows.Scan(&item.Id, &item.Content, &item.Status, &item.Date)
         
         
         
@@ -385,21 +332,19 @@ func (p *GameundoitemManager) ReadRow(rows *sql.Rows) *Gameundoitem {
     }
 }
 
-func (p *GameundoitemManager) ReadRows(rows *sql.Rows) []Gameundoitem {
-    var items []Gameundoitem
+func (p *NoticeManager) ReadRows(rows *sql.Rows) []Notice {
+    var items []Notice
 
     for rows.Next() {
-        var item Gameundoitem
+        var item Notice
         
     
-        err := rows.Scan(&item.Id, &item.Status, &item.Gameundo, &item.Game, &item.User, &item.Date)
+        err := rows.Scan(&item.Id, &item.Content, &item.Status, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
-        
-        
         
         
         
@@ -417,12 +362,12 @@ func (p *GameundoitemManager) ReadRows(rows *sql.Rows) []Gameundoitem {
      return items
 }
 
-func (p *GameundoitemManager) Get(id int64) *Gameundoitem {
+func (p *NoticeManager) Get(id int64) *Notice {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and gi_id = ?"
+    query := p.GetQuery() + " and n_id = ?"
 
     
     
@@ -438,7 +383,7 @@ func (p *GameundoitemManager) Get(id int64) *Gameundoitem {
     return p.ReadRow(rows)
 }
 
-func (p *GameundoitemManager) Count(args []interface{}) int {
+func (p *NoticeManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -452,15 +397,15 @@ func (p *GameundoitemManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and n_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and n_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and n_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -497,13 +442,13 @@ func (p *GameundoitemManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GameundoitemManager) FindAll() []Gameundoitem {
+func (p *NoticeManager) FindAll() []Notice {
     return p.Find(nil)
 }
 
-func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
+func (p *NoticeManager) Find(args []interface{}) []Notice {
     if p.Conn == nil && p.Tx == nil {
-        var items []Gameundoitem
+        var items []Notice
         return items
     }
 
@@ -542,15 +487,15 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and n_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and n_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and n_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -572,10 +517,10 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "gi_id desc"
+            orderby = "n_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "gi_" + orderby
+                orderby = "n_" + orderby
             }
             
         }
@@ -593,10 +538,10 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
         */
     } else {
         if orderby == "" {
-            orderby = "gi_id"
+            orderby = "n_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "gi_" + orderby
+                orderby = "n_" + orderby
             }
         }
         query += " order by " + orderby
@@ -606,7 +551,7 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Gameundoitem
+        var items []Notice
         return items
     }
 
@@ -615,39 +560,6 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
     return p.ReadRows(rows)
 }
 
-
-func (p *GameundoitemManager) FindByGame(game int64, args ...interface{}) []Gameundoitem {
-    rets := make([]interface{}, 0)
-    rets = append(rets, args...)
-
-    if game != 0 { 
-        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
-     }
-    
-    return p.Find(rets)
-}
-
-func (p *GameundoitemManager) CountByGame(game int64, args ...interface{}) int {
-    rets := make([]interface{}, 0)
-    rets = append(rets, args...)
-    
-    if game != 0 { 
-        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
-     }
-    
-    return p.Count(rets)
-}
-
-func (p *GameundoitemManager) DeleteByGame(game int64) error {
-     if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-    query := "delete from gameundoitem_tb where gi_game = ?"
-    _, err := p.Exec(query, game)
-
-    return err
-}
 
 
 

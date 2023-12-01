@@ -169,6 +169,51 @@ func (c *GameundoitemController) Deletebatch(item *[]models.Gameundoitem) {
 
 
 
+func (c *GameundoitemController) FindByGame(game int64) []models.Gameundoitem {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameundoitemManager(conn)
+    
+    item := _manager.FindByGame(game)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
+func (c *GameundoitemController) CountByGame(game int64) int {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameundoitemManager(conn)
+    
+    item := _manager.CountByGame(game)
+    
+    
+    
+    c.Set("count", item)
+    
+    return item
+    
+}
+
+// @Delete()
+func (c *GameundoitemController) DeleteByGame(game int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameundoitemManager(conn)
+    
+    _manager.DeleteByGame(game)
+    
+}
+
+
 // @Put()
 func (c *GameundoitemController) UpdateStatus(status int, id int64) {
     

@@ -171,6 +171,7 @@ func (p *GametileManager) Insert(item *Gametile) error {
 
     return err
 }
+
 func (p *GametileManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -504,6 +505,10 @@ func (p *GametileManager) Count(args []interface{}) int {
     }
 }
 
+func (p *GametileManager) FindAll() []Gametile {
+    return p.Find(nil)
+}
+
 func (p *GametileManager) Find(args []interface{}) []Gametile {
     if p.Conn == nil && p.Tx == nil {
         var items []Gametile
@@ -511,7 +516,8 @@ func (p *GametileManager) Find(args []interface{}) []Gametile {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -563,7 +569,11 @@ func (p *GametileManager) Find(args []interface{}) []Gametile {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -600,7 +610,7 @@ func (p *GametileManager) Find(args []interface{}) []Gametile {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -613,6 +623,39 @@ func (p *GametileManager) Find(args []interface{}) []Gametile {
     return p.ReadRows(rows)
 }
 
+
+func (p *GametileManager) FindByGame(game int64, args ...interface{}) []Gametile {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
+
+func (p *GametileManager) CountByGame(game int64, args ...interface{}) int {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+    
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Count(rets)
+}
+
+func (p *GametileManager) DeleteByGame(game int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from gametile_tb where gt_game = ?"
+    _, err := p.Exec(query, game)
+
+    return err
+}
 
 
 

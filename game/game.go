@@ -10,7 +10,6 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
-	"log"
 	"math"
 	"sort"
 	"strings"
@@ -85,6 +84,7 @@ type Game struct {
 	UndoRequest     UndoRequest               `json:"undo"`
 	DummyNetwork    int                       `json:"-"`
 	HistoryId       int64                     `json:"-"`
+	Illusionists    gm.Illusionists           `json:"illusionists"`
 }
 
 type Log struct {
@@ -102,6 +102,7 @@ func NewGame(game *models.Game) *Game {
 	count := game.Count
 
 	item.Id = id
+	item.Illusionists = game.Illusionists
 	item.Name = game.Name
 	item.Type = GameType(game.Type)
 	item.PowerActions = action.NewPowerAction()
@@ -291,6 +292,16 @@ func (p *Game) SelectFaction(user int, name string) {
 
 	p.FactionTiles.Items[pos].Use = true
 	f.Action = true
+
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gameuserManager := models.NewGameuserManager(conn)
+	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+	gameuser.Faction = int(factionTile.Type)
+	gameuser.Color = int(colorTile.Color)
+
+	gameuserManager.Update(gameuser)
 }
 
 func (p *Game) IsTurn(user int) bool {
@@ -345,8 +356,6 @@ func (p *Game) Start() {
 	p.RoundTiles.Start()
 
 	p.Round++
-
-	log.Println("round :", p.Round, "-----------------------")
 
 	if p.Round == 6 {
 		p.Network = p.DummyNetwork
@@ -739,8 +748,16 @@ func (p *Game) CheckDistance(f *factions.Faction, x int, y int, tile bool) bool 
 	return flag
 }
 
-func (p *Game) CheckDistanceMoles(f *factions.Faction, x int, y int) bool {
+func (p *Game) IsMoles(f *factions.Faction) bool {
 	if f.Type != resources.TileFactionMoles {
+		return false
+	}
+
+	return true
+}
+
+func (p *Game) CheckDistanceMoles(f *factions.Faction, x int, y int) bool {
+	if !p.IsMoles(f) {
 		return false
 	}
 
@@ -802,8 +819,16 @@ func (p *Game) CheckDistanceMoles(f *factions.Faction, x int, y int) bool {
 	return flag
 }
 
-func (p *Game) CheckDistanceJump(f *factions.Faction, x int, y int) bool {
+func (p *Game) IsJump(f *factions.Faction) bool {
 	if !f.CheckTile(resources.TilePalaceJump) {
+		return false
+	}
+
+	return true
+}
+
+func (p *Game) CheckDistanceJump(f *factions.Faction, x int, y int) bool {
+	if !p.IsJump(f) {
 		return false
 	}
 
@@ -950,14 +975,20 @@ func (p *Game) Build(user int, x int, y int, building resources.Building, extra 
 	if extra == TunnelingBuild {
 		f.Resource.Worker--
 		f.VP += 4
+		f.IsJump = true
 	}
 
 	if extra == FlyBuild {
 		f.Resource.Prist--
 		f.VP += 5
+		f.IsJump = true
 	}
 
 	p.Map.Build(x, y, f.Color, building)
+
+	if f.Resource.Building != resources.None {
+		p.Map.ResetLastPosition()
+	}
 
 	lists := p.Map.CheckCity(f.Color, x, y, f.TownPower)
 
@@ -1172,13 +1203,21 @@ func (p *Game) PowerAction(user int, pos int) error {
 	}
 
 	if f.CheckTile(resources.TileFactionIllusionists) {
-		vp := 3
+		if p.Illusionists != gm.IllusionistsVp0 {
+			vp := 3
 
-		if len(p.Factions) == 5 {
-			vp = 4
+			if p.Illusionists == gm.IllusionistsVp2 {
+				vp = 2
+			} else if p.Illusionists == gm.IllusionistsVp1 {
+				vp = 1
+			}
+
+			if len(p.Factions) == 5 {
+				vp++
+			}
+
+			f.ReceiveResource(resources.Price{VP: vp})
 		}
-
-		f.ReceiveResource(resources.Price{VP: vp})
 	}
 
 	return nil
@@ -1436,11 +1475,13 @@ func (p *Game) Dig(user int, x int, y int, dig int, extra BuildType) error {
 	if extra == TunnelingBuild {
 		f.Resource.Worker--
 		f.VP += 4
+		f.IsJump = true
 	}
 
 	if extra == FlyBuild {
 		f.Resource.Prist--
 		f.VP += 5
+		f.IsJump = true
 	}
 
 	spade := 0
@@ -1475,8 +1516,17 @@ func (p *Game) Dig(user int, x int, y int, dig int, extra BuildType) error {
 		spade = dig
 	}
 
+	flag = false
+	if f.Resource.Building != resources.None && f.Resource.ConvertSpade == 0 {
+		flag = true
+	}
+
 	faction.Dig(x, y, spade)
 	p.Map.Dig(x, y, color.Color(change))
+
+	if flag == true {
+		p.Map.ResetLastPosition()
+	}
 
 	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
@@ -1550,7 +1600,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 
 			if f.Type == resources.TileFactionMoles {
 				flag = true
-			} else if p.Map.GetType(x1+1, y) == color.River && p.Map.GetType(x1+1, y+1) == color.River {
+			} else if (p.Map.GetType(x1+1, y) == color.River || p.Map.GetType(x1+1, y) == color.None) && (p.Map.GetType(x1+1, y+1) == color.River || p.Map.GetType(x1+1, y+1) == color.None) {
 				flag = true
 			}
 		}
@@ -1559,7 +1609,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 2 {
 				if f.Type == resources.TileFactionMoles {
 					flag = true
-				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
+				} else if (p.Map.GetType(x1, y1+1) == color.River || p.Map.GetType(x1, y1+1) == color.None) && (p.Map.GetType(x2, y2-1) == color.River || p.Map.GetType(x2, y2-1) == color.None) {
 					flag = true
 				}
 			}
@@ -1567,7 +1617,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 1 {
 				if f.Type == resources.TileFactionMoles {
 					flag = true
-				} else if p.Map.GetType(x1, y1+1) == color.River && p.Map.GetType(x2, y2-1) == color.River {
+				} else if (p.Map.GetType(x1, y1+1) == color.River || p.Map.GetType(x1, y1+1) == color.None) && (p.Map.GetType(x2, y2-1) == color.River || p.Map.GetType(x2, y2-1) == color.None) {
 					flag = true
 				}
 			}
@@ -1852,7 +1902,7 @@ func (p *Game) ConvertDig(user int, spade int) error {
 		return errors.New("over")
 	}
 
-	if f.BuildAction == true {
+	if f.BuildAction == true && f.Resource.Building == resources.None {
 		return errors.New("already build")
 	}
 
@@ -2091,6 +2141,8 @@ func (p *Game) SchoolTile(user int, science int, level int) error {
 
 	p.SchoolTiles.Items[science][level].Count--
 
+	p.Map.ResetLastPosition()
+
 	return nil
 }
 
@@ -2246,8 +2298,27 @@ func (p *Game) LastRoundVP(calculate bool) {
 
 			for _, b := range items {
 				for _, b2 := range remain {
-					if p.Map.CheckConnect(f.Color, f.GetShipDistance(false), b.X, b.Y, b2.X, b2.Y) {
+					distance := p.Map.CheckConnect(f.Color, f.GetShipDistance(false), b.X, b.Y, b2.X, b2.Y)
 
+					if distance == false {
+						if p.IsJump(f) {
+							calc := p.Map.GetDistance(b.X, b.Y, b2.X, b2.Y)
+
+							if calc == 2 || calc == 3 {
+								distance = true
+							}
+						}
+
+						if p.IsMoles(f) {
+							calc := p.Map.GetDistance(b.X, b.Y, b2.X, b2.Y)
+
+							if calc == 2 {
+								distance = true
+							}
+						}
+					}
+
+					if distance == true {
 						flag := false
 						for _, v := range connect {
 							if b2.X == v.X && b2.Y == v.Y {
@@ -2399,7 +2470,7 @@ func (p *Game) LastRoundVP(calculate bool) {
 			return scores[i].Score > scores[j].Score
 		})
 
-		receives := []int{0, 8, 4, 2}
+		receives := []int{0, 8, 6, 4, 3, 2}
 		receiveCount := 0
 
 		for i := 0; i < 3; i++ {
@@ -2445,7 +2516,7 @@ func (p *Game) LastRoundVP(calculate bool) {
 			}
 
 			if receiveCount == 1 {
-				receives = []int{0, 4, 2, 1}
+				receives = []int{0, 4, 3, 2, 1}
 			} else if receiveCount == 2 {
 				receives = []int{0, 2, 1, 0}
 			}
@@ -2587,6 +2658,11 @@ func (p *Game) CalculateElo() {
 	}
 
 	users := make([][]int64, 0)
+	elos := make(map[int64]float64)
+
+	for _, v := range items {
+		elos[v.User] = 0.0
+	}
 
 	for _, v := range items {
 		for _, v2 := range items[1:] {
@@ -2621,9 +2697,17 @@ func (p *Game) CalculateElo() {
 
 			userManager.IncreaseElo(models.Double(elo1), v.User)
 			userManager.IncreaseElo(models.Double(elo2), v2.User)
+
+			elos[v.User] += elo1
+			elos[v2.User] += elo2
 		}
 
 		userManager.IncreaseCount(1, v.User)
+	}
+
+	for _, v := range items {
+		v.Elo = models.Double(elos[v.User])
+		gameuserManager.Update(&v)
 	}
 
 	conn.Commit()
@@ -2650,6 +2734,14 @@ func (p *Game) SelectFactionTile(user int, name string) error {
 	p.FactionTiles.Items[pos].Use = true
 	f.Action = true
 
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gameuserManager := models.NewGameuserManager(conn)
+	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+	gameuser.Faction = int(tile.Type)
+	gameuserManager.Update(gameuser)
+
 	return nil
 }
 
@@ -2674,6 +2766,14 @@ func (p *Game) SelectColorTile(user int, name string) error {
 	p.ColorTiles.Items[pos].Use = true
 	f.Action = true
 
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	gameuserManager := models.NewGameuserManager(conn)
+	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+	gameuser.Color = int(tile.Color)
+	gameuserManager.Update(gameuser)
+
 	return nil
 }
 
@@ -2695,6 +2795,7 @@ func (p *Game) SelectPalaceTile(user int, pos int) error {
 
 func (p *Game) InitDraft() {
 	p.PalaceTiles.Items = make([]resources.TileItem, 0)
+
 	for user, v := range p.Factions {
 		f := v.GetInstance()
 
@@ -2706,7 +2807,6 @@ func (p *Game) InitDraft() {
 			if tile.Category == resources.TileFaction {
 				factionTile = tile
 			}
-
 			if tile.Category == resources.TileColor {
 				colorTile = tile
 			}
@@ -2749,11 +2849,19 @@ func (p *Game) InitDraft() {
 		}
 
 		item.Init(colorTile, p.Usernames[user])
+
 		p.Factions[user] = item
+		f = item.GetInstance()
+
+		f.Tiles = make([]resources.TileItem, 0)
+		f.Tiles = append(f.Tiles, factionTile)
+		f.Tiles = append(f.Tiles, colorTile)
+
+		if factionTile.Type == resources.TileFactionMonks {
+			f.FirstBuilding = resources.SA
+		}
 
 		palaceTile.Color = colorTile.Color
-
-		f = item.GetInstance()
 
 		f.ReceiveResource(factionTile.Once)
 		f.ReceiveResource(colorTile.Once)

@@ -172,6 +172,7 @@ func (p *GamehistoryManager) Insert(item *Gamehistory) error {
 
     return err
 }
+
 func (p *GamehistoryManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -519,6 +520,10 @@ func (p *GamehistoryManager) Count(args []interface{}) int {
     }
 }
 
+func (p *GamehistoryManager) FindAll() []Gamehistory {
+    return p.Find(nil)
+}
+
 func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
     if p.Conn == nil && p.Tx == nil {
         var items []Gamehistory
@@ -526,7 +531,8 @@ func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -578,7 +584,11 @@ func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -615,7 +625,7 @@ func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -628,6 +638,39 @@ func (p *GamehistoryManager) Find(args []interface{}) []Gamehistory {
     return p.ReadRows(rows)
 }
 
+
+func (p *GamehistoryManager) FindByGame(game int64, args ...interface{}) []Gamehistory {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
+
+func (p *GamehistoryManager) CountByGame(game int64, args ...interface{}) int {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+    
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Count(rets)
+}
+
+func (p *GamehistoryManager) DeleteByGame(game int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from gamehistory_tb where gh_game = ?"
+    _, err := p.Exec(query, game)
+
+    return err
+}
 
 
 

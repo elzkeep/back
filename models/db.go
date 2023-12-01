@@ -41,6 +41,10 @@ type Custom struct {
 	Query string
 }
 
+type Base struct {
+	Query string
+}
+
 func Paging(page int, pagesize int) PagingType {
 	return PagingType{Page: page, Pagesize: pagesize}
 }

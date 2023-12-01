@@ -173,6 +173,7 @@ func (p *GameundoManager) Insert(item *Gameundo) error {
 
     return err
 }
+
 func (p *GameundoManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -496,6 +497,10 @@ func (p *GameundoManager) Count(args []interface{}) int {
     }
 }
 
+func (p *GameundoManager) FindAll() []Gameundo {
+    return p.Find(nil)
+}
+
 func (p *GameundoManager) Find(args []interface{}) []Gameundo {
     if p.Conn == nil && p.Tx == nil {
         var items []Gameundo
@@ -503,7 +508,8 @@ func (p *GameundoManager) Find(args []interface{}) []Gameundo {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -555,7 +561,11 @@ func (p *GameundoManager) Find(args []interface{}) []Gameundo {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -592,7 +602,7 @@ func (p *GameundoManager) Find(args []interface{}) []Gameundo {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -605,6 +615,39 @@ func (p *GameundoManager) Find(args []interface{}) []Gameundo {
     return p.ReadRows(rows)
 }
 
+
+func (p *GameundoManager) FindByGame(game int64, args ...interface{}) []Gameundo {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
+
+func (p *GameundoManager) CountByGame(game int64, args ...interface{}) int {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+    
+    if game != 0 { 
+        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
+     }
+    
+    return p.Count(rets)
+}
+
+func (p *GameundoManager) DeleteByGame(game int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from gameundo_tb where gn_game = ?"
+    _, err := p.Exec(query, game)
+
+    return err
+}
 
 
 

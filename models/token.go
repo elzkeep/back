@@ -170,6 +170,7 @@ func (p *TokenManager) Insert(item *Token) error {
 
     return err
 }
+
 func (p *TokenManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -467,6 +468,10 @@ func (p *TokenManager) Count(args []interface{}) int {
     }
 }
 
+func (p *TokenManager) FindAll() []Token {
+    return p.Find(nil)
+}
+
 func (p *TokenManager) Find(args []interface{}) []Token {
     if p.Conn == nil && p.Tx == nil {
         var items []Token
@@ -474,7 +479,8 @@ func (p *TokenManager) Find(args []interface{}) []Token {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -526,7 +532,11 @@ func (p *TokenManager) Find(args []interface{}) []Token {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -563,7 +573,7 @@ func (p *TokenManager) Find(args []interface{}) []Token {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)

@@ -3,46 +3,45 @@ package models
 import (
     //"aoi/config"
     
-    "aoi/models/gameundoitem"
-    
     "database/sql"
     "errors"
     "fmt"
     "strings"
-    "time"
-
+    
     log "github.com/sirupsen/logrus"    
     _ "github.com/go-sql-driver/mysql"
 
     
 )
 
-type Gameundoitem struct {
+type Statisticscolor struct {
             
-    Id                int64 `json:"id"`         
-    Status                gameundoitem.Status `json:"status"`         
-    Gameundo                int64 `json:"gameundo"`         
-    Game                int64 `json:"game"`         
-    User                int64 `json:"user"`         
-    Date                string `json:"date"` 
+    Color                int `json:"color"`         
+    Rank1                int `json:"rank1"`         
+    Rank2                int `json:"rank2"`         
+    Rank3                int `json:"rank3"`         
+    Rank4                int `json:"rank4"`         
+    Rank5                int `json:"rank5"`         
+    Count                int64 `json:"count"`         
+    Avg                int64 `json:"avg"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type GameundoitemManager struct {
+type StatisticscolorManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Gameundoitem) AddExtra(key string, value interface{}) {    
+func (c *Statisticscolor) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewGameundoitemManager(conn interface{}) *GameundoitemManager {
-    var item GameundoitemManager
+func NewStatisticscolorManager(conn interface{}) *StatisticscolorManager {
+    var item StatisticscolorManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -61,17 +60,17 @@ func NewGameundoitemManager(conn interface{}) *GameundoitemManager {
     return &item
 }
 
-func (p *GameundoitemManager) Close() {
+func (p *StatisticscolorManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *GameundoitemManager) SetIndex(index string) {
+func (p *StatisticscolorManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *GameundoitemManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *StatisticscolorManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -79,7 +78,7 @@ func (p *GameundoitemManager) Exec(query string, params ...interface{}) (sql.Res
     }
 }
 
-func (p *GameundoitemManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *StatisticscolorManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -87,10 +86,10 @@ func (p *GameundoitemManager) Query(query string, params ...interface{}) (*sql.R
     }
 }
 
-func (p *GameundoitemManager) GetQuery() string {
+func (p *StatisticscolorManager) GetQuery() string {
     ret := ""
 
-    str := "select gi_id, gi_status, gi_gameundo, gi_game, gi_user, gi_date from gameundoitem_tb "
+    str := "select gu_color, gu_rank1, gu_rank2, gu_rank3, gu_rank4, gu_rank5, gu_count, gu_avg from statisticscolor_vw "
 
     if p.Index == "" {
         ret = str
@@ -104,10 +103,10 @@ func (p *GameundoitemManager) GetQuery() string {
     return ret;
 }
 
-func (p *GameundoitemManager) GetQuerySelect() string {
+func (p *StatisticscolorManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from gameundoitem_tb "
+    str := "select count(*) from statisticscolor_vw "
 
     if p.Index == "" {
         ret = str
@@ -121,12 +120,12 @@ func (p *GameundoitemManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *GameundoitemManager) Truncate() error {
+func (p *StatisticscolorManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate gameundoitem_tb "
+    query := "truncate statisticscolor_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -136,57 +135,21 @@ func (p *GameundoitemManager) Truncate() error {
     return nil
 }
 
-func (p *GameundoitemManager) Insert(item *Gameundoitem) error {
+
+
+func (p *StatisticscolorManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    if item.Date == "" {
-        t := time.Now().UTC().Add(time.Hour * 9)
-        //t := time.Now()
-        item.Date = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
-    }
-
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-    query := ""
-    var res sql.Result
-    var err error
-    if item.Id > 0 {
-        query = "insert into gameundoitem_tb (gi_id, gi_status, gi_gameundo, gi_game, gi_user, gi_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Status, item.Gameundo, item.Game, item.User, item.Date)
-    } else {
-        query = "insert into gameundoitem_tb (gi_status, gi_gameundo, gi_game, gi_user, gi_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Status, item.Gameundo, item.Game, item.User, item.Date)
-    }
-    
-    if err == nil {
-        p.Result = &res
-        
-    } else {
-        log.Println(err)
-        p.Result = nil
-    }
-
-    return err
-}
-
-func (p *GameundoitemManager) Delete(id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-    query := "delete from gameundoitem_tb where gi_id = ?"
+    query := "delete from statisticscolor_vw where gu_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
+func (p *StatisticscolorManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -200,15 +163,15 @@ func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gu_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and gu_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and gu_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -222,112 +185,105 @@ func (p *GameundoitemManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from gameundoitem_tb where " + query[5:]
+    query = "delete from statisticscolor_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *GameundoitemManager) Update(item *Gameundoitem) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-    
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-	query := "update gameundoitem_tb set gi_status = ?, gi_gameundo = ?, gi_game = ?, gi_user = ?, gi_date = ? where gi_id = ?"
-	_, err := p.Exec(query , item.Status, item.Gameundo, item.Game, item.User, item.Date, item.Id)
-    
-        
-    return err
-}
 
 
-func (p *GameundoitemManager) UpdateStatus(value int, id int64) error {
+func (p *StatisticscolorManager) IncreaseColor(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_status = ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_color = gu_color + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) UpdateGameundo(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseRank1(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_gameundo = ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_rank1 = gu_rank1 + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) UpdateGame(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseRank2(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_game = ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_rank2 = gu_rank2 + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) UpdateUser(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseRank3(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_user = ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_rank3 = gu_rank3 + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-
-
-func (p *GameundoitemManager) IncreaseGameundo(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseRank4(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_gameundo = gi_gameundo + ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_rank4 = gu_rank4 + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) IncreaseGame(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseRank5(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_game = gi_game + ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_rank5 = gu_rank5 + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *GameundoitemManager) IncreaseUser(value int64, id int64) error {
+func (p *StatisticscolorManager) IncreaseCount(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update gameundoitem_tb set gi_user = gi_user + ? where gi_id = ?"
+	query := "update statisticscolor_vw set gu_count = gu_count + ? where gu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *StatisticscolorManager) IncreaseAvg(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update statisticscolor_vw set gu_avg = gu_avg + ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *GameundoitemManager) GetIdentity() int64 {
+func (p *StatisticscolorManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -341,21 +297,20 @@ func (p *GameundoitemManager) GetIdentity() int64 {
     }
 }
 
-func (p *Gameundoitem) InitExtra() {
+func (p *Statisticscolor) InitExtra() {
     p.Extra = map[string]interface{}{
-            "status":     gameundoitem.GetStatus(p.Status),
 
     }
 }
 
-func (p *GameundoitemManager) ReadRow(rows *sql.Rows) *Gameundoitem {
-    var item Gameundoitem
+func (p *StatisticscolorManager) ReadRow(rows *sql.Rows) *Statisticscolor {
+    var item Statisticscolor
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Status, &item.Gameundo, &item.Game, &item.User, &item.Date)
+        err = rows.Scan(&item.Color, &item.Rank1, &item.Rank2, &item.Rank3, &item.Rank4, &item.Rank5, &item.Count, &item.Avg)
         
         
         
@@ -367,9 +322,11 @@ func (p *GameundoitemManager) ReadRow(rows *sql.Rows) *Gameundoitem {
         
         
         
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
+        
+        
+        
+        
+        
         
     } else {
         return nil
@@ -385,14 +342,14 @@ func (p *GameundoitemManager) ReadRow(rows *sql.Rows) *Gameundoitem {
     }
 }
 
-func (p *GameundoitemManager) ReadRows(rows *sql.Rows) []Gameundoitem {
-    var items []Gameundoitem
+func (p *StatisticscolorManager) ReadRows(rows *sql.Rows) []Statisticscolor {
+    var items []Statisticscolor
 
     for rows.Next() {
-        var item Gameundoitem
+        var item Statisticscolor
         
     
-        err := rows.Scan(&item.Id, &item.Status, &item.Gameundo, &item.Game, &item.User, &item.Date)
+        err := rows.Scan(&item.Color, &item.Rank1, &item.Rank2, &item.Rank3, &item.Rank4, &item.Rank5, &item.Count, &item.Avg)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -404,9 +361,9 @@ func (p *GameundoitemManager) ReadRows(rows *sql.Rows) []Gameundoitem {
         
         
         
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
+        
+        
+        
         
         item.InitExtra()        
         
@@ -417,12 +374,12 @@ func (p *GameundoitemManager) ReadRows(rows *sql.Rows) []Gameundoitem {
      return items
 }
 
-func (p *GameundoitemManager) Get(id int64) *Gameundoitem {
+func (p *StatisticscolorManager) Get(id int64) *Statisticscolor {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and gi_id = ?"
+    query := p.GetQuery() + " and gu_id = ?"
 
     
     
@@ -438,7 +395,7 @@ func (p *GameundoitemManager) Get(id int64) *Gameundoitem {
     return p.ReadRow(rows)
 }
 
-func (p *GameundoitemManager) Count(args []interface{}) int {
+func (p *StatisticscolorManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -452,15 +409,15 @@ func (p *GameundoitemManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gu_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and gu_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and gu_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -497,13 +454,13 @@ func (p *GameundoitemManager) Count(args []interface{}) int {
     }
 }
 
-func (p *GameundoitemManager) FindAll() []Gameundoitem {
+func (p *StatisticscolorManager) FindAll() []Statisticscolor {
     return p.Find(nil)
 }
 
-func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
+func (p *StatisticscolorManager) Find(args []interface{}) []Statisticscolor {
     if p.Conn == nil && p.Tx == nil {
-        var items []Gameundoitem
+        var items []Statisticscolor
         return items
     }
 
@@ -542,15 +499,15 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
             item := v
 
             if item.Compare == "in" {
-                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gu_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and gi_" + item.Column + " between ? and ?"
+                query += " and gu_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                query += " and gu_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -572,10 +529,10 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "gi_id desc"
+            orderby = "gu_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "gi_" + orderby
+                orderby = "gu_" + orderby
             }
             
         }
@@ -593,10 +550,10 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
         */
     } else {
         if orderby == "" {
-            orderby = "gi_id"
+            orderby = "gu_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "gi_" + orderby
+                orderby = "gu_" + orderby
             }
         }
         query += " order by " + orderby
@@ -606,7 +563,7 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Gameundoitem
+        var items []Statisticscolor
         return items
     }
 
@@ -616,38 +573,126 @@ func (p *GameundoitemManager) Find(args []interface{}) []Gameundoitem {
 }
 
 
-func (p *GameundoitemManager) FindByGame(game int64, args ...interface{}) []Gameundoitem {
-    rets := make([]interface{}, 0)
-    rets = append(rets, args...)
 
-    if game != 0 { 
-        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
-     }
-    
-    return p.Find(rets)
-}
-
-func (p *GameundoitemManager) CountByGame(game int64, args ...interface{}) int {
-    rets := make([]interface{}, 0)
-    rets = append(rets, args...)
-    
-    if game != 0 { 
-        rets = append(rets, Where{Column:"game", Value:game, Compare:"="})
-     }
-    
-    return p.Count(rets)
-}
-
-func (p *GameundoitemManager) DeleteByGame(game int64) error {
-     if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
+func (p *StatisticscolorManager) Sum(args []interface{}) *Statisticscolor {
+    if p.Conn == nil && p.Tx == nil {
+        var item Statisticscolor
+        return &item
     }
 
-    query := "delete from gameundoitem_tb where gi_game = ?"
-    _, err := p.Exec(query, game)
+    var params []interface{}
 
-    return err
+    
+    query := "select count from statisticscolor_vw"
+
+    if p.Index != "" {
+        query = query + " use index(" + p.Index + ") "
+    }
+
+    query += "where 1=1 "
+
+    page := 0
+    pagesize := 0
+    orderby := ""
+    
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case PagingType:
+            item := v
+            page = item.Page
+            pagesize = item.Pagesize
+        case OrderingType:
+            item := v
+            orderby = item.Order
+        case LimitType:
+            item := v
+            page = 1
+            pagesize = item.Limit
+        case OptionType:
+            item := v
+            if item.Limit > 0 {
+                page = 1
+                pagesize = item.Limit
+            } else {
+                page = item.Page
+                pagesize = item.Pagesize                
+            }
+            orderby = item.Order
+        case Where:
+            item := v
+
+            if item.Compare == "in" {
+                query += " and gu_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+            } else if item.Compare == "between" {
+                query += " and gu_" + item.Column + " between ? and ?"
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                query += " and gu_" + item.Column + " " + item.Compare + " ?"
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+             query += " and " + item.Query
+        }        
+    }
+    
+    startpage := (page - 1) * pagesize
+    
+    if page > 0 && pagesize > 0 {
+        if orderby == "" {
+            orderby = "gu_id desc"
+        } else {
+            if !strings.Contains(orderby, "_") {                   
+                orderby = "gu_" + orderby
+            }
+            
+        }
+        query += " order by " + orderby
+        //if config.Database == "mysql" {
+            query += " limit ? offset ?"
+            params = append(params, pagesize)
+            params = append(params, startpage)
+            /*
+        } else if config.Database == "mssql" || config.Database == "sqlserver" {
+            query += "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
+            params = append(params, startpage)
+            params = append(params, pagesize)
+        }
+        */
+    } else {
+        if orderby == "" {
+            orderby = "gu_id"
+        } else {
+            if !strings.Contains(orderby, "_") {
+                orderby = "gu_" + orderby
+            }
+        }
+        query += " order by " + orderby
+    }
+
+    rows, err := p.Query(query, params...)
+
+    var item Statisticscolor
+    
+    if err != nil {
+        log.Printf("query error : %v, %v\n", err, query)
+        return &item
+    }
+
+    defer rows.Close()
+
+    if rows.Next() {
+        
+        rows.Scan(&item.Count)        
+    }
+
+    return &item        
 }
-
-
-

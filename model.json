@@ -1,9 +1,9 @@
 {
   "buildtool": "1.1",
-  "database": "aoi",
-  "user": "yuhki",
-  "server": "crud.netb.co.kr",
-  "password": "dkTkfl123!",
+  "database": "aoi_develop",
+  "user": "aoi",
+  "server": "aoi.netb.co.kr",
+  "password": "aoidb",
   "auth": "jwt",
   "adminLevel": "3",  
   "table": [
@@ -44,6 +44,23 @@
         {
           "name": "status",
           "data": ["", "ready:대기중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
+        },
+        {
+          "name": "illusionists",
+          "data": ["", "normal:너프 없음", "vp2:2, 3점으로 너프", "vp1:1, 2점으로 너프", "vp0:점수안줌", "ban:사용 안함"]
+        }
+      ]            
+    },
+    {
+      "name": "gamelist",             
+      "map": [        
+        {
+          "name": "status",
+          "data": ["", "ready:대기중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
+        },
+        {
+          "name": "illusionists",
+          "data": ["", "normal:너프 없음", "vp2:2, 3점으로 너프", "vp1:1, 2점으로 너프", "vp0:점수안줌", "ban:사용 안함"]
         }
       ]            
     },
@@ -65,7 +82,25 @@
       "method" : [
         "FindByGame",
         "CountByGame",
-        "CountByGameUser"        
+        "GetByGameUser",
+        "CountByGameUser",
+        "DeleteByGame"
+      ]      
+    },
+    {
+      "name": "gamehistory",      
+      "method" : [
+        "FindByGame",
+        "CountByGame",        
+        "DeleteByGame"
+      ]      
+    },
+    {
+      "name": "gametile",      
+      "method" : [
+        "FindByGame",
+        "CountByGame",        
+        "DeleteByGame"
       ]      
     },
     {
@@ -75,6 +110,11 @@
           "name": "status",
           "data": ["", "wait:Wait", "complete:Complete"]
         }
+      ],
+      "method" : [
+        "FindByGame",
+        "CountByGame",
+        "DeleteByGame"
       ]
     },
     {
@@ -84,6 +124,11 @@
           "name": "status",
           "data": ["", "accept:Accept", "reject:Reject"]
         }        
+      ],
+      "method" : [
+        "FindByGame",
+        "CountByGame",
+        "DeleteByGame"
       ]
     }
   ]   

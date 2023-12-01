@@ -170,6 +170,7 @@ func (p *MapManager) Insert(item *Map) error {
 
     return err
 }
+
 func (p *MapManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -456,6 +457,10 @@ func (p *MapManager) Count(args []interface{}) int {
     }
 }
 
+func (p *MapManager) FindAll() []Map {
+    return p.Find(nil)
+}
+
 func (p *MapManager) Find(args []interface{}) []Map {
     if p.Conn == nil && p.Tx == nil {
         var items []Map
@@ -463,7 +468,8 @@ func (p *MapManager) Find(args []interface{}) []Map {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -515,7 +521,11 @@ func (p *MapManager) Find(args []interface{}) []Map {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -552,7 +562,7 @@ func (p *MapManager) Find(args []interface{}) []Map {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)

@@ -8,16 +8,16 @@ import (
     "strings"
 )
 
-type GameController struct {
+type GamelistController struct {
 	controllers.Controller
 }
 
-func (c *GameController) Read(id int64) {
+func (c *GamelistController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewGameManager(conn)
+	manager := models.NewGamelistManager(conn)
 	item := manager.Get(id)
 
     
@@ -25,12 +25,12 @@ func (c *GameController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *GameController) Index(page int, pagesize int) {
+func (c *GamelistController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewGameManager(conn)
+	manager := models.NewGamelistManager(conn)
 
     var args []interface{}
     
@@ -90,6 +90,10 @@ func (c *GameController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
     } else if  _enddate != "" {          
         args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    _gameuser := c.Geti64("gameuser")
+    if _gameuser != 0 {
+        args = append(args, models.Where{Column:"gameuser", Value:_gameuser, Compare:"="})    
     }
     
 
@@ -131,174 +135,21 @@ func (c *GameController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
-func (c *GameController) Insert(item *models.Game) {
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewGameManager(conn)
-	manager.Insert(item)
 
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
-}
 
-func (c *GameController) Insertbatch(item *[]models.Game) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
 
-    rows := len(*item)
-    
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewGameManager(conn)
 
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
-}
 
-func (c *GameController) Update(item *models.Game) {
+
+
+
+
+func (c *GamelistController) Sum() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewGameManager(conn)
-	manager.Update(item)
-}
-
-func (c *GameController) Delete(item *models.Game) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewGameManager(conn)
-
-    
-	manager.Delete(item.Id)
-}
-
-func (c *GameController) Deletebatch(item *[]models.Game) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewGameManager(conn)
-
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
-}
-
-
-
-// @Put()
-func (c *GameController) UpdateName(name string, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateName(name, id)
-}
-
-// @Put()
-func (c *GameController) UpdateCount(count int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateCount(count, id)
-}
-
-// @Put()
-func (c *GameController) UpdateJoin(join int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateJoin(join, id)
-}
-
-// @Put()
-func (c *GameController) UpdateMap(mapid int64, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateMap(mapid, id)
-}
-
-// @Put()
-func (c *GameController) UpdateIllusionists(illusionists int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateIllusionists(illusionists, id)
-}
-
-// @Put()
-func (c *GameController) UpdateType(typeid int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateType(typeid, id)
-}
-
-// @Put()
-func (c *GameController) UpdateStatus(status int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateStatus(status, id)
-}
-
-// @Put()
-func (c *GameController) UpdateEnddate(enddate string, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateEnddate(enddate, id)
-}
-
-// @Put()
-func (c *GameController) UpdateUser(user int64, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewGameManager(conn)
-	_manager.UpdateUser(user, id)
-}
-
-
-
-
-
-
-func (c *GameController) Sum() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewGameManager(conn)
+	manager := models.NewGamelistManager(conn)
 
     var args []interface{}
     
@@ -358,6 +209,10 @@ func (c *GameController) Sum() {
         args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
     } else if  _enddate != "" {          
         args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    _gameuser := c.Geti64("gameuser")
+    if _gameuser != 0 {
+        args = append(args, models.Where{Column:"gameuser", Value:_gameuser, Compare:"="})    
     }
     
 

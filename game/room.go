@@ -26,7 +26,6 @@ func SetGame(id int64, game *Game) {
 }
 
 func MakeGame(id int64) {
-	log.Println("MakeGame")
 	conn := models.NewConnection()
 	defer conn.Close()
 
@@ -161,14 +160,13 @@ func Init() {
 					}
 				}
 
-
-					//for i, v := range g.Users {
-					//	if v == 1 {
-					//		if g.IsTurn(i) {
-					//			AICommand(g, i)
-					//		}
-					//	}
-					//}
+				//for i, v := range g.Users {
+				//	if v == 1 {
+				//		if g.IsTurn(i) {
+				//			AICommand(g, i)
+				//		}
+				//	}
+				//}
 
 			}
 		}
@@ -224,16 +222,36 @@ func Make(user int64, item *models.Game) {
 			int(resources.TileFactionPsychics),
 		}
 
-		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
-		for i, v := range items[:factionCount] {
-			var tile models.Gametile
+		for {
+			rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 
-			tile.Type = int(resources.TileFaction)
-			tile.Number = v
-			tile.Order = i + 1
-			tile.Game = id
+			if item.Illusionists == game.IllusionistsBan {
+				find := false
 
-			gametileManager.Insert(&tile)
+				for _, v := range items[:factionCount] {
+					if v == int(resources.TileFactionIllusionists) {
+						find = true
+						break
+					}
+				}
+
+				if find == true {
+					continue
+				}
+			}
+
+			for i, v := range items[:factionCount] {
+				var tile models.Gametile
+
+				tile.Type = int(resources.TileFaction)
+				tile.Number = v
+				tile.Order = i + 1
+				tile.Game = id
+
+				gametileManager.Insert(&tile)
+			}
+
+			break
 		}
 	}
 
@@ -282,7 +300,6 @@ func Make(user int64, item *models.Game) {
 			var tile models.Gametile
 
 			tile.Type = int(resources.TileRound)
-			log.Println("round", tile.Type)
 			tile.Number = v
 			tile.Order = i + 1
 			tile.Game = id

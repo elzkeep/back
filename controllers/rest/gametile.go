@@ -169,6 +169,51 @@ func (c *GametileController) Deletebatch(item *[]models.Gametile) {
 
 
 
+func (c *GametileController) FindByGame(game int64) []models.Gametile {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGametileManager(conn)
+    
+    item := _manager.FindByGame(game)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
+func (c *GametileController) CountByGame(game int64) int {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGametileManager(conn)
+    
+    item := _manager.CountByGame(game)
+    
+    
+    
+    c.Set("count", item)
+    
+    return item
+    
+}
+
+// @Delete()
+func (c *GametileController) DeleteByGame(game int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGametileManager(conn)
+    
+    _manager.DeleteByGame(game)
+    
+}
+
+
 // @Put()
 func (c *GametileController) UpdateType(typeid int, id int64) {
     

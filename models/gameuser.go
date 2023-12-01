@@ -23,6 +23,7 @@ type Gameuser struct {
     Color                int `json:"color"`         
     Score                int `json:"score"`         
     Rank                int `json:"rank"`         
+    Elo                Double `json:"elo"`         
     User                int64 `json:"user"`         
     Game                int64 `json:"game"`         
     Date                string `json:"date"` 
@@ -91,7 +92,7 @@ func (p *GameuserManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *GameuserManager) GetQuery() string {
     ret := ""
 
-    str := "select gu_id, gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_user, gu_game, gu_date, u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_count, u_image, u_profile, u_date from gameuser_tb, user_tb "
+    str := "select gu_id, gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_elo, gu_user, gu_game, gu_date, u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_count, u_image, u_profile, u_date from gameuser_tb, user_tb "
 
     if p.Index == "" {
         ret = str
@@ -161,11 +162,11 @@ func (p *GameuserManager) Insert(item *Gameuser) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into gameuser_tb (gu_id, gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Order, item.Faction, item.Color, item.Score, item.Rank, item.User, item.Game, item.Date)
+        query = "insert into gameuser_tb (gu_id, gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_elo, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Order, item.Faction, item.Color, item.Score, item.Rank, item.Elo, item.User, item.Game, item.Date)
     } else {
-        query = "insert into gameuser_tb (gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Order, item.Faction, item.Color, item.Score, item.Rank, item.User, item.Game, item.Date)
+        query = "insert into gameuser_tb (gu_order, gu_faction, gu_color, gu_score, gu_rank, gu_elo, gu_user, gu_game, gu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Order, item.Faction, item.Color, item.Score, item.Rank, item.Elo, item.User, item.Game, item.Date)
     }
     
     if err == nil {
@@ -178,6 +179,7 @@ func (p *GameuserManager) Insert(item *Gameuser) error {
 
     return err
 }
+
 func (p *GameuserManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -243,8 +245,8 @@ func (p *GameuserManager) Update(item *Gameuser) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update gameuser_tb set gu_order = ?, gu_faction = ?, gu_color = ?, gu_score = ?, gu_rank = ?, gu_user = ?, gu_game = ?, gu_date = ? where gu_id = ?"
-	_, err := p.Exec(query , item.Order, item.Faction, item.Color, item.Score, item.Rank, item.User, item.Game, item.Date, item.Id)
+	query := "update gameuser_tb set gu_order = ?, gu_faction = ?, gu_color = ?, gu_score = ?, gu_rank = ?, gu_elo = ?, gu_user = ?, gu_game = ?, gu_date = ? where gu_id = ?"
+	_, err := p.Exec(query , item.Order, item.Faction, item.Color, item.Score, item.Rank, item.Elo, item.User, item.Game, item.Date, item.Id)
     
         
     return err
@@ -301,6 +303,17 @@ func (p *GameuserManager) UpdateRank(value int, id int64) error {
     }
 
 	query := "update gameuser_tb set gu_rank = ? where gu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameuserManager) UpdateElo(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameuser_tb set gu_elo = ? where gu_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -385,6 +398,17 @@ func (p *GameuserManager) IncreaseRank(value int, id int64) error {
     return err
 }
 
+func (p *GameuserManager) IncreaseElo(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gameuser_tb set gu_elo = gu_elo + ? where gu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *GameuserManager) IncreaseUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -436,7 +460,9 @@ func (p *GameuserManager) ReadRow(rows *sql.Rows) *Gameuser {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.Faction, &item.Color, &item.Score, &item.Rank, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Count, &_user.Image, &_user.Profile, &_user.Date)
+        err = rows.Scan(&item.Id, &item.Order, &item.Faction, &item.Color, &item.Score, &item.Rank, &item.Elo, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Count, &_user.Image, &_user.Profile, &_user.Date)
+        
+        
         
         
         
@@ -482,12 +508,13 @@ func (p *GameuserManager) ReadRows(rows *sql.Rows) []Gameuser {
         var _user User
             
     
-        err := rows.Scan(&item.Id, &item.Order, &item.Faction, &item.Color, &item.Score, &item.Rank, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Count, &_user.Image, &_user.Profile, &_user.Date)
+        err := rows.Scan(&item.Id, &item.Order, &item.Faction, &item.Color, &item.Score, &item.Rank, &item.Elo, &item.User, &item.Game, &item.Date, &_user.Id, &_user.Email, &_user.Passwd, &_user.Name, &_user.Level, &_user.Status, &_user.Elo, &_user.Count, &_user.Image, &_user.Profile, &_user.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         
@@ -594,6 +621,10 @@ func (p *GameuserManager) Count(args []interface{}) int {
     }
 }
 
+func (p *GameuserManager) FindAll() []Gameuser {
+    return p.Find(nil)
+}
+
 func (p *GameuserManager) Find(args []interface{}) []Gameuser {
     if p.Conn == nil && p.Tx == nil {
         var items []Gameuser
@@ -601,7 +632,8 @@ func (p *GameuserManager) Find(args []interface{}) []Gameuser {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -653,7 +685,11 @@ func (p *GameuserManager) Find(args []interface{}) []Gameuser {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -690,7 +726,7 @@ func (p *GameuserManager) Find(args []interface{}) []Gameuser {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -726,6 +762,23 @@ func (p *GameuserManager) CountByGame(game int64, args ...interface{}) int {
     return p.Count(rets)
 }
 
+func (p *GameuserManager) GetByGameUser(game int64, user int64, args ...interface{}) *Gameuser {
+    if game != 0 {
+        args = append(args, Where{Column:"game", Value:game, Compare:"="})        
+    }
+    if user != 0 {
+        args = append(args, Where{Column:"user", Value:user, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 func (p *GameuserManager) CountByGameUser(game int64, user int64, args ...interface{}) int {
     rets := make([]interface{}, 0)
     rets = append(rets, args...)
@@ -738,6 +791,17 @@ func (p *GameuserManager) CountByGameUser(game int64, user int64, args ...interf
      }
     
     return p.Count(rets)
+}
+
+func (p *GameuserManager) DeleteByGame(game int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from gameuser_tb where gu_game = ?"
+    _, err := p.Exec(query, game)
+
+    return err
 }
 
 

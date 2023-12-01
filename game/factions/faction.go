@@ -78,6 +78,7 @@ type Faction struct {
 	Cities            []CityItem       `json:"cities"`
 	Type              TileType         `json:"type"`
 	IsPass            bool             `json:"isPass"`
+	IsJump            bool             `json:"isJump"`
 	FirstBuilding     Building         `json:"-"`
 }
 
@@ -102,6 +103,7 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 	item.Action = false
 	item.ExtraBuild = 0
 	item.IsPass = false
+	item.IsJump = false
 	item.FirstBuilding = D
 
 	item.DigPosition = make([]Position, 0)
@@ -112,8 +114,8 @@ func (item *Faction) InitFaction(name string, ename string, factionTile TileItem
 		factionTile.Use = false
 
 		item.Color = colorTile.Color
-		item.Tiles = append(item.Tiles, colorTile)
 		item.Tiles = append(item.Tiles, factionTile)
+		item.Tiles = append(item.Tiles, colorTile)
 	} else {
 		item.Color = color.None
 	}
@@ -320,6 +322,14 @@ func (p *Faction) ReceiveResource(receive Price) {
 			} else if p.Ship == 2 {
 				p.ReceiveResource(Price{VP: 4})
 			}
+		}
+	}
+
+	if receive.SpadeUpgrade == 1 {
+		if p.Spade == 0 {
+			p.ReceiveResource(Price{Book: Book{Any: 2}})
+		} else if p.Spade == 1 {
+			p.ReceiveResource(Price{VP: 6})
 		}
 	}
 
@@ -645,7 +655,9 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 
 	p.BuildingList = append(p.BuildingList, Position{X: x, Y: y, Building: building})
 
-	p.Resource.Building = None
+	if building == p.Resource.Building {
+		p.Resource.Building = None
+	}
 
 	p.Action = true
 	p.BuildAction = true
@@ -897,6 +909,7 @@ func (p *Faction) ResetResource() {
 	p.Resource.TpUpgrade = 0
 	p.Resource.Building = None
 	p.ExtraBuild = 0
+	p.IsJump = false
 	p.DigPosition = make([]Position, 0)
 }
 

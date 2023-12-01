@@ -173,6 +173,51 @@ func (c *GamehistoryController) Deletebatch(item *[]models.Gamehistory) {
 
 
 
+func (c *GamehistoryController) FindByGame(game int64) []models.Gamehistory {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGamehistoryManager(conn)
+    
+    item := _manager.FindByGame(game)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
+func (c *GamehistoryController) CountByGame(game int64) int {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGamehistoryManager(conn)
+    
+    item := _manager.CountByGame(game)
+    
+    
+    
+    c.Set("count", item)
+    
+    return item
+    
+}
+
+// @Delete()
+func (c *GamehistoryController) DeleteByGame(game int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGamehistoryManager(conn)
+    
+    _manager.DeleteByGame(game)
+    
+}
+
+
 // @Put()
 func (c *GamehistoryController) UpdateRound(round int, id int64) {
     

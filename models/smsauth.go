@@ -169,6 +169,7 @@ func (p *SmsauthManager) Insert(item *Smsauth) error {
 
     return err
 }
+
 func (p *SmsauthManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -430,6 +431,10 @@ func (p *SmsauthManager) Count(args []interface{}) int {
     }
 }
 
+func (p *SmsauthManager) FindAll() []Smsauth {
+    return p.Find(nil)
+}
+
 func (p *SmsauthManager) Find(args []interface{}) []Smsauth {
     if p.Conn == nil && p.Tx == nil {
         var items []Smsauth
@@ -437,7 +442,8 @@ func (p *SmsauthManager) Find(args []interface{}) []Smsauth {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -489,7 +495,11 @@ func (p *SmsauthManager) Find(args []interface{}) []Smsauth {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -526,7 +536,7 @@ func (p *SmsauthManager) Find(args []interface{}) []Smsauth {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)

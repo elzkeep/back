@@ -23,6 +23,10 @@ type SchoolTileItem struct {
 func NewSchoolTile(id int64, count int) *SchoolTile {
 	var item SchoolTile
 
+	if count == 5 {
+		count = 4
+	}
+
 	item.Items = make([][]SchoolTileItem, 0)
 
 	for i := 0; i < 4; i++ {

@@ -219,7 +219,15 @@ func (p *Map) GetBuilding(x int, y int) resources.Building {
 
 func (p *Map) GetPower(x int, y int) int {
 	building := p.GetBuilding(x, y)
-	return building.Power()
+	power := building.Power()
+
+	for _, v := range p.AnnexList {
+		if v.X == x && v.Y == y {
+			power++
+			break
+		}
+	}
+	return power
 }
 
 func (p *Map) abs(value int) int {
@@ -367,7 +375,9 @@ func (p *Map) Build(x int, y int, color color.Color, building resources.Building
 	p.Data[x+p.Mx][y+1].Building = building
 	p.Index++
 
-	p.LastBuild = resources.Position{X: x, Y: y}
+	if building != resources.TP {
+		p.LastBuild = resources.Position{X: x, Y: y}
+	}
 }
 
 func (p *Map) Print() {
@@ -798,6 +808,10 @@ func (p *Map) FindRiverConnect(user color.Color, x int, y int, x2, y2, distance 
 }
 
 func (p *Map) TurnEnd() {
+	p.ResetLastPosition()
+}
+
+func (p *Map) ResetLastPosition() {
 	p.LastBuild = resources.Position{X: -1, Y: -1}
 	p.LastDig = resources.Position{X: -1, Y: -1}
 }

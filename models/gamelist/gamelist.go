@@ -1,4 +1,4 @@
-package game
+package gamelist
 
 
 type Status int

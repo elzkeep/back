@@ -54,6 +54,10 @@ func (c *GameuserController) Index(page int, pagesize int) {
     if _rank != 0 {
         args = append(args, models.Where{Column:"rank", Value:_rank, Compare:"="})    
     }
+    _elo := c.Geti("elo")
+    if _elo != 0 {
+        args = append(args, models.Where{Column:"elo", Value:_elo, Compare:"="})    
+    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
@@ -215,6 +219,23 @@ func (c *GameuserController) CountByGame(game int64) int {
 }
 
 
+func (c *GameuserController) GetByGameUser(game int64 ,user int64) *models.Gameuser {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+    
+    item := _manager.GetByGameUser(game, user)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 func (c *GameuserController) CountByGameUser(game int64 ,user int64) int {
     
     conn := c.NewConnection()
@@ -228,6 +249,17 @@ func (c *GameuserController) CountByGameUser(game int64 ,user int64) int {
     c.Set("count", item)
     
     return item
+    
+}
+
+// @Delete()
+func (c *GameuserController) DeleteByGame(game int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+    
+    _manager.DeleteByGame(game)
     
 }
 
@@ -280,6 +312,16 @@ func (c *GameuserController) UpdateRank(rank int, id int64) {
 
 	_manager := models.NewGameuserManager(conn)
 	_manager.UpdateRank(rank, id)
+}
+
+// @Put()
+func (c *GameuserController) UpdateElo(elo models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewGameuserManager(conn)
+	_manager.UpdateElo(elo, id)
 }
 
 // @Put()

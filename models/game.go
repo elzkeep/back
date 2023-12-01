@@ -24,9 +24,11 @@ type Game struct {
     Count                int `json:"count"`         
     Join                int `json:"join"`         
     Map                int64 `json:"map"`         
+    Illusionists                game.Illusionists `json:"illusionists"`         
     Type                int `json:"type"`         
     Status                game.Status `json:"status"`         
     Enddate                string `json:"enddate"`         
+    User                int64 `json:"user"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -93,7 +95,7 @@ func (p *GameManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *GameManager) GetQuery() string {
     ret := ""
 
-    str := "select g_id, g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date from game_tb "
+    str := "select g_id, g_name, g_count, g_join, g_map, g_illusionists, g_type, g_status, g_enddate, g_user, g_date from game_tb "
 
     if p.Index == "" {
         ret = str
@@ -162,11 +164,11 @@ func (p *GameManager) Insert(item *Game) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into game_tb (g_id, g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date)
+        query = "insert into game_tb (g_id, g_name, g_count, g_join, g_map, g_illusionists, g_type, g_status, g_enddate, g_user, g_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Count, item.Join, item.Map, item.Illusionists, item.Type, item.Status, item.Enddate, item.User, item.Date)
     } else {
-        query = "insert into game_tb (g_name, g_count, g_join, g_map, g_type, g_status, g_enddate, g_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date)
+        query = "insert into game_tb (g_name, g_count, g_join, g_map, g_illusionists, g_type, g_status, g_enddate, g_user, g_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Illusionists, item.Type, item.Status, item.Enddate, item.User, item.Date)
     }
     
     if err == nil {
@@ -179,6 +181,7 @@ func (p *GameManager) Insert(item *Game) error {
 
     return err
 }
+
 func (p *GameManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -247,8 +250,8 @@ func (p *GameManager) Update(item *Game) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update game_tb set g_name = ?, g_count = ?, g_join = ?, g_map = ?, g_type = ?, g_status = ?, g_enddate = ?, g_date = ? where g_id = ?"
-	_, err := p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Type, item.Status, item.Enddate, item.Date, item.Id)
+	query := "update game_tb set g_name = ?, g_count = ?, g_join = ?, g_map = ?, g_illusionists = ?, g_type = ?, g_status = ?, g_enddate = ?, g_user = ?, g_date = ? where g_id = ?"
+	_, err := p.Exec(query , item.Name, item.Count, item.Join, item.Map, item.Illusionists, item.Type, item.Status, item.Enddate, item.User, item.Date, item.Id)
     
         
     return err
@@ -299,6 +302,17 @@ func (p *GameManager) UpdateMap(value int64, id int64) error {
     return err
 }
 
+func (p *GameManager) UpdateIllusionists(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_illusionists = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *GameManager) UpdateType(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -327,6 +341,17 @@ func (p *GameManager) UpdateEnddate(value string, id int64) error {
     }
 
 	query := "update game_tb set g_enddate = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GameManager) UpdateUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_user = ? where g_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -378,6 +403,17 @@ func (p *GameManager) IncreaseType(value int, id int64) error {
     return err
 }
 
+func (p *GameManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update game_tb set g_user = g_user + ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 func (p *GameManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
@@ -396,6 +432,7 @@ func (p *GameManager) GetIdentity() int64 {
 func (p *Game) InitExtra() {
     p.Extra = map[string]interface{}{
             "status":     game.GetStatus(p.Status),
+            "illusionists":     game.GetIllusionists(p.Illusionists),
 
     }
 }
@@ -407,7 +444,9 @@ func (p *GameManager) ReadRow(rows *sql.Rows) *Game {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Type, &item.Status, &item.Enddate, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Illusionists, &item.Type, &item.Status, &item.Enddate, &item.User, &item.Date)
+        
+        
         
         
         
@@ -426,6 +465,8 @@ func (p *GameManager) ReadRow(rows *sql.Rows) *Game {
         if item.Enddate == "0000-00-00 00:00:00" || item.Enddate == "1000-01-01 00:00:00" {
             item.Enddate = ""
         }
+        
+        
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
@@ -452,7 +493,7 @@ func (p *GameManager) ReadRows(rows *sql.Rows) []Game {
         var item Game
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Type, &item.Status, &item.Enddate, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Count, &item.Join, &item.Map, &item.Illusionists, &item.Type, &item.Status, &item.Enddate, &item.User, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -466,9 +507,11 @@ func (p *GameManager) ReadRows(rows *sql.Rows) []Game {
         
         
         
+        
         if item.Enddate == "0000-00-00 00:00:00" || item.Enddate == "1000-01-01 00:00:00" {
             item.Enddate = ""
         }
+        
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
@@ -562,6 +605,10 @@ func (p *GameManager) Count(args []interface{}) int {
     }
 }
 
+func (p *GameManager) FindAll() []Game {
+    return p.Find(nil)
+}
+
 func (p *GameManager) Find(args []interface{}) []Game {
     if p.Conn == nil && p.Tx == nil {
         var items []Game
@@ -569,7 +616,8 @@ func (p *GameManager) Find(args []interface{}) []Game {
     }
 
     var params []interface{}
-    query := p.GetQuery()
+    baseQuery := p.GetQuery()
+    query := ""
 
     page := 0
     pagesize := 0
@@ -621,7 +669,11 @@ func (p *GameManager) Find(args []interface{}) []Game {
              item := v
 
              query += " and " + item.Query
-        }        
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
     }
     
     startpage := (page - 1) * pagesize
@@ -658,7 +710,7 @@ func (p *GameManager) Find(args []interface{}) []Game {
         query += " order by " + orderby
     }
 
-    rows, err := p.Query(query, params...)
+    rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)

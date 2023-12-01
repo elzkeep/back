@@ -120,6 +120,16 @@ func GetDate(t time.Time) string {
 	return fmt.Sprintf("%04d-%02d-%02d", t.Year(), t.Month(), t.Day())
 }
 
+func GetTodayDatetime() string {
+	t := time.Now().UTC().Add(9 * time.Hour)
+	return fmt.Sprintf("%04d-%02d-%02d 00:00:00", t.Year(), t.Month(), t.Day())
+}
+
+func GetMonthStartDatetime() string {
+	t := time.Now().UTC().Add(9 * time.Hour)
+	return fmt.Sprintf("%04d-%02d-01 00:00:00", t.Year(), t.Month())
+}
+
 func ArrayToString(A []int, delim string) string {
 	var buffer bytes.Buffer
 	for i := 0; i < len(A); i++ {

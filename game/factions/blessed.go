@@ -30,7 +30,12 @@ func (p *Blessed) Income() {
 }
 
 func (p *Blessed) GetScience(pos int) int {
-	return p.Faction.GetScience(pos) + 3
+	value := p.Faction.GetScience(pos) + 3
+	if value > 12 {
+		value = 12
+	}
+
+	return value
 }
 
 func (p *Blessed) FirstBuild(x int, y int, building Building) error {

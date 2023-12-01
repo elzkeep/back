@@ -159,6 +159,53 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/game/search/:status", func(c *fiber.Ctx) error {
+			status_, _ := strconv.Atoi(c.Params("status"))
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.GameController
+			controller.Init(c)
+			controller.Search(status_, page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/game", func(c *fiber.Ctx) error {
+			item_ := &models.Game{}
+			c.BodyParser(item_)
+			var controller api.GameController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gamelist/search/:status", func(c *fiber.Ctx) error {
+			status_, _ := strconv.Atoi(c.Params("status"))
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.GamelistController
+			controller.Init(c)
+			controller.Search(status_, page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/ranklist/elo/:status", func(c *fiber.Ctx) error {
+			status_, _ := strconv.Atoi(c.Params("status"))
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.RanklistController
+			controller.Init(c)
+			controller.Elo(status_, page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/sms", func(c *fiber.Ctx) error {
 			to_ := c.Query("to")
 			message_ := c.Query("message")
@@ -253,175 +300,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Delete("/game", func(c *fiber.Ctx) error {
-			item_ := &models.Game{}
-			c.BodyParser(item_)
-			var controller rest.GameController
-			controller.Init(c)
-			if item_ != nil {
-				controller.Delete(item_)
-			} else {
-			    controller.Result["code"] = "error"
-			}
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Delete("/game/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Game{}
-			c.BodyParser(item_)
-			var controller rest.GameController
-			controller.Init(c)
-			if item_ != nil {
-				controller.Deletebatch(item_)
-			} else {
-			    controller.Result["code"] = "error"
-			}
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/name", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var name_ string
-			if v, flag := results["name"]; flag {
-				name_ = v.(string)
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateName(name_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/count", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var count_ int
-			if v, flag := results["count"]; flag {
-				count_ = int(v.(float64))
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateCount(count_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/join", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var join_ int
-			if v, flag := results["join"]; flag {
-				join_ = int(v.(float64))
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateJoin(join_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/map", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var mapid_ int64
-			if v, flag := results["mapid"]; flag {
-				mapid_ = int64(v.(float64))
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateMap(mapid_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/type", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var type_ int
-			if v, flag := results["type"]; flag {
-				type_ = int(v.(float64))
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateType(type_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/status", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var status_ int
-			if v, flag := results["status"]; flag {
-				status_ = int(v.(float64))
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateStatus(status_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Put("/game/enddate", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var enddate_ string
-			if v, flag := results["enddate"]; flag {
-				enddate_ = v.(string)
-			}
-			var id_ int64
-			if v, flag := results["id"]; flag {
-				id_ = int64(v.(float64))
-			}
-			var controller rest.GameController
-			controller.Init(c)
-			controller.UpdateEnddate(enddate_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/game/sum", func(c *fiber.Ctx) error {
-			var controller rest.GameController
-			controller.Init(c)
-			controller.Sum()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/gamehistory/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.GamehistoryController
@@ -507,6 +385,34 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gamehistory/find/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GamehistoryController
+			controller.Init(c)
+			controller.FindByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gamehistory/count/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GamehistoryController
+			controller.Init(c)
+			controller.CountByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gamehistory/bygame", func(c *fiber.Ctx) error {
+			item_ := &models.Gamehistory{}
+			c.BodyParser(item_)
+			var controller rest.GamehistoryController
+			controller.Init(c)
+			controller.DeleteByGame(item_.Game)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -606,6 +512,33 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/gamelist/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.GamelistController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gamelist", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.GamelistController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gamelist/sum", func(c *fiber.Ctx) error {
+			var controller rest.GamelistController
+			controller.Init(c)
+			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/gametile/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.GametileController
@@ -691,6 +624,34 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gametile/find/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GametileController
+			controller.Init(c)
+			controller.FindByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gametile/count/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GametileController
+			controller.Init(c)
+			controller.CountByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gametile/bygame", func(c *fiber.Ctx) error {
+			item_ := &models.Gametile{}
+			c.BodyParser(item_)
+			var controller rest.GametileController
+			controller.Init(c)
+			controller.DeleteByGame(item_.Game)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -860,6 +821,34 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/gameundo/find/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.FindByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundo/count/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.CountByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundo/bygame", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundo{}
+			c.BodyParser(item_)
+			var controller rest.GameundoController
+			controller.Init(c)
+			controller.DeleteByGame(item_.Game)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/gameundo/status", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1021,6 +1010,34 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundoitem/find/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.FindByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/gameundoitem/count/game/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.CountByGame(game_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameundoitem/bygame", func(c *fiber.Ctx) error {
+			item_ := &models.Gameundoitem{}
+			c.BodyParser(item_)
+			var controller rest.GameundoitemController
+			controller.Init(c)
+			controller.DeleteByGame(item_.Game)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1208,12 +1225,32 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/gameuser/get/gameuser/:game", func(c *fiber.Ctx) error {
+			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
+			user_, _ := strconv.ParseInt(c.Query("user"), 10, 64)
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.GetByGameUser(game_, user_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/gameuser/count/gameuser/:game", func(c *fiber.Ctx) error {
 			game_, _ := strconv.ParseInt(c.Params("game"), 10, 64)
 			user_, _ := strconv.ParseInt(c.Query("user"), 10, 64)
 			var controller rest.GameuserController
 			controller.Init(c)
 			controller.CountByGameUser(game_, user_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/gameuser/bygame", func(c *fiber.Ctx) error {
+			item_ := &models.Gameuser{}
+			c.BodyParser(item_)
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.DeleteByGame(item_.Game)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1309,6 +1346,24 @@ func SetRouter(r *fiber.App) {
 			var controller rest.GameuserController
 			controller.Init(c)
 			controller.UpdateRank(rank_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/gameuser/elo", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var elo_ models.Double
+			elo__ref := &elo_
+			c.BodyParser(elo__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.GameuserController
+			controller.Init(c)
+			controller.UpdateElo(elo_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1497,6 +1552,160 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/notice/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/notice", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/notice", func(c *fiber.Ctx) error {
+			item_ := &models.Notice{}
+			c.BodyParser(item_)
+			var controller rest.NoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/notice/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Notice{}
+			c.BodyParser(item_)
+			var controller rest.NoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/notice", func(c *fiber.Ctx) error {
+			item_ := &models.Notice{}
+			c.BodyParser(item_)
+			var controller rest.NoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/notice", func(c *fiber.Ctx) error {
+			item_ := &models.Notice{}
+			c.BodyParser(item_)
+			var controller rest.NoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/notice/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Notice{}
+			c.BodyParser(item_)
+			var controller rest.NoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/notice/content", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var content_ string
+			if v, flag := results["content"]; flag {
+				content_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.UpdateContent(content_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/notice/status", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var status_ int
+			if v, flag := results["status"]; flag {
+				status_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.UpdateStatus(status_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/ranklist/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.RanklistController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/ranklist", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.RanklistController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/ranklist/sum", func(c *fiber.Ctx) error {
+			var controller rest.RanklistController
+			controller.Init(c)
+			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/smsauth/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.SmsauthController
@@ -1640,6 +1849,87 @@ func SetRouter(r *fiber.App) {
 			var controller rest.SmsauthController
 			controller.Init(c)
 			controller.UpdateNumber(number_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statistics/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.StatisticsController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statistics", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.StatisticsController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statistics/sum", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsController
+			controller.Init(c)
+			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticscolor/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.StatisticscolorController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticscolor", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.StatisticscolorController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticscolor/sum", func(c *fiber.Ctx) error {
+			var controller rest.StatisticscolorController
+			controller.Init(c)
+			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsfaction/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.StatisticsfactionController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsfaction", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.StatisticsfactionController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsfaction/sum", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsfactionController
+			controller.Init(c)
+			controller.Sum()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
