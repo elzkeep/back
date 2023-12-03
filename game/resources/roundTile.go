@@ -5,8 +5,10 @@ import (
 )
 
 type RoundTile struct {
-	Items    []TileItem `json:"items"`
-	Reserved []TileItem `json:"reserved"`
+	Items            []TileItem `json:"items"`
+	Reserved         []TileItem `json:"reserved"`
+	Original         []TileItem `json:"-"`
+	OriginalReserved []TileItem `json:"-"`
 }
 
 func NewRoundTile(id int64, typeid int) *RoundTile {
@@ -86,6 +88,29 @@ func NewRoundTile(id int64, typeid int) *RoundTile {
 		}
 	}
 
+	item.Original = make([]TileItem, len(item.Items))
+	item.OriginalReserved = make([]TileItem, len(item.Reserved))
+	copy(item.Original, item.Items)
+	copy(item.OriginalReserved, item.Reserved)
+
+	return &item
+}
+
+func (p *RoundTile) Copy() *RoundTile {
+	var item RoundTile
+
+	item.Items = make([]TileItem, len(p.Original))
+	copy(item.Items, p.Original)
+	for i := range item.Items {
+		item.Items[i].Use = false
+	}
+
+	item.Reserved = make([]TileItem, len(p.OriginalReserved))
+	copy(item.Reserved, p.OriginalReserved)
+	for i := range item.Reserved {
+		item.Reserved[i].Use = false
+	}
+
 	return &item
 }
 
@@ -94,7 +119,7 @@ func (p *RoundTile) BuildStart() {
 }
 
 func (p *RoundTile) Start() {
-	for i, _ := range p.Items {
+	for i := range p.Items {
 		p.Items[i].Use = false
 		p.Items[i].Coin++
 	}

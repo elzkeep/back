@@ -5,7 +5,8 @@ import (
 )
 
 type City struct {
-	Items [][]resources.CityItem `json:"items"`
+	Items    [][]resources.CityItem `json:"items"`
+	Original [][]resources.CityItem `json:"-"`
 }
 
 func NewCity() *City {
@@ -25,6 +26,37 @@ func NewCity() *City {
 		item.Items[4] = append(item.Items[4], resources.CityItem{Type: resources.ScienceCity, Name: "science", Receive: resources.Price{Science: resources.Science{Banking: 1, Law: 1, Engineering: 1, Medicine: 1}, VP: 7}, Use: false})
 		item.Items[5] = append(item.Items[5], resources.CityItem{Type: resources.PowerCity, Name: "8 power", Receive: resources.Price{Power: 8, VP: 8}, Use: false})
 		item.Items[6] = append(item.Items[6], resources.CityItem{Type: resources.PristCity, Name: "1 prist", Receive: resources.Price{Prist: 1, VP: 8}, Use: false})
+	}
+
+	item.Original = make([][]resources.CityItem, 0)
+
+	for i := 0; i < 7; i++ {
+		item.Original = append(item.Original, make([]resources.CityItem, 0))
+	}
+
+	for i := 0; i < 7; i++ {
+		item.Original[i] = make([]resources.CityItem, len(item.Items[i]))
+		copy(item.Original[i], item.Items[i])
+	}
+
+	return &item
+}
+
+func (p *City) Copy() *City {
+	var item City
+
+	item.Items = make([][]resources.CityItem, 0)
+
+	for i := 0; i < 7; i++ {
+		item.Items = append(item.Items, make([]resources.CityItem, 0))
+	}
+
+	for i := 0; i < 7; i++ {
+		item.Items[i] = make([]resources.CityItem, len(p.Original[i]))
+		copy(item.Items[i], p.Original[i])
+		for j := range item.Items[i] {
+			item.Items[i][j].Use = false
+		}
 	}
 
 	return &item

@@ -66,7 +66,7 @@ func MakeGame(id int64) {
 		}
 
 		if g.Round > 0 && g.Round <= 6 {
-			for user, _ := range g.Factions {
+			for user := range g.Factions {
 				g.Calculate(user)
 			}
 		}
@@ -427,18 +427,18 @@ func Make(user int64, item *models.Game) {
 		items := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
 		sciences := []resources.Science{
-			resources.Science{Law: 3},
-			resources.Science{Banking: 3},
-			resources.Science{Law: 3},
-			resources.Science{Medicine: 4},
-			resources.Science{Banking: 1},
-			resources.Science{Medicine: 2},
-			resources.Science{Banking: 2},
-			resources.Science{Engineering: 1},
-			resources.Science{Medicine: 3},
-			resources.Science{Engineering: 4},
-			resources.Science{Engineering: 3},
-			resources.Science{Law: 2},
+			{Law: 3},
+			{Banking: 3},
+			{Law: 3},
+			{Medicine: 4},
+			{Banking: 1},
+			{Medicine: 2},
+			{Banking: 2},
+			{Engineering: 1},
+			{Medicine: 3},
+			{Engineering: 4},
+			{Engineering: 3},
+			{Law: 2},
 		}
 
 		for {
@@ -656,4 +656,36 @@ func Join(user int64, id int64) error {
 
 func Get(id int64) *Game {
 	return _rooms[id]
+}
+
+func Replay(id int64, pos int) *Game {
+	old := _rooms[id]
+
+	log.Println("replay length", len(old.Replays))
+	game := old.Copy()
+
+	for i, v := range old.Users {
+		game.AddUser(v, old.Usernames[i])
+	}
+
+	game.CompleteAddUser()
+
+	if pos > 0 {
+		end := 0
+		for i, item := range old.Replays {
+			Command(game, id, item.User, item.Command, false, 0)
+
+			if item.Command[2:] == "save" {
+				end++
+
+			}
+
+			if pos == end {
+				log.Println("break", i)
+				break
+			}
+		}
+	}
+
+	return game
 }

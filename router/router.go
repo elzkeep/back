@@ -89,6 +89,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/game/replay/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			pos_, _ := strconv.Atoi(c.Query("pos"))
+			var controller api.GameController
+			controller.Init(c)
+			controller.Replay(id_, pos_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/game/map/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller api.GameController
@@ -212,6 +222,17 @@ func SetRouter(r *fiber.App) {
 			var controller api.SmsController
 			controller.Init(c)
 			controller.Index(to_, message_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticscolor/search/:status", func(c *fiber.Ctx) error {
+			status_, _ := strconv.Atoi(c.Params("status"))
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.StatisticscolorController
+			controller.Init(c)
+			controller.Search(status_, page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

@@ -1,6 +1,8 @@
 package resources
 
-import "aoi/models"
+import (
+	"aoi/models"
+)
 
 type SchoolTileType int
 
@@ -12,7 +14,9 @@ const (
 )
 
 type SchoolTile struct {
-	Items [][]SchoolTileItem `json:"items"`
+	Items    [][]SchoolTileItem `json:"items"`
+	Original [][]SchoolTileItem `json:"-"`
+	Count    int                `json:"-"`
 }
 
 type SchoolTileItem struct {
@@ -27,6 +31,7 @@ func NewSchoolTile(id int64, count int) *SchoolTile {
 		count = 4
 	}
 
+	item.Count = count
 	item.Items = make([][]SchoolTileItem, 0)
 
 	for i := 0; i < 4; i++ {
@@ -35,6 +40,16 @@ func NewSchoolTile(id int64, count int) *SchoolTile {
 			items = append(items, SchoolTileItem{})
 		}
 		item.Items = append(item.Items, items)
+	}
+
+	item.Original = make([][]SchoolTileItem, 0)
+
+	for i := 0; i < 4; i++ {
+		items := make([]SchoolTileItem, 0)
+		for j := 0; j < 3; j++ {
+			items = append(items, SchoolTileItem{})
+		}
+		item.Original = append(item.Original, items)
 	}
 
 	tiles := []TileItem{
@@ -69,6 +84,10 @@ func NewSchoolTile(id int64, count int) *SchoolTile {
 			if v.Number == int(tile.Type) {
 				item.Items[i][j].Tile = tile
 				item.Items[i][j].Count = count
+
+				item.Original[i][j].Tile = tile
+				item.Original[i][j].Count = count
+
 				j++
 				if j == 3 {
 					i++
@@ -76,6 +95,24 @@ func NewSchoolTile(id int64, count int) *SchoolTile {
 				}
 			}
 		}
+	}
+
+	return &item
+}
+
+func (p *SchoolTile) Copy() *SchoolTile {
+	var item SchoolTile
+
+	item.Items = make([][]SchoolTileItem, 0)
+
+	for i := 0; i < 4; i++ {
+		items := make([]SchoolTileItem, 0)
+		for j := 0; j < 3; j++ {
+			tile := p.Original[i][j]
+			tile.Tile.Use = false
+			items = append(items, tile)
+		}
+		item.Items = append(item.Items, items)
 	}
 
 	return &item

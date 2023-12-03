@@ -497,7 +497,7 @@ func (p *Faction) UsePrice(need Price) {
 
 func (p *Faction) AdvanceShip() error {
 	if p.Ship == p.MaxShip {
-		return errors.New("max ship")
+		return errors.New("Can't upgrade anymore")
 	}
 
 	err := CheckResource(p.Resource, p.AdvanceShipPrice)
@@ -535,7 +535,7 @@ func (p *Faction) AdvanceShip() error {
 
 func (p *Faction) AdvanceSpade() error {
 	if p.Spade == p.MaxSpade {
-		return errors.New("max spade")
+		return errors.New("Can't upgrade anymore")
 	}
 
 	err := CheckResource(p.Resource, p.AdvanceSpadePrice)
@@ -591,7 +591,7 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 		} else {
 			if len(p.DigPosition) > 0 {
 				if p.DigPosition[0].X != x || p.DigPosition[0].Y != y {
-					return errors.New("must build first dig position")
+					return errors.New("must build a building at the location of the first dig")
 				}
 			}
 
@@ -600,7 +600,7 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	}
 
 	if p.MaxBuilding[building] <= p.Building[building] {
-		return errors.New("full building")
+		return errors.New("There are no more buildings to build")
 	}
 
 	if building == D {
@@ -726,7 +726,7 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 	}
 
 	if p.MaxBuilding[target] <= p.Building[target] {
-		return errors.New("full building")
+		return errors.New("There are no more buildings to build")
 	}
 
 	if target == TP && p.Resource.TpUpgrade > 0 {
@@ -791,7 +791,7 @@ func (p *Faction) Downgrade(x int, y int) error {
 	}
 
 	if p.MaxBuilding[TP] <= p.Building[TP] {
-		return errors.New("full building")
+		return errors.New("There are no more buildings to build")
 	}
 
 	p.Building[TE]--
@@ -888,7 +888,7 @@ func (p *Faction) Book(item action.BookActionItem, book Book) error {
 
 func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	if p.Resource.Bridge == 0 {
-		return errors.New("not have bridge")
+		return errors.New("have not bridge")
 	}
 
 	p.Resource.Bridge--
@@ -981,7 +981,7 @@ func (p *Faction) Dig(x int, y int, dig int) error {
 
 func (p *Faction) ConvertDig(spade int) error {
 	if p.Action == true && p.ExtraBuild == 0 && p.Resource.Building == None {
-		return errors.New("already action end")
+		return errors.New("already took action")
 	}
 
 	if p.Resource.Worker < p.GetWorkerForSpade()*spade {
@@ -997,7 +997,7 @@ func (p *Faction) ConvertDig(spade int) error {
 
 func (p *Faction) TurnEnd(round int, pass bool) error {
 	if p.Action == false {
-		return errors.New("must action")
+		return errors.New("have to take action")
 	}
 
 	if p.Resource.Downgrade > 0 {
@@ -1027,7 +1027,7 @@ func (p *Faction) TurnEnd(round int, pass bool) error {
 
 func (p *Faction) PalaceTile(tile TileItem) error {
 	if p.Resource.PalaceTile == 0 {
-		return errors.New("not have palace tile")
+		return errors.New("Unable to retrieve palace tile")
 	}
 
 	for _, v := range p.Tiles {
@@ -1054,7 +1054,7 @@ func (p *Faction) PalaceTile(tile TileItem) error {
 
 func (p *Faction) SchoolTile(tile TileItem, science int) error {
 	if p.Resource.SchoolTile == 0 {
-		return errors.New("not have school tile")
+		return errors.New("Unable to retrieve school tile")
 	}
 
 	for _, v := range p.Tiles {
@@ -1166,7 +1166,7 @@ func (p *Faction) Annex(x int, y int) error {
 	}
 
 	if p.Resource.Annex == 0 {
-		return errors.New("not have annex")
+		return errors.New("have not annex")
 	}
 
 	p.Resource.Annex--
@@ -1234,7 +1234,7 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 
 	if tile.Type == TileInnovationKind {
 		cnt := 0
-		for _, v := range p.Building[:len(p.Building)-1] {
+		for _, v := range p.Building[:len(p.Building)] {
 			if v > 0 {
 				cnt++
 			}

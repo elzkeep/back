@@ -5,8 +5,9 @@ import (
 )
 
 type InnovationTile struct {
-	Items [][]TileItem `json:"items"`
-	Price []Price      `json:"price"`
+	Items    [][]TileItem `json:"items"`
+	Price    []Price      `json:"price"`
+	Original [][]TileItem `json:"-"`
 }
 
 func NewInnovationTile(id int64, count int) *InnovationTile {
@@ -16,6 +17,12 @@ func NewInnovationTile(id int64, count int) *InnovationTile {
 
 	for i := 0; i < 6; i++ {
 		item.Items[i] = make([]TileItem, 0)
+	}
+
+	item.Original = make([][]TileItem, 6)
+
+	for i := 0; i < 6; i++ {
+		item.Original[i] = make([]TileItem, 0)
 	}
 
 	item.Price = []Price{
@@ -88,7 +95,27 @@ func NewInnovationTile(id int64, count int) *InnovationTile {
 		}
 
 		item.Items[i] = tiles
+		item.Original[i] = tiles
 	}
+
+	return &item
+}
+
+func (p *InnovationTile) Copy() *InnovationTile {
+	var item InnovationTile
+
+	item.Items = make([][]TileItem, 6)
+
+	for i := 0; i < 6; i++ {
+		item.Items[i] = make([]TileItem, len(p.Original[i]))
+		copy(item.Items[i], p.Original[i])
+		for j := range item.Items[i] {
+			item.Items[i][j].Use = false
+		}
+	}
+
+	item.Price = make([]Price, len(p.Price))
+	copy(item.Price, p.Price)
 
 	return &item
 }

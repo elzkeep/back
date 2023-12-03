@@ -5,6 +5,7 @@ import (
 	"aoi/game"
 	"aoi/global"
 	"aoi/models"
+	gm "aoi/models/game"
 	"log"
 	"strings"
 	"time"
@@ -50,6 +51,26 @@ func (c *GameController) Game(id int64) {
 	}
 
 	c.Set("item", g)
+}
+
+func (c *GameController) Replay(id int64, pos int) {
+	g := game.Get(id)
+
+	log.Println("Replace", id, pos)
+
+	if g == nil {
+		game.MakeGame(id)
+
+		g = game.Get(id)
+		if g == nil {
+			c.Set("code", "not found game")
+			return
+		}
+	}
+
+	replay := game.Replay(id, pos)
+
+	c.Set("item", replay)
 }
 
 func (c *GameController) Map(id int64) {
@@ -232,6 +253,10 @@ func (c *GameController) Delete(item *models.Game) {
 	old := gameManager.Get(id)
 
 	if old.User != user {
+		return
+	}
+
+	if old.Status == gm.StatusEnd {
 		return
 	}
 

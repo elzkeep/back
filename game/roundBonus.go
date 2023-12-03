@@ -32,6 +32,10 @@ type RoundBonus struct {
 	Items      []RoundBonusItem `json:"items"`
 	FinalRound RoundBonusItem   `json:"final"`
 	Tiles      []RoundBonusItem `json:"-"`
+
+	OriginalItems      []RoundBonusItem `json:"-"`
+	OriginalFinalRound RoundBonusItem   `json:"-"`
+	OriginalTiles      []RoundBonusItem `json:"-"`
 }
 
 func NewRoundBonus(id int64) *RoundBonus {
@@ -78,6 +82,26 @@ func NewRoundBonus(id int64) *RoundBonus {
 	item.FinalRound = finalRound[items[6].Number]
 
 	item.Tiles = tiles
+
+	item.OriginalItems = make([]RoundBonusItem, len(item.Items))
+	item.OriginalFinalRound = item.FinalRound
+	item.OriginalTiles = make([]RoundBonusItem, len(item.Tiles))
+	copy(item.OriginalItems, item.Items)
+	copy(item.OriginalTiles, item.Tiles)
+
+	return &item
+}
+
+func (p *RoundBonus) Copy() *RoundBonus {
+	var item RoundBonus
+
+	item.Items = make([]RoundBonusItem, len(p.OriginalItems))
+	copy(item.Items, p.OriginalItems)
+
+	item.FinalRound = item.OriginalFinalRound
+
+	item.Tiles = make([]RoundBonusItem, len(p.OriginalTiles))
+	copy(item.Tiles, p.OriginalTiles)
 
 	return &item
 }

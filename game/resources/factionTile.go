@@ -5,7 +5,8 @@ import (
 )
 
 type FactionTile struct {
-	Items []TileItem `json:"items"`
+	Items    []TileItem `json:"items"`
+	Original []TileItem `json:"-"`
 }
 
 var _factionTile []TileItem
@@ -48,7 +49,29 @@ func NewFactionTile(id int64) *FactionTile {
 		}
 	}
 
-	_factionTile = item.Items
+	_factionTile = make([]TileItem, len(item.Items))
+	copy(_factionTile, item.Items)
+
+	item.Original = make([]TileItem, len(item.Items))
+	copy(item.Original, item.Items)
+
+	return &item
+}
+
+func (p *FactionTile) Copy() *FactionTile {
+	var item FactionTile
+
+	_factionTile = make([]TileItem, len(p.Original))
+	copy(_factionTile, p.Original)
+	for i := range _factionTile {
+		_factionTile[i].Use = false
+	}
+
+	item.Items = make([]TileItem, len(p.Original))
+	copy(item.Items, p.Original)
+	for i := range item.Items {
+		item.Items[i].Use = false
+	}
 
 	return &item
 }

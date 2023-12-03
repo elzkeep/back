@@ -5,7 +5,8 @@ import (
 )
 
 type PalaceTile struct {
-	Items []TileItem `json:"items"`
+	Items    []TileItem `json:"items"`
+	Original []TileItem `json:"-"`
 }
 
 func NewPalaceTile(id int64) *PalaceTile {
@@ -49,6 +50,21 @@ func NewPalaceTile(id int64) *PalaceTile {
 				item.Items = append(item.Items, tile)
 			}
 		}
+	}
+
+	item.Original = make([]TileItem, len(item.Items))
+	copy(item.Original, item.Items)
+
+	return &item
+}
+
+func (p *PalaceTile) Copy() *PalaceTile {
+	var item PalaceTile
+
+	item.Items = make([]TileItem, len(p.Original))
+	copy(item.Items, p.Original)
+	for i := range item.Items {
+		item.Items[i].Use = false
 	}
 
 	return &item

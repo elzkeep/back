@@ -18,7 +18,8 @@ const (
 )
 
 type BookAction struct {
-	Items []BookActionItem `json:"items"`
+	Items    []BookActionItem `json:"items"`
+	Original []BookActionItem `json:"-"`
 }
 
 func NewBookAction(id int64) *BookAction {
@@ -56,6 +57,21 @@ func NewBookAction(id int64) *BookAction {
 	sort.Slice(item.Items, func(i, j int) bool {
 		return item.Items[i].Book > item.Items[j].Book
 	})
+
+	item.Original = make([]BookActionItem, len(item.Items))
+	copy(item.Original, item.Items)
+
+	return &item
+}
+
+func (p *BookAction) Copy() *BookAction {
+	var item BookAction
+
+	item.Items = make([]BookActionItem, len(p.Original))
+	copy(item.Items, p.Original)
+	for i := range item.Items {
+		item.Items[i].Use = false
+	}
 
 	return &item
 }

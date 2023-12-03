@@ -6,7 +6,8 @@ import (
 )
 
 type ColorTile struct {
-	Items []TileItem `json:"items"`
+	Items    []TileItem `json:"items"`
+	Original []TileItem `json:"-"`
 }
 
 func NewColorTile(id int64) *ColorTile {
@@ -40,6 +41,21 @@ func NewColorTile(id int64) *ColorTile {
 				item.Items = append(item.Items, tile)
 			}
 		}
+	}
+
+	item.Original = make([]TileItem, len(item.Items))
+	copy(item.Original, item.Items)
+
+	return &item
+}
+
+func (p *ColorTile) Copy() *ColorTile {
+	var item ColorTile
+
+	item.Items = make([]TileItem, len(p.Original))
+	copy(item.Items, p.Original)
+	for i := range item.Items {
+		item.Items[i].Use = false
 	}
 
 	return &item

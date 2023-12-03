@@ -10,6 +10,7 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
+	"log"
 	"math"
 	"sort"
 	"strings"
@@ -51,6 +52,13 @@ type UndoRequest struct {
 	Users   []int  `json:"users"`
 }
 
+type ReplayLog struct {
+	Round   int
+	User    int64
+	History int64
+	Command string
+}
+
 type Game struct {
 	Id       int64                       `json:"id"`
 	Name     string                      `json:"name"`
@@ -82,9 +90,13 @@ type Game struct {
 	OldCommand      []string                  `json:"oldCommands"`
 	Network         int                       `json:"network"`
 	UndoRequest     UndoRequest               `json:"undo"`
+	Illusionists    gm.Illusionists           `json:"illusionists"`
 	DummyNetwork    int                       `json:"-"`
 	HistoryId       int64                     `json:"-"`
-	Illusionists    gm.Illusionists           `json:"illusionists"`
+	Replay          bool                      `json:"replay"`
+	Replays         []ReplayLog               `json:"-"`
+	Mapid           int64                     `json:"-"`
+	ReplayPos       []int                     `json:"replayPos"`
 }
 
 type Log struct {
@@ -100,14 +112,17 @@ func NewGame(game *models.Game) *Game {
 	var item Game
 	id := game.Id
 	count := game.Count
+	typeid := game.Type
+	mapid := game.Map
 
 	item.Id = id
-	item.Illusionists = game.Illusionists
+	item.Count = count
+	item.Type = GameType(typeid)
 	item.Name = game.Name
-	item.Type = GameType(game.Type)
+	item.Mapid = mapid
 	item.PowerActions = action.NewPowerAction()
 	item.BookActions = action.NewBookAction(id)
-	item.RoundTiles = resources.NewRoundTile(id, game.Type)
+	item.RoundTiles = resources.NewRoundTile(id, typeid)
 	item.RoundBonuss = NewRoundBonus(id)
 	item.PalaceTiles = resources.NewPalaceTile(id)
 	item.SchoolTiles = resources.NewSchoolTile(id, count)
@@ -115,6 +130,9 @@ func NewGame(game *models.Game) *Game {
 	item.FactionTiles = resources.NewFactionTile(id)
 	item.ColorTiles = resources.NewColorTile(id)
 	item.Cities = NewCity()
+	item.Replay = false
+	item.Replays = make([]ReplayLog, 0)
+	item.Illusionists = game.Illusionists
 
 	item.Network = 0
 	network := 0
@@ -124,7 +142,7 @@ func NewGame(game *models.Game) *Game {
 
 	item.DummyNetwork = network%4 + 12
 
-	item.Map = NewMap(id, game.Map)
+	item.Map = NewMap(id, mapid)
 	item.Sciences = NewScience(count)
 	item.Factions = make([]factions.FactionInterface, 0)
 
@@ -139,8 +157,65 @@ func NewGame(game *models.Game) *Game {
 	item.OldCommand = make([]string, 0)
 	item.Logs = make([]Log, 0)
 	item.UndoRequest = UndoRequest{Users: make([]int, 0)}
+	item.ReplayPos = make([]int, 8)
 
-	item.Count = count
+	item.Round = InitRound
+
+	return &item
+}
+
+func (p *Game) Copy() *Game {
+	var item Game
+
+	id := p.Id
+	mapid := p.Mapid
+	count := p.Count
+
+	item.Id = p.Id
+	item.Count = p.Count
+	item.Type = p.Type
+	item.Name = p.Name
+	item.Mapid = p.Mapid
+
+	item.PowerActions = p.PowerActions.Copy()
+	item.BookActions = p.BookActions.Copy()
+	item.RoundTiles = p.RoundTiles.Copy()
+	item.RoundBonuss = p.RoundBonuss.Copy()
+	item.PalaceTiles = p.PalaceTiles.Copy()
+	item.SchoolTiles = p.SchoolTiles.Copy()
+	item.InnovationTiles = p.InnovationTiles.Copy()
+	item.FactionTiles = p.FactionTiles.Copy()
+	item.ColorTiles = p.ColorTiles.Copy()
+	item.Cities = p.Cities.Copy()
+	item.Replay = true
+	item.Illusionists = p.Illusionists
+
+	item.Network = 0
+	network := 0
+	for _, v := range item.PalaceTiles.Items {
+		network += int(v.Type)
+	}
+
+	item.DummyNetwork = network%4 + 12
+
+	item.Map = NewMap(id, mapid)
+	item.Sciences = NewScience(count)
+	item.Factions = make([]factions.FactionInterface, 0)
+
+	item.Turn = make([]Turn, 0)
+	item.PowerTurn = make([]Turn, 0)
+	item.PassOrder = make([]int, 0)
+	item.TurnOrder = make([]int, 0)
+	item.Users = make([]int64, 0)
+	item.Usernames = make([]string, 0)
+
+	item.Command = make([]string, 0)
+	item.OldCommand = make([]string, 0)
+	item.Logs = make([]Log, 0)
+	item.UndoRequest = UndoRequest{Users: make([]int, 0)}
+	item.ReplayPos = make([]int, 8)
+
+	copy(item.ReplayPos, p.ReplayPos)
 
 	item.Round = InitRound
 
@@ -181,6 +256,10 @@ func (p *Game) AddUser(user int64, name string) {
 }
 
 func (p *Game) UpdateDBRound(value int) {
+	if p.Replay == true {
+		return
+	}
+
 	conn := models.NewConnection()
 	defer conn.Close()
 
@@ -293,15 +372,17 @@ func (p *Game) SelectFaction(user int, name string) {
 	p.FactionTiles.Items[pos].Use = true
 	f.Action = true
 
-	conn := models.NewConnection()
-	defer conn.Close()
+	if p.Replay == false {
+		conn := models.NewConnection()
+		defer conn.Close()
 
-	gameuserManager := models.NewGameuserManager(conn)
-	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
-	gameuser.Faction = int(factionTile.Type)
-	gameuser.Color = int(colorTile.Color)
+		gameuserManager := models.NewGameuserManager(conn)
+		gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+		gameuser.Faction = int(factionTile.Type)
+		gameuser.Color = int(colorTile.Color)
 
-	gameuserManager.Update(gameuser)
+		gameuserManager.Update(gameuser)
+	}
 }
 
 func (p *Game) IsTurn(user int) bool {
@@ -690,7 +771,7 @@ func (p *Game) IsBookTurn() bool {
 
 func (p *Game) FirstBuild(user int, x int, y int, building resources.Building) error {
 	if p.Round != BuildRound {
-		return errors.New("round error : FirstBuild")
+		return errors.New("round error")
 	}
 
 	if !p.IsTurn(user) {
@@ -1795,6 +1876,8 @@ func (p *Game) City(user int, city resources.CityType) error {
 
 	f.ReceiveResource(resources.Price{VP: buildVP.City})
 
+	p.Map.ResetLastPosition()
+
 	return nil
 }
 
@@ -2220,25 +2303,33 @@ func (p *Game) Annex(user int, x int, y int) error {
 	return nil
 }
 
-func (p *Game) ClearHistory(user int) {
+func (p *Game) ClearHistory(id int64, user int, str string, userid int64, round int) {
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
-	p.Logs = append(p.Logs, Log{Id: p.HistoryId, User: user, VP: f.VP, Round: p.Round, Command: p.Command})
+	p.Logs = append(p.Logs, Log{Id: p.HistoryId, User: user, VP: f.VP, Round: round, Command: p.Command})
 
 	p.OldCommand = make([]string, 0)
 	p.OldCommand = append(p.OldCommand, p.Command...)
 	p.Command = make([]string, 0)
+
+	p.Replays = append(p.Replays, ReplayLog{User: userid, Round: round, Command: str, History: id})
 }
 
-func (p *Game) AddHistory(id int64, str string) {
+func (p *Game) AddHistory(id int64, str string, userid int64, round int) {
 	if len(p.Command) == 0 {
 		p.HistoryId = id
 	}
 	p.Command = append(p.Command, str)
+
+	p.Replays = append(p.Replays, ReplayLog{User: userid, Round: round, Command: str, History: id})
 }
 
 func (p *Game) Undo(user int) error {
+	if p.Replay == true {
+		return nil
+	}
+
 	if !p.IsTurn(user) {
 		return errors.New("It's not a turn")
 	}
@@ -2246,29 +2337,83 @@ func (p *Game) Undo(user int) error {
 	if len(p.Command) == 0 {
 		return errors.New("history empty")
 	}
-	conn := models.NewConnection()
-	defer conn.Close()
 
-	gamehistoryManager := models.NewGamehistoryManager(conn)
-	items := gamehistoryManager.Find([]interface{}{
-		models.Where{Column: "game", Value: p.Id, Compare: "="},
-		models.Ordering("gh_id desc"),
-	})
+	game := p.Copy()
+	game.Replay = false
 
-	if len(items) == 0 {
+	game.PowerActions.Original = p.PowerActions.Original
+	game.BookActions.Original = p.BookActions.Original
+	game.RoundTiles.Original = p.RoundTiles.Original
+	game.RoundTiles.OriginalReserved = p.RoundTiles.OriginalReserved
+	game.RoundBonuss.OriginalItems = p.RoundBonuss.OriginalItems
+	game.RoundBonuss.OriginalTiles = p.RoundBonuss.OriginalTiles
+	game.RoundBonuss.OriginalFinalRound = p.RoundBonuss.OriginalFinalRound
+
+	game.PalaceTiles.Original = p.PalaceTiles.Original
+	game.SchoolTiles.Original = p.SchoolTiles.Original
+	game.InnovationTiles.Original = p.InnovationTiles.Original
+	game.FactionTiles.Original = p.FactionTiles.Original
+	game.ColorTiles.Original = p.ColorTiles.Original
+	game.Cities.Original = p.Cities.Original
+
+	for i, v := range p.Users {
+		game.AddUser(v, p.Usernames[i])
+	}
+
+	game.CompleteAddUser()
+
+	if len(p.Replays) == 0 {
 		return errors.New("history empty")
 	}
 
-	last := items[0]
-
-	strs := strings.Split(last.Command, " ")
-	if strs[1] == "save" {
+	last := p.Replays[len(p.Replays)-1]
+	if last.Command[2:] == "save" {
 		return errors.New("unabled")
 	}
 
-	gamehistoryManager.Delete(last.Id)
+	for _, item := range p.Replays[:len(p.Replays)-1] {
+		Command(game, p.Id, item.User, item.Command, false, item.History)
+	}
 
-	MakeGame(p.Id)
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	log.Println("history id", last.History)
+	gamehistoryManager := models.NewGamehistoryManager(conn)
+	gamehistoryManager.Delete(last.History)
+
+	_rooms[p.Id] = game
+
+	/*
+		db := models.NewConnection()
+		defer db.Close()
+
+		conn, _ := db.Begin()
+		defer conn.Rollback()
+
+		gamehistoryManager := models.NewGamehistoryManager(conn)
+		items := gamehistoryManager.Find([]interface{}{
+			models.Where{Column: "game", Value: p.Id, Compare: "="},
+			models.Ordering("gh_id desc"),
+		})
+
+		if len(items) == 0 {
+			return errors.New("history empty")
+		}
+
+		last := items[0]
+
+		strs := strings.Split(last.Command, " ")
+		if strs[1] == "save" {
+			return errors.New("unabled")
+		}
+
+		gamehistoryManager.Delete(last.Id)
+
+		conn.Commit()
+
+		MakeGame(p.Id)
+	*/
 
 	return nil
 }
@@ -2562,6 +2707,10 @@ func (p *Game) EndGame() {
 		}
 	}
 
+	if p.Replay == true {
+		return
+	}
+
 	db := models.NewConnection()
 	defer db.Close()
 
@@ -2607,6 +2756,8 @@ func (p *Game) EndGame() {
 
 		p.CalculateElo()
 	}
+
+	p.MakeReplay()
 }
 
 func (p *Game) CalculateEndGame() {
@@ -2640,6 +2791,10 @@ func (p *Game) Elo(a float64, b float64, rank int) (float64, float64) {
 }
 
 func (p *Game) CalculateElo() {
+	if p.Replay == true {
+		return
+	}
+
 	db := models.NewConnection()
 	defer db.Close()
 
@@ -2734,13 +2889,15 @@ func (p *Game) SelectFactionTile(user int, name string) error {
 	p.FactionTiles.Items[pos].Use = true
 	f.Action = true
 
-	conn := models.NewConnection()
-	defer conn.Close()
+	if p.Replay == false {
+		conn := models.NewConnection()
+		defer conn.Close()
 
-	gameuserManager := models.NewGameuserManager(conn)
-	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
-	gameuser.Faction = int(tile.Type)
-	gameuserManager.Update(gameuser)
+		gameuserManager := models.NewGameuserManager(conn)
+		gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+		gameuser.Faction = int(tile.Type)
+		gameuserManager.Update(gameuser)
+	}
 
 	return nil
 }
@@ -2766,13 +2923,15 @@ func (p *Game) SelectColorTile(user int, name string) error {
 	p.ColorTiles.Items[pos].Use = true
 	f.Action = true
 
-	conn := models.NewConnection()
-	defer conn.Close()
+	if p.Replay == false {
+		conn := models.NewConnection()
+		defer conn.Close()
 
-	gameuserManager := models.NewGameuserManager(conn)
-	gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
-	gameuser.Color = int(tile.Color)
-	gameuserManager.Update(gameuser)
+		gameuserManager := models.NewGameuserManager(conn)
+		gameuser := gameuserManager.GetByGameUser(p.Id, p.Users[user])
+		gameuser.Color = int(tile.Color)
+		gameuserManager.Update(gameuser)
+	}
 
 	return nil
 }
@@ -2900,4 +3059,25 @@ func (p *Game) Lock() {
 
 func (p *Game) Unlock() {
 	Unlock(p.Id)
+}
+
+func (p *Game) MakeReplay() {
+	replay := make([]int, 8)
+
+	count := 1
+	round := 1
+	for _, v := range p.Replays {
+		if v.Round == round {
+			replay[v.Round] = count
+			round++
+		}
+
+		if v.Command[2:] == "save" {
+			count++
+		}
+	}
+
+	replay[0] = count
+
+	p.ReplayPos = replay
 }

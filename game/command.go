@@ -362,9 +362,9 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 					global.SendNotify(msg)
 				}
 
-				p.ClearHistory(user)
+				p.ClearHistory(historyId, user, str, id, round)
 			} else {
-				p.AddHistory(historyId, str)
+				p.AddHistory(historyId, str, id, round)
 			}
 		}
 
