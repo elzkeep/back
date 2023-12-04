@@ -20,3 +20,8 @@ select gu_faction, gu_color, sum(if(gu_rank = 1, 1, 0))as gu_rank1, sum(if(gu_ra
 drop view ranklist_vw;
 create view ranklist_vw as
 select gu_user as r_id, u_name as r_name, sum(gu_elo) + 1000.0 as r_elo, avg(gu_score) as r_score, count(*) as  r_count, sum(if(gu_rank = 1, 1, 0)) as r_rank1, sum(if(gu_rank = 2, 1, 0)) as r_rank2, sum(if(gu_rank = 3, 1, 0)) as r_rank3, sum(if(gu_rank = 4, 1, 0)) as r_rank4, sum(if(gu_rank = 5, 1, 0)) as r_rank5 from gameuser_tb, user_tb where gu_user = u_id group by gu_user, u_name order by sum(gu_elo) desc;
+
+drop view highscore_vw;
+create view highscore_vw as 
+select a.g_id, a.g_count, b.g_faction, b.g_score, a.gu_user, u_name from (select * from game_tb, gameuser_tb, user_tb where g_status = 4 and g_id = gu_game and u_id = gu_user) a, (select g_count, gu_faction as g_faction, max(gu_score) as g_score from game_tb, gameuser_tb where g_status = 4 and g_id = gu_game group by g_count, gu_faction) b
+       where a.g_count = b.g_count and a.gu_faction = b.g_faction and a.gu_score = b.g_score;

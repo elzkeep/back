@@ -94,9 +94,10 @@ type Game struct {
 	DummyNetwork    int                       `json:"-"`
 	HistoryId       int64                     `json:"-"`
 	Replay          bool                      `json:"replay"`
+	ReplayPos       []int                     `json:"replayPos"`
+	MolesBridge     bool                      `json:"molesBridge"`
 	Replays         []ReplayLog               `json:"-"`
 	Mapid           int64                     `json:"-"`
-	ReplayPos       []int                     `json:"replayPos"`
 }
 
 type Log struct {
@@ -133,6 +134,7 @@ func NewGame(game *models.Game) *Game {
 	item.Replay = false
 	item.Replays = make([]ReplayLog, 0)
 	item.Illusionists = game.Illusionists
+	item.MolesBridge = false
 
 	item.Network = 0
 	network := 0
@@ -189,6 +191,7 @@ func (p *Game) Copy() *Game {
 	item.Cities = p.Cities.Copy()
 	item.Replay = true
 	item.Illusionists = p.Illusionists
+	item.MolesBridge = false
 
 	item.Network = 0
 	network := 0
@@ -663,6 +666,8 @@ func (p *Game) TurnEnd(user int) error {
 	if len(p.Turn) == 0 {
 		p.RoundProcess()
 	}
+
+	p.MolesBridge = false
 
 	return nil
 }
@@ -1669,6 +1674,12 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 		y1, y2 = y2, y1
 	}
 
+	molesFlag := false
+	if f.Type == resources.TileFactionMoles && p.MolesBridge == true {
+		molesFlag = true
+	}
+	log.Println("moles flag", molesFlag)
+
 	if y1 == y2 {
 		if x1 > x2 {
 			x1, x2 = x2, x1
@@ -1679,7 +1690,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 				y--
 			}
 
-			if f.Type == resources.TileFactionMoles {
+			if molesFlag == true {
 				flag = true
 			} else if (p.Map.GetType(x1+1, y) == color.River || p.Map.GetType(x1+1, y) == color.None) && (p.Map.GetType(x1+1, y+1) == color.River || p.Map.GetType(x1+1, y+1) == color.None) {
 				flag = true
@@ -1688,7 +1699,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 	} else {
 		if x1%2 == 1 {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 2 {
-				if f.Type == resources.TileFactionMoles {
+				if molesFlag == true {
 					flag = true
 				} else if (p.Map.GetType(x1, y1+1) == color.River || p.Map.GetType(x1, y1+1) == color.None) && (p.Map.GetType(x2, y2-1) == color.River || p.Map.GetType(x2, y2-1) == color.None) {
 					flag = true
@@ -1696,7 +1707,7 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 			}
 		} else {
 			if (x1-x2 == 1 || x1-x2 == -1) && y2-y1 == 1 {
-				if f.Type == resources.TileFactionMoles {
+				if molesFlag == true {
 					flag = true
 				} else if (p.Map.GetType(x1, y1+1) == color.River || p.Map.GetType(x1, y1+1) == color.None) && (p.Map.GetType(x2, y2-1) == color.River || p.Map.GetType(x2, y2-1) == color.None) {
 					flag = true
@@ -2175,6 +2186,10 @@ func (p *Game) TileAction(user int, category resources.TileCategory, pos int) er
 		return err
 	}
 
+	if category == resources.TileFaction && int(resources.TileSchoolPassPrist)+pos == int(resources.TileFactionMoles) {
+		p.MolesBridge = true
+	}
+
 	return nil
 }
 
@@ -2341,6 +2356,8 @@ func (p *Game) Undo(user int) error {
 	game := p.Copy()
 	game.Replay = false
 
+	log.Println(p.RoundBonuss.FinalRound)
+	log.Println(p.RoundBonuss.OriginalFinalRound)
 	game.PowerActions.Original = p.PowerActions.Original
 	game.BookActions.Original = p.BookActions.Original
 	game.RoundTiles.Original = p.RoundTiles.Original
@@ -2348,6 +2365,8 @@ func (p *Game) Undo(user int) error {
 	game.RoundBonuss.OriginalItems = p.RoundBonuss.OriginalItems
 	game.RoundBonuss.OriginalTiles = p.RoundBonuss.OriginalTiles
 	game.RoundBonuss.OriginalFinalRound = p.RoundBonuss.OriginalFinalRound
+
+	log.Println(game.RoundBonuss.FinalRound)
 
 	game.PalaceTiles.Original = p.PalaceTiles.Original
 	game.SchoolTiles.Original = p.SchoolTiles.Original
@@ -2378,13 +2397,13 @@ func (p *Game) Undo(user int) error {
 	conn := models.NewConnection()
 	defer conn.Close()
 
-	log.Println("history id", last.History)
 	gamehistoryManager := models.NewGamehistoryManager(conn)
 	gamehistoryManager.Delete(last.History)
 
 	_rooms[p.Id] = game
 
 	/*
+
 		db := models.NewConnection()
 		defer db.Close()
 

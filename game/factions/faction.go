@@ -1234,10 +1234,33 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 
 	if tile.Type == TileInnovationKind {
 		cnt := 0
-		for _, v := range p.Building[:len(p.Building)] {
-			if v > 0 {
-				cnt++
-			}
+
+		if p.Building[D]+p.Building[WHITE_D] > 0 {
+			cnt++
+		}
+
+		if p.Building[TP]+p.Building[WHITE_TP] > 0 {
+			cnt++
+		}
+
+		if p.Building[TE]+p.Building[WHITE_TE] > 0 {
+			cnt++
+		}
+
+		if p.Building[WHITE_TOWER] > 0 {
+			cnt++
+		}
+
+		if p.Building[SA]+p.Building[WHITE_SA] > 0 {
+			cnt++
+		}
+
+		if p.Building[SH]+p.Building[WHITE_SH] > 0 {
+			cnt++
+		}
+
+		if p.Building[WHITE_MT] > 0 {
+			cnt++
 		}
 
 		p.ReceiveResource(Price{Science: Science{Any: cnt}})

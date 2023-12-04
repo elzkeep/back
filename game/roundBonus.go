@@ -98,7 +98,7 @@ func (p *RoundBonus) Copy() *RoundBonus {
 	item.Items = make([]RoundBonusItem, len(p.OriginalItems))
 	copy(item.Items, p.OriginalItems)
 
-	item.FinalRound = item.OriginalFinalRound
+	item.FinalRound = p.OriginalFinalRound
 
 	item.Tiles = make([]RoundBonusItem, len(p.OriginalTiles))
 	copy(item.Tiles, p.OriginalTiles)
