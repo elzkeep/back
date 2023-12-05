@@ -38,6 +38,9 @@ func (c *GameController) Join(id int64) {
 }
 
 func (c *GameController) Game(id int64) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	g := game.Get(id)
 
 	if g == nil {
@@ -46,6 +49,7 @@ func (c *GameController) Game(id int64) {
 		g = game.Get(id)
 		if g == nil {
 			c.Set("code", "not found game")
+
 			return
 		}
 	}
@@ -54,6 +58,9 @@ func (c *GameController) Game(id int64) {
 }
 
 func (c *GameController) Replay(id int64, pos int) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	g := game.Get(id)
 
 	log.Println("Replace", id, pos)
@@ -74,6 +81,9 @@ func (c *GameController) Replay(id int64, pos int) {
 }
 
 func (c *GameController) Map(id int64) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	g := game.Get(id)
 
 	if g == nil {
@@ -86,6 +96,9 @@ func (c *GameController) Map(id int64) {
 
 // @Post()
 func (c *GameController) Command(id int64, cmd string) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	user := c.Session.Id
 
 	g := game.Get(id)
@@ -94,8 +107,6 @@ func (c *GameController) Command(id int64, cmd string) {
 		c.Set("code", "not found game")
 		return
 	}
-
-	g.Lock()
 
 	cmds := strings.Split(cmd, ", ")
 
@@ -109,12 +120,13 @@ func (c *GameController) Command(id int64, cmd string) {
 			c.Error(ret.Error())
 		}
 	}
-
-	g.Unlock()
 }
 
 // @Post()
 func (c *GameController) Undo(id int64, history int64) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	user := c.Session.Id
 
 	g := game.Get(id)
@@ -139,6 +151,9 @@ func (c *GameController) Undo(id int64, history int64) {
 
 // @Post()
 func (c *GameController) Undoconfirm(id int64, undo int64, status int) {
+	game.Lock(id)
+	defer game.Unlock(id)
+
 	user := c.Session.Id
 
 	g := game.Get(id)

@@ -525,6 +525,9 @@ func Make(user int64, item *models.Game) {
 
 	{
 		items := []int{
+			int(resources.TileInnovationSpade),
+			int(resources.TileInnovationTP),
+			int(resources.TileInnovationPrist),
 			int(resources.TileInnovationKind),
 			int(resources.TileInnovationCount),
 			int(resources.TileInnovationSchool),

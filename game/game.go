@@ -10,7 +10,6 @@ import (
 	"aoi/models/game"
 	gm "aoi/models/game"
 	"errors"
-	"log"
 	"math"
 	"sort"
 	"strings"
@@ -309,13 +308,21 @@ func (p *Game) CompleteAddUser() {
 	p.UpdateDBRound(int(game.StatusFaction))
 }
 
-func (p *Game) SelectFaction(user int, name string) {
-	pos := 0
+func (p *Game) SelectFaction(user int, name string) error {
+	pos := -1
 
 	for i, v := range p.FactionTiles.Items {
 		if strings.ToLower(v.Name) == name {
 			pos = i
 		}
+	}
+
+	if pos == -1 {
+		return errors.New("not found")
+	}
+
+	if p.Factions[user].GetInstance().Ename != "" {
+		return errors.New("already")
 	}
 
 	factionTile := p.FactionTiles.Items[pos]
@@ -386,6 +393,8 @@ func (p *Game) SelectFaction(user int, name string) {
 
 		gameuserManager.Update(gameuser)
 	}
+
+	return nil
 }
 
 func (p *Game) IsTurn(user int) bool {
@@ -453,6 +462,8 @@ func (p *Game) Start() {
 			user := p.TurnOrder[i]
 			faction := p.Factions[user]
 			f := faction.GetInstance()
+
+			f.Resource.Building = resources.None
 			f.Income()
 
 			// income 계산
@@ -461,12 +472,6 @@ func (p *Game) Start() {
 			if p.Round < 6 {
 				p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
 			}
-
-			/*
-				if p.Round > 1 {
-					p.Sciences.RoundBonus(f)
-				}
-			*/
 		}
 	}
 
@@ -550,7 +555,14 @@ func (p *Game) RoundProcess() {
 
 		for i, v := range p.Factions {
 			faction := v.GetInstance()
-			if faction.Type == resources.TileFactionInventors || faction.Type == resources.TileFactionMonks {
+			if faction.Type == resources.TileFactionMonks {
+				p.Turn = append(p.Turn, Turn{User: i, Type: TileTurn})
+			}
+		}
+
+		for i, v := range p.Factions {
+			faction := v.GetInstance()
+			if faction.Type == resources.TileFactionInventors {
 				p.Turn = append(p.Turn, Turn{User: i, Type: TileTurn})
 			}
 		}
@@ -566,10 +578,8 @@ func (p *Game) RoundProcess() {
 		for i, v := range p.Factions {
 			f := v.GetInstance()
 
-			f.Resource.Building = resources.None
-
 			if f.Resource.Spade > 0 {
-				p.Turn = append(p.Turn, Turn{User: i, Type: SpadeTurn})
+				p.Turn = append(p.Turn, Turn{User: i, Type: ResourceTurn})
 			}
 		}
 
@@ -667,6 +677,9 @@ func (p *Game) TurnEnd(user int) error {
 		p.RoundProcess()
 	}
 
+	if f.Type == resources.TileFactionMonks || f.Type == resources.TileFactionOmar {
+		f.Resource.Building = resources.None
+	}
 	p.MolesBridge = false
 
 	return nil
@@ -1123,7 +1136,9 @@ func (p *Game) Build(user int, x int, y int, building resources.Building, extra 
 		}
 	}
 
-	p.PowerDiffusion(user, x, y)
+	if p.Round >= 1 {
+		p.PowerDiffusion(user, x, y)
+	}
 
 	return nil
 }
@@ -1678,7 +1693,6 @@ func (p *Game) Bridge(user int, x1 int, y1 int, x2 int, y2 int) error {
 	if f.Type == resources.TileFactionMoles && p.MolesBridge == true {
 		molesFlag = true
 	}
-	log.Println("moles flag", molesFlag)
 
 	if y1 == y2 {
 		if x1 > x2 {
@@ -1837,6 +1851,12 @@ func (p *Game) PowerConfirm(user int, confirm bool) error {
 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
+
+	if p.Id > 191 {
+		if f.Action == true {
+			return errors.New("already")
+		}
+	}
 
 	if confirm == true {
 		f.ReceivePower(p.Turn[0].Power, true)
@@ -2356,8 +2376,6 @@ func (p *Game) Undo(user int) error {
 	game := p.Copy()
 	game.Replay = false
 
-	log.Println(p.RoundBonuss.FinalRound)
-	log.Println(p.RoundBonuss.OriginalFinalRound)
 	game.PowerActions.Original = p.PowerActions.Original
 	game.BookActions.Original = p.BookActions.Original
 	game.RoundTiles.Original = p.RoundTiles.Original
@@ -2365,8 +2383,6 @@ func (p *Game) Undo(user int) error {
 	game.RoundBonuss.OriginalItems = p.RoundBonuss.OriginalItems
 	game.RoundBonuss.OriginalTiles = p.RoundBonuss.OriginalTiles
 	game.RoundBonuss.OriginalFinalRound = p.RoundBonuss.OriginalFinalRound
-
-	log.Println(game.RoundBonuss.FinalRound)
 
 	game.PalaceTiles.Original = p.PalaceTiles.Original
 	game.SchoolTiles.Original = p.SchoolTiles.Original
@@ -2399,6 +2415,25 @@ func (p *Game) Undo(user int) error {
 
 	gamehistoryManager := models.NewGamehistoryManager(conn)
 	gamehistoryManager.Delete(last.History)
+
+	if p.Round >= 6 {
+		for _, v := range p.Factions {
+			f := v.GetInstance()
+			f.CalulateVP()
+		}
+
+		p.CalculateEndGame()
+	} else {
+		for i := range game.Factions {
+			user := game.TurnOrder[i]
+			faction := game.Factions[user]
+			f := faction.GetInstance()
+
+			f.CalulateReceive()
+			game.Sciences.CalculateRoundBonus(f)
+			game.Sciences.CalculateRoundEndBonus(faction, game.RoundBonuss.Items[game.Round-1])
+		}
+	}
 
 	_rooms[p.Id] = game
 
@@ -2901,6 +2936,10 @@ func (p *Game) SelectFactionTile(user int, name string) error {
 	faction := p.Factions[user]
 	f := faction.GetInstance()
 
+	if f.Action == true {
+		return errors.New("Already completed the action")
+	}
+
 	if !f.AddTile(tile) {
 		return errors.New("already been selected")
 	}
@@ -2918,11 +2957,13 @@ func (p *Game) SelectFactionTile(user int, name string) error {
 		gameuserManager.Update(gameuser)
 	}
 
+	f.Action = true
+
 	return nil
 }
 
 func (p *Game) SelectColorTile(user int, name string) error {
-	pos := 0
+	pos := -1
 
 	for i, v := range p.ColorTiles.Items {
 		if strings.ToLower(v.Name) == name {
@@ -2930,10 +2971,18 @@ func (p *Game) SelectColorTile(user int, name string) error {
 		}
 	}
 
+	if pos == -1 {
+		return errors.New("not found")
+	}
+
 	tile := p.ColorTiles.Items[pos]
 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
+
+	if f.Action == true {
+		return errors.New("Already completed the action")
+	}
 
 	if !f.AddTile(tile) {
 		return errors.New("already been selected")
@@ -2952,6 +3001,8 @@ func (p *Game) SelectColorTile(user int, name string) error {
 		gameuserManager.Update(gameuser)
 	}
 
+	f.Action = true
+
 	return nil
 }
 
@@ -2960,6 +3011,10 @@ func (p *Game) SelectPalaceTile(user int, pos int) error {
 
 	faction := p.Factions[user]
 	f := faction.GetInstance()
+
+	if f.Action == true {
+		return errors.New("Already completed the action")
+	}
 
 	if !f.AddTile(tile) {
 		return errors.New("already been selected")
@@ -3070,14 +3125,6 @@ func (p *Game) AddUndoConfirm(userid int64) {
 	user := p.GetUserPos(userid)
 
 	p.UndoRequest.Users = append(p.UndoRequest.Users, user)
-}
-
-func (p *Game) Lock() {
-	Lock(p.Id)
-}
-
-func (p *Game) Unlock() {
-	Unlock(p.Id)
 }
 
 func (p *Game) MakeReplay() {

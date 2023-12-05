@@ -296,26 +296,26 @@ func Command(p *Game, gameid int64, id int64, str string, update bool, historyId
 		faction := strs[2]
 
 		if p.Type == BasicType {
-			p.SelectFaction(user, faction)
+			err = p.SelectFaction(user, faction)
 		} else {
-			p.SelectFactionTile(user, faction)
+			err = p.SelectFactionTile(user, faction)
 		}
 	} else if cmd == "color" {
 		color := strs[2]
 
-		p.SelectColorTile(user, color)
+		err = p.SelectColorTile(user, color)
 	} else if cmd == "palace" {
 		pos := global.Atoi(strs[2])
 
-		p.SelectPalaceTile(user, pos)
+		err = p.SelectPalaceTile(user, pos)
 	} else if cmd == "leech" {
-		p.PowerConfirm(user, true)
+		err = p.PowerConfirm(user, true)
 	} else if cmd == "decline" {
-		p.PowerConfirm(user, false)
+		err = p.PowerConfirm(user, false)
 	} else if cmd == "save" {
 		err = p.TurnEnd(user)
 	} else if cmd == "undo" {
-		p.Undo(user)
+		err = p.Undo(user)
 	}
 
 	p.Map.Index++
