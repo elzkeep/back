@@ -5,6 +5,7 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
+	"log"
 	"sort"
 
 	"math"
@@ -605,7 +606,12 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 
 	if building == D {
 		if p.Resource.Building != D {
-			err := CheckResource(p.Resource, p.Price[D])
+			need := p.Price[D]
+			log.Println(need)
+			if p.Type == TileFactionGoblins {
+				need.Coin -= 2
+			}
+			err := CheckResource(p.Resource, need)
 			if err != nil {
 				return err
 			}
