@@ -93,84 +93,84 @@ func MakeGame(id int64) {
 	}
 }
 func Init() {
-	/*
-		conn := models.NewConnection()
-		defer conn.Close()
 
-		gameManager := models.NewGameManager(conn)
-		gameuserManager := models.NewGameuserManager(conn)
-		gamehistoryManager := models.NewGamehistoryManager(conn)
-		gameundoManager := models.NewGameundoManager(conn)
-		gameundoitemManager := models.NewGameundoitemManager(conn)
+	conn := models.NewConnection()
+	defer conn.Close()
 
-		games := gameManager.Find([]interface{}{models.Where{Column: "status", Value: game.StatusEnd, Compare: "<>"}})
+	gameManager := models.NewGameManager(conn)
+	gameuserManager := models.NewGameuserManager(conn)
+	gamehistoryManager := models.NewGamehistoryManager(conn)
+	gameundoManager := models.NewGameundoManager(conn)
+	gameundoitemManager := models.NewGameundoitemManager(conn)
 
-		for _, v := range games {
-			g := NewGame(&v)
-			SetGame(v.Id, g)
+	games := gameManager.Find([]interface{}{models.Where{Column: "status", Value: game.StatusEnd, Compare: "<>"}})
 
-			gameusers := gameuserManager.Find([]interface{}{
+	for _, v := range games {
+		g := NewGame(&v)
+		SetGame(v.Id, g)
+
+		gameusers := gameuserManager.Find([]interface{}{
+			models.Where{Column: "game", Value: v.Id, Compare: "="},
+			models.Ordering("gu_order"),
+		})
+
+		if v.Count == len(gameusers) {
+			for _, gameuser := range gameusers {
+				user := gameuser.Extra["user"].(models.User)
+				g.AddUser(gameuser.User, user.Name)
+			}
+
+			g.CompleteAddUser()
+
+			historys := gamehistoryManager.Find([]interface{}{
 				models.Where{Column: "game", Value: v.Id, Compare: "="},
-				models.Ordering("gu_order"),
+				models.Ordering("gh_id"),
 			})
 
-			if v.Count == len(gameusers) {
-				for _, gameuser := range gameusers {
-					user := gameuser.Extra["user"].(models.User)
-					g.AddUser(gameuser.User, user.Name)
+			for _, history := range historys {
+				err := Command(g, history.Game, history.User, history.Command, false, history.Id)
+				if err != nil {
+					log.Println(err)
 				}
+			}
 
-				g.CompleteAddUser()
+			if g.Round > 0 && g.Round <= 6 {
+				for user, _ := range g.Factions {
+					g.Calculate(user)
+				}
+			}
 
-				historys := gamehistoryManager.Find([]interface{}{
+			if v.Status != game.StatusEnd {
+				gameundos := gameundoManager.Find([]interface{}{
 					models.Where{Column: "game", Value: v.Id, Compare: "="},
-					models.Ordering("gh_id"),
+					models.Where{Column: "status", Value: gameundo.StatusWait, Compare: "="},
 				})
 
-				for _, history := range historys {
-					err := Command(g, history.Game, history.User, history.Command, false, history.Id)
-					if err != nil {
-						log.Println(err)
-					}
-				}
+				for _, gameundo := range gameundos {
+					user := g.GetUserPos(gameundo.User)
+					g.UndoRequest = UndoRequest{Id: gameundo.Id, User: user, History: gameundo.Gamehistory, Status: 1, Command: "", Users: make([]int, 0)}
 
-				if g.Round > 0 && g.Round <= 6 {
-					for user, _ := range g.Factions {
-						g.Calculate(user)
-					}
-				}
-
-				if v.Status != game.StatusEnd {
-					gameundos := gameundoManager.Find([]interface{}{
-						models.Where{Column: "game", Value: v.Id, Compare: "="},
-						models.Where{Column: "status", Value: gameundo.StatusWait, Compare: "="},
+					gameundoitems := gameundoitemManager.Find([]interface{}{
+						models.Where{Column: "gameundo", Value: gameundo.Id, Compare: "="},
 					})
 
-					for _, gameundo := range gameundos {
-						user := g.GetUserPos(gameundo.User)
-						g.UndoRequest = UndoRequest{Id: gameundo.Id, User: user, History: gameundo.Gamehistory, Status: 1, Command: "", Users: make([]int, 0)}
-
-						gameundoitems := gameundoitemManager.Find([]interface{}{
-							models.Where{Column: "gameundo", Value: gameundo.Id, Compare: "="},
-						})
-
-						for _, gameundoitem := range gameundoitems {
-							g.AddUndoConfirm(gameundoitem.User)
-						}
+					for _, gameundoitem := range gameundoitems {
+						g.AddUndoConfirm(gameundoitem.User)
 					}
 				}
-
-				//for i, v := range g.Users {
-				//	if v == 1 {
-				//		if g.IsTurn(i) {
-				//			AICommand(g, i)
-				//		}
-				//	}
-				//}
-
 			}
+
+			//for i, v := range g.Users {
+			//	if v == 1 {
+			//		if g.IsTurn(i) {
+			//			AICommand(g, i)
+			//		}
+			//	}
+			//}
+
 		}
-	*/
+	}
+
 }
 
 func Make(user int64, item *models.Game) {
@@ -664,7 +664,6 @@ func Get(id int64) *Game {
 func Replay(id int64, pos int) *Game {
 	old := _rooms[id]
 
-	log.Println("replay length", len(old.Replays))
 	game := old.Copy()
 
 	for i, v := range old.Users {
@@ -675,7 +674,7 @@ func Replay(id int64, pos int) *Game {
 
 	if pos > 0 {
 		end := 0
-		for i, item := range old.Replays {
+		for _, item := range old.Replays {
 			Command(game, id, item.User, item.Command, false, 0)
 
 			if item.Command[2:] == "save" {
@@ -684,7 +683,6 @@ func Replay(id int64, pos int) *Game {
 			}
 
 			if pos == end {
-				log.Println("break", i)
 				break
 			}
 		}

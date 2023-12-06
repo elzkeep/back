@@ -2416,22 +2416,24 @@ func (p *Game) Undo(user int) error {
 	gamehistoryManager := models.NewGamehistoryManager(conn)
 	gamehistoryManager.Delete(last.History)
 
-	if p.Round >= 6 {
-		for _, v := range p.Factions {
+	if game.Round >= 6 {
+		for _, v := range game.Factions {
 			f := v.GetInstance()
 			f.CalulateVP()
 		}
 
-		p.CalculateEndGame()
+		game.CalculateEndGame()
 	} else {
-		for i := range game.Factions {
-			user := game.TurnOrder[i]
+		for user := range game.Factions {
 			faction := game.Factions[user]
 			f := faction.GetInstance()
 
 			f.CalulateReceive()
 			game.Sciences.CalculateRoundBonus(f)
-			game.Sciences.CalculateRoundEndBonus(faction, game.RoundBonuss.Items[game.Round-1])
+
+			if len(game.RoundBonuss.Items) > game.Round-1 {
+				game.Sciences.CalculateRoundEndBonus(faction, game.RoundBonuss.Items[game.Round-1])
+			}
 		}
 	}
 
