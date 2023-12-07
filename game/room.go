@@ -37,6 +37,10 @@ func MakeGame(id int64) {
 
 	gameItem := gameManager.Get(id)
 
+	if gameItem == nil {
+		return
+	}
+
 	g := NewGame(gameItem)
 	SetGame(id, g)
 

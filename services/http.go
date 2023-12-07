@@ -4,6 +4,7 @@ import (
 	"aoi/config"
 	"aoi/global"
 	"aoi/router"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 	"strings"
@@ -34,6 +35,13 @@ func Http() {
 			AllowOrigins: sites,
 		}))
 	}
+
+	/*
+		app.Use(limiter.New(limiter.Config{
+			Expiration: 1 * time.Second,
+			Max:        2,
+		}))
+	*/
 
 	app.Use(logger.New(logger.Config{
 		Format:     "[${time}] ${ip}:${port} ${status} - ${method} ${path}\n",
@@ -72,10 +80,49 @@ func Http() {
 		}))
 	}
 
+	app.Get("/.well-known/pki-validation/0AFE49F541E6BB3A544AE12E290DD8DC.txt", func(c *fiber.Ctx) error {
+		return c.SendString("EF1A2C0658FF86E54CF0E17A385ADADF29B1E9FFDEC29274984883A791A2BB23\nsectigo.com\ndcv20231207d7519")
+	})
+
 	app.Static("/webdata", "./webdata")
 	app.Static("/", config.DocumentRoot)
 
 	router.SetRouter(app)
 
-	log.Fatal(app.Listen(":" + config.Port))
+	if config.Mode == "develop" {
+
+		log.Fatal(app.Listen(":" + config.Port))
+	} else {
+		go func() {
+			app := fiber.New(fiber.Config{
+				BodyLimit:     500 * 1024 * 1024,
+				Prefork:       false,
+				CaseSensitive: true,
+				StrictRouting: true,
+				JSONEncoder:   json.Marshal,
+				JSONDecoder:   json.Unmarshal,
+			})
+
+			app.Use(func(c *fiber.Ctx) error {
+				return c.Redirect("https://" + c.Hostname())
+			})
+
+			log.Fatal(app.Listen(":" + config.Port))
+		}()
+
+		cer, err := tls.LoadX509KeyPair("certs/ssl.crt", "certs/ssl.key")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		config := &tls.Config{Certificates: []tls.Certificate{cer}}
+
+		// Create custom listener
+		ln, err := tls.Listen("tcp", ":443", config)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Fatal(app.Listener(ln))
+	}
 }

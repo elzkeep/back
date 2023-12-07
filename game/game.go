@@ -467,7 +467,7 @@ func (p *Game) Start() {
 			f.Income()
 
 			// income 계산
-			f.CalulateReceive()
+			f.CalculateReceive()
 			p.Sciences.CalculateRoundBonus(f)
 			if p.Round < 6 {
 				p.Sciences.CalculateRoundEndBonus(faction, p.RoundBonuss.Items[p.Round-1])
@@ -620,7 +620,7 @@ func (p *Game) Calculate(user int) {
 	if p.Round >= 6 {
 		for _, v := range p.Factions {
 			f := v.GetInstance()
-			f.CalulateVP()
+			f.CalculateVP()
 		}
 
 		p.CalculateEndGame()
@@ -628,7 +628,7 @@ func (p *Game) Calculate(user int) {
 		faction := p.Factions[user]
 		f := faction.GetInstance()
 
-		f.CalulateReceive()
+		f.CalculateReceive()
 		p.Sciences.CalculateRoundBonus(f)
 
 		if p.Round < 6 {
@@ -2163,6 +2163,13 @@ func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book)
 			vp = 8
 		}
 		f.ReceiveResource(resources.Price{VP: vp})
+	} else if tile.Type == resources.TileInnovationSpade {
+		inc1, inc2, inc3, inc4 := p.Sciences.Receive(f, tile.Once)
+
+		f.IncScience(int(Banking), inc1)
+		f.IncScience(int(Law), inc2)
+		f.IncScience(int(Engineering), inc3)
+		f.IncScience(int(Medicine), inc4)
 	}
 
 	p.InnovationTiles.Setup(pos, index)
@@ -2417,9 +2424,10 @@ func (p *Game) Undo(user int) error {
 	gamehistoryManager.Delete(last.History)
 
 	if game.Round >= 6 {
-		for _, v := range game.Factions {
-			f := v.GetInstance()
-			f.CalulateVP()
+		for user := range game.Factions {
+			faction := game.Factions[user]
+			f := faction.GetInstance()
+			f.CalculateVP()
 		}
 
 		game.CalculateEndGame()
@@ -2428,11 +2436,13 @@ func (p *Game) Undo(user int) error {
 			faction := game.Factions[user]
 			f := faction.GetInstance()
 
-			f.CalulateReceive()
+			f.CalculateReceive()
 			game.Sciences.CalculateRoundBonus(f)
 
-			if len(game.RoundBonuss.Items) > game.Round-1 {
-				game.Sciences.CalculateRoundEndBonus(faction, game.RoundBonuss.Items[game.Round-1])
+			if game.Round > 0 {
+				if len(game.RoundBonuss.Items) > game.Round-1 {
+					game.Sciences.CalculateRoundEndBonus(faction, game.RoundBonuss.Items[game.Round-1])
+				}
 			}
 		}
 	}

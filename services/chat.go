@@ -30,6 +30,18 @@ func (p *ChatService) Broadcast(room int64, message []byte) {
 	}
 }
 
+func (p *ChatService) BroadcastWithout(room int64, user string, message []byte) {
+	for _, v := range p.Rooms[room] {
+		if user == v {
+			continue
+		}
+		err := ikisocket.EmitTo(v, message)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 func Chat() {
 	chat.Use = true
 	chat.Clients = make(map[string]string)

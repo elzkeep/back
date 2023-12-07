@@ -5,7 +5,6 @@ import (
 	"aoi/game/color"
 	. "aoi/game/resources"
 	"errors"
-	"log"
 	"sort"
 
 	"math"
@@ -263,6 +262,13 @@ func (p *Faction) ReceiveResource(receive Price) {
 
 	p.Resource.Science.Any += receive.Science.Any
 	p.Resource.Science.Single += receive.Science.Single
+
+	/*
+		p.Resource.Science.Banking += receive.Science.Banking
+		p.Resource.Science.Law += receive.Science.Law
+		p.Resource.Science.Engineering += receive.Science.Engineering
+		p.Resource.Science.Medicine += receive.Science.Medicine
+	*/
 
 	p.Resource.Annex += receive.Annex
 
@@ -607,7 +613,6 @@ func (p *Faction) Build(x int, y int, needSpade int, building Building) error {
 	if building == D {
 		if p.Resource.Building != D {
 			need := p.Price[D]
-			log.Println(need)
 			if p.Type == TileFactionGoblins {
 				need.Coin -= 2
 			}
@@ -1326,7 +1331,7 @@ func (p *Faction) ReceiveIncome(receive Price) {
 	p.Receive.Power += receive.Power
 }
 
-func (p *Faction) CalulateReceive() {
+func (p *Faction) CalculateReceive() {
 	p.Receive = Price{}
 	p.Receive.VP = p.VP
 
@@ -1345,7 +1350,7 @@ func (p *Faction) CalulateReceive() {
 	}
 }
 
-func (p *Faction) CalulateVP() {
+func (p *Faction) CalculateVP() {
 	p.Receive = Price{}
 	p.Receive.VP = p.VP
 
