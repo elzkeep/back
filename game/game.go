@@ -555,6 +555,7 @@ func (p *Game) RoundProcess() {
 
 		for i, v := range p.Factions {
 			faction := v.GetInstance()
+			faction.Resource.Building = resources.None
 			if faction.Type == resources.TileFactionMonks {
 				p.Turn = append(p.Turn, Turn{User: i, Type: TileTurn})
 			}
@@ -1862,6 +1863,12 @@ func (p *Game) PowerConfirm(user int, confirm bool) error {
 		f.ReceivePower(p.Turn[0].Power, true)
 	}
 
+	if confirm == true {
+		f.Accept = 1
+	} else {
+		f.Accept = 2
+	}
+
 	f.Action = true
 
 	return nil
@@ -1900,10 +1907,11 @@ func (p *Game) City(user int, city resources.CityType) error {
 	f.IncScience(int(Engineering), inc3)
 	f.IncScience(int(Medicine), inc4)
 
+	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+	f.ReceiveResource(resources.Price{VP: buildVP.Science * (inc1 + inc2 + inc3 + inc4)})
+
 	p.Map.AddCityBuildingList(f.CityBuildingList)
 	f.CityBuildingList = make([]resources.Position, 0)
-
-	buildVP := p.RoundBonuss.GetBuildVP(p.Round)
 
 	f.ReceiveResource(resources.Price{VP: buildVP.City})
 
@@ -2170,6 +2178,9 @@ func (p *Game) InnovationTile(user int, pos int, index int, book resources.Book)
 		f.IncScience(int(Law), inc2)
 		f.IncScience(int(Engineering), inc3)
 		f.IncScience(int(Medicine), inc4)
+
+		buildVP := p.RoundBonuss.GetBuildVP(p.Round)
+		f.ReceiveResource(resources.Price{VP: buildVP.Science * (inc1 + inc2 + inc3 + inc4)})
 	}
 
 	p.InnovationTiles.Setup(pos, index)

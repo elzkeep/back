@@ -33,7 +33,7 @@ linux:
 
 dockerbuild:
 	rm -rf web
-	cd ../app && make release-web && cp -rf build/web ../back/
+	cd ../app && make release-web version=$(version) && cp -rf build/web ../back/
 
 docker: dockerbuild
 	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .

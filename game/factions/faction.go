@@ -79,6 +79,7 @@ type Faction struct {
 	Type              TileType         `json:"type"`
 	IsPass            bool             `json:"isPass"`
 	IsJump            bool             `json:"isJump"`
+	Accept            int              `json:"accept"`
 	FirstBuilding     Building         `json:"-"`
 }
 
@@ -778,7 +779,7 @@ func (p *Faction) Upgrade(x int, y int, target Building, extra int) error {
 	}
 
 	p.Action = true
-	p.ResetResource()
+	p.ResetResource(false)
 
 	p.Print()
 
@@ -822,7 +823,7 @@ func (p *Faction) Downgrade(x int, y int) error {
 
 	p.Resource.Downgrade--
 	p.Action = true
-	p.ResetResource()
+	p.ResetResource(false)
 
 	p.Print()
 
@@ -835,7 +836,7 @@ func (p *Faction) SendScholar(pos int, inc int) error {
 	p.MaxPrist--
 
 	p.Action = true
-	p.ResetResource()
+	p.ResetResource(false)
 
 	p.ReceivePristVP()
 
@@ -849,7 +850,7 @@ func (p *Faction) SupployScholar(pos int, inc int) error {
 	p.Resource.Prist--
 
 	p.Action = true
-	p.ResetResource()
+	p.ResetResource(false)
 
 	p.ReceivePristVP()
 
@@ -864,7 +865,7 @@ func (p *Faction) PowerAction(item action.PowerActionItem) error {
 		return err
 	}
 
-	p.ResetResource()
+	p.ResetResource(false)
 
 	p.ReceiveResource(item.Receive)
 
@@ -912,20 +913,25 @@ func (p *Faction) Bridge(x1 int, y1 int, x2 int, y2 int) error {
 	return nil
 }
 
-func (p *Faction) ResetResource() {
+func (p *Faction) ResetResource(city bool) {
 	p.Resource.Science = Science{}
-	p.Resource.Spade = 0
+
 	p.Resource.ConvertSpade = 0
 	p.Resource.Bridge = 0
 	p.Resource.TpUpgrade = 0
-	p.Resource.Building = None
+
+	if city == false {
+		p.Resource.Building = None
+		p.Resource.Spade = 0
+	}
+
 	p.ExtraBuild = 0
 	p.IsJump = false
 	p.DigPosition = make([]Position, 0)
 }
 
 func (p *Faction) Pass(tile TileItem) (error, TileItem) {
-	p.ResetResource()
+	p.ResetResource(false)
 
 	for i, v := range p.Tiles {
 		if v.Type == TileRoundSchoolScienceCoin {
@@ -968,7 +974,7 @@ func (p *Faction) Pass(tile TileItem) (error, TileItem) {
 func (p *Faction) ReceiveCity(item CityItem) error {
 	p.Cities = append(p.Cities, item)
 
-	p.ResetResource()
+	p.ResetResource(true)
 
 	p.ReceiveResource(item.Receive)
 	p.Resource.City--
@@ -1026,11 +1032,12 @@ func (p *Faction) TurnEnd(round int, pass bool) error {
 		}
 	}
 
+	p.Accept = 0
 	p.Action = false
 	p.BuildAction = false
 
 	if round > 0 {
-		p.ResetResource()
+		p.ResetResource(false)
 	}
 
 	return nil
@@ -1184,7 +1191,7 @@ func (p *Faction) Annex(x int, y int) error {
 
 	p.AnnexList = append(p.AnnexList, Position{X: x, Y: y})
 
-	p.ResetResource()
+	p.ResetResource(false)
 	p.Action = true
 
 	p.Print()
@@ -1239,7 +1246,7 @@ func (p *Faction) InnovationTile(tile TileItem, book Book) error {
 
 	p.Tiles = append(p.Tiles, tile)
 
-	p.ResetResource()
+	p.ResetResource(false)
 	p.ReceiveResource(tile.Once)
 	p.UsePrice(price)
 
