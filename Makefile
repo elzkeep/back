@@ -39,7 +39,7 @@ docker: dockerbuild
 	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .
 
 dockerrun:
-	docker run -d --name="aoi" -p 9301:9301 netb.co.kr:5000/aoi
+	docker run -d --name="aoi" -p 9303:9303 netb.co.kr:5000/aoi
 
 push: docker
 	docker push netb.co.kr:5000/aoi:$(tag)

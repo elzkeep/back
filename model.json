@@ -1,10 +1,10 @@
 {
   "buildtool": "1.1",
-  "database": "aoi_develop",
-  "user": "aoi",
-  "server": "aoi.netb.co.kr",
-  "password": "aoidb",
-  "auth": "jwt",
+  "database": "zkeep",
+  "user": "yuhki",
+  "server": "crud.netb.co.kr",
+  "password": "dkTkfl123!",
+  "auth": "none",
   "adminLevel": "3",  
   "table": [
     {
@@ -39,96 +39,25 @@
       ]  
     },
     {
-      "name": "game",             
-      "map": [        
-        {
-          "name": "status",
-          "data": ["", "ready:대기중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
-        },
-        {
-          "name": "illusionists",
-          "data": ["", "normal:너프 없음", "vp2:2, 3점으로 너프", "vp1:1, 2점으로 너프", "vp0:점수안줌", "ban:사용 안함"]
-        }
-      ]            
-    },
-    {
-      "name": "gamelist",             
-      "map": [        
-        {
-          "name": "status",
-          "data": ["", "ready:대기중", "faction:종족선택중", "normal:게임중", "end:게임종료"]
-        },
-        {
-          "name": "illusionists",
-          "data": ["", "normal:너프 없음", "vp2:2, 3점으로 너프", "vp1:1, 2점으로 너프", "vp0:점수안줌", "ban:사용 안함"]
-        }
-      ]            
-    },
-    {
-      "name": "smsauth",             
-      "method" : [
-        "GetByHpNumber",
-        "DeleteByHp"
-      ]      
-    },
-    {
-      "name": "gameuser",
-      "join": [
-        {
-          "name": "user",
-          "column": "user"
-        }
-      ],
-      "method" : [
-        "FindByGame",
-        "CountByGame",
-        "GetByGameUser",
-        "CountByGameUser",
-        "DeleteByGame"
-      ]      
-    },
-    {
-      "name": "gamehistory",      
-      "method" : [
-        "FindByGame",
-        "CountByGame",        
-        "DeleteByGame"
-      ]      
-    },
-    {
-      "name": "gametile",      
-      "method" : [
-        "FindByGame",
-        "CountByGame",        
-        "DeleteByGame"
-      ]      
-    },
-    {
-      "name": "gameundo",
+      "name": "data",
       "map": [
         {
-          "name": "status",
-          "data": ["", "wait:Wait", "complete:Complete"]
+          "name": "type",
+          "data": ["", "single:Single", "multi:Multi"]
         }
-      ],
-      "method" : [
-        "FindByGame",
-        "CountByGame",
-        "DeleteByGame"
       ]
     },
     {
-      "name": "gameundoitem",
+      "name": "item",
       "map": [
         {
+          "name": "type",
+          "data": ["", "text:Text", "select:Select", "status:Status"]
+        },
+        {
           "name": "status",
-          "data": ["", "accept:Accept", "reject:Reject"]
-        }        
-      ],
-      "method" : [
-        "FindByGame",
-        "CountByGame",
-        "DeleteByGame"
+          "data": ["", "good:적합", "warning:부적합", "danger:요주의", "notuse:해당없음"]
+        }
       ]
     }
   ]   
