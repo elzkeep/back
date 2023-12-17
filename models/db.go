@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"aoi/config"
+	"zkeep/config"
 
 	"database/sql"
 	"time"

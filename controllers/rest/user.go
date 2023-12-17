@@ -2,10 +2,10 @@ package rest
 
 
 import (
-	"aoi/controllers"
-	"aoi/models"
+	"zkeep/controllers"
+	"zkeep/models"
 
-	"aoi/models/user"
+	"zkeep/models/user"
 
     "strings"
 )
@@ -56,14 +56,6 @@ func (c *UserController) Index(page int, pagesize int) {
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _elo := c.Geti("elo")
-    if _elo != 0 {
-        args = append(args, models.Where{Column:"elo", Value:_elo, Compare:"="})    
-    }
-    _count := c.Geti("count")
-    if _count != 0 {
-        args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
     }
     _image := c.Get("image")
     if _image != "" {
@@ -305,26 +297,6 @@ func (c *UserController) UpdateStatus(status int, id int64) {
 }
 
 // @Put()
-func (c *UserController) UpdateElo(elo models.Double, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewUserManager(conn)
-	_manager.UpdateElo(elo, id)
-}
-
-// @Put()
-func (c *UserController) UpdateCount(count int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewUserManager(conn)
-	_manager.UpdateCount(count, id)
-}
-
-// @Put()
 func (c *UserController) UpdateImage(image string, id int64) {
     
     
@@ -348,70 +320,4 @@ func (c *UserController) UpdateProfile(profile string, id int64) {
 
 
 
-
-func (c *UserController) Sum() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewUserManager(conn)
-
-    var args []interface{}
-    
-    _email := c.Get("email")
-    if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
-    }
-    _passwd := c.Get("passwd")
-    if _passwd != "" {
-        args = append(args, models.Where{Column:"passwd", Value:_passwd, Compare:"like"})
-    }
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
-        
-    }
-    _level := c.Geti("level")
-    if _level != 0 {
-        args = append(args, models.Where{Column:"level", Value:_level, Compare:"="})    
-    }
-    _status := c.Geti("status")
-    if _status != 0 {
-        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _elo := c.Geti("elo")
-    if _elo != 0 {
-        args = append(args, models.Where{Column:"elo", Value:_elo, Compare:"="})    
-    }
-    _count := c.Geti("count")
-    if _count != 0 {
-        args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
-    }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
-    _profile := c.Get("profile")
-    if _profile != "" {
-        args = append(args, models.Where{Column:"profile", Value:_profile, Compare:"like"})
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    item := manager.Sum(args)
-	c.Set("item", item)
-}
 

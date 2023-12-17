@@ -1,8 +1,8 @@
 package api
 
 import (
-	"aoi/controllers"
-	"aoi/models"
+	"zkeep/controllers"
+	"zkeep/models"
 )
 
 type UserController struct {

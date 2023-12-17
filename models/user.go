@@ -1,9 +1,9 @@
 package models
 
 import (
-    //"aoi/config"
+    //"zkeep/config"
     
-    "aoi/models/user"
+    "zkeep/models/user"
     
     "database/sql"
     "errors"
@@ -25,8 +25,6 @@ type User struct {
     Name                string `json:"name"`         
     Level                user.Level `json:"level"`         
     Status                user.Status `json:"status"`         
-    Elo                Double `json:"elo"`         
-    Count                int `json:"count"`         
     Image                string `json:"image"`         
     Profile                string `json:"profile"`         
     Date                string `json:"date"` 
@@ -95,7 +93,7 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *UserManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_count, u_image, u_profile, u_date from user_tb "
+    str := "select u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date from user_tb "
 
     if p.Index == "" {
         ret = str
@@ -161,11 +159,11 @@ func (p *UserManager) Insert(item *User) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into user_tb (u_id, u_email, u_passwd, u_name, u_level, u_status, u_elo, u_count, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Count, item.Image, item.Profile, item.Date)
+        query = "insert into user_tb (u_id, u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date)
     } else {
-        query = "insert into user_tb (u_email, u_passwd, u_name, u_level, u_status, u_elo, u_count, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Count, item.Image, item.Profile, item.Date)
+        query = "insert into user_tb (u_email, u_passwd, u_name, u_level, u_status, u_image, u_profile, u_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date)
     }
     
     if err == nil {
@@ -244,8 +242,8 @@ func (p *UserManager) Update(item *User) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update user_tb set u_email = ?, u_passwd = ?, u_name = ?, u_level = ?, u_status = ?, u_elo = ?, u_count = ?, u_image = ?, u_profile = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Elo, item.Count, item.Image, item.Profile, item.Date, item.Id)
+	query := "update user_tb set u_email = ?, u_passwd = ?, u_name = ?, u_level = ?, u_status = ?, u_image = ?, u_profile = ?, u_date = ? where u_id = ?"
+	_, err := p.Exec(query , item.Email, item.Passwd, item.Name, item.Level, item.Status, item.Image, item.Profile, item.Date, item.Id)
     
         
     return err
@@ -307,28 +305,6 @@ func (p *UserManager) UpdateStatus(value int, id int64) error {
     return err
 }
 
-func (p *UserManager) UpdateElo(value Double, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update user_tb set u_elo = ? where u_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *UserManager) UpdateCount(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update user_tb set u_count = ? where u_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
 func (p *UserManager) UpdateImage(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -352,28 +328,6 @@ func (p *UserManager) UpdateProfile(value string, id int64) error {
 }
 
 
-
-func (p *UserManager) IncreaseElo(value Double, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update user_tb set u_elo = u_elo + ? where u_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *UserManager) IncreaseCount(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update user_tb set u_count = u_count + ? where u_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
 
 
 func (p *UserManager) GetIdentity() int64 {
@@ -405,11 +359,7 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Elo, &item.Count, &item.Image, &item.Profile, &item.Date)
-        
-        
-        
-        
+        err = rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Image, &item.Profile, &item.Date)
         
         
         
@@ -452,14 +402,12 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         var item User
         
     
-        err := rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Elo, &item.Count, &item.Image, &item.Profile, &item.Date)
+        err := rows.Scan(&item.Id, &item.Email, &item.Passwd, &item.Name, &item.Level, &item.Status, &item.Image, &item.Profile, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
-        
-        
         
         
         
@@ -729,125 +677,4 @@ func (p *UserManager) UpdateImageById(image string, id int64) error {
 }
 
 
-func (p *UserManager) Sum(args []interface{}) *User {
-    if p.Conn == nil && p.Tx == nil {
-        var item User
-        return &item
-    }
 
-    var params []interface{}
-
-    
-    query := "select count from user_tb"
-
-    if p.Index != "" {
-        query = query + " use index(" + p.Index + ") "
-    }
-
-    query += "where 1=1 "
-
-    page := 0
-    pagesize := 0
-    orderby := ""
-    
-    for _, arg := range args {
-        switch v := arg.(type) {
-        case PagingType:
-            item := v
-            page = item.Page
-            pagesize = item.Pagesize
-        case OrderingType:
-            item := v
-            orderby = item.Order
-        case LimitType:
-            item := v
-            page = 1
-            pagesize = item.Limit
-        case OptionType:
-            item := v
-            if item.Limit > 0 {
-                page = 1
-                pagesize = item.Limit
-            } else {
-                page = item.Page
-                pagesize = item.Pagesize                
-            }
-            orderby = item.Order
-        case Where:
-            item := v
-
-            if item.Compare == "in" {
-                query += " and u_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
-            } else if item.Compare == "between" {
-                query += " and u_" + item.Column + " between ? and ?"
-
-                s := item.Value.([2]string)
-                params = append(params, s[0])
-                params = append(params, s[1])
-            } else {
-                query += " and u_" + item.Column + " " + item.Compare + " ?"
-                if item.Compare == "like" {
-                    params = append(params, "%" + item.Value.(string) + "%")
-                } else {
-                    params = append(params, item.Value)                
-                }
-            }
-        case Custom:
-             item := v
-
-             query += " and " + item.Query
-        }        
-    }
-    
-    startpage := (page - 1) * pagesize
-    
-    if page > 0 && pagesize > 0 {
-        if orderby == "" {
-            orderby = "u_id desc"
-        } else {
-            if !strings.Contains(orderby, "_") {                   
-                orderby = "u_" + orderby
-            }
-            
-        }
-        query += " order by " + orderby
-        //if config.Database == "mysql" {
-            query += " limit ? offset ?"
-            params = append(params, pagesize)
-            params = append(params, startpage)
-            /*
-        } else if config.Database == "mssql" || config.Database == "sqlserver" {
-            query += "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
-            params = append(params, startpage)
-            params = append(params, pagesize)
-        }
-        */
-    } else {
-        if orderby == "" {
-            orderby = "u_id"
-        } else {
-            if !strings.Contains(orderby, "_") {
-                orderby = "u_" + orderby
-            }
-        }
-        query += " order by " + orderby
-    }
-
-    rows, err := p.Query(query, params...)
-
-    var item User
-    
-    if err != nil {
-        log.Printf("query error : %v, %v\n", err, query)
-        return &item
-    }
-
-    defer rows.Close()
-
-    if rows.Next() {
-        
-        rows.Scan(&item.Count)        
-    }
-
-    return &item        
-}

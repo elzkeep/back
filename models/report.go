@@ -1,7 +1,9 @@
 package models
 
 import (
-    //"aoi/config"
+    //"zkeep/config"
+    
+    "zkeep/models/report"
     
     "database/sql"
     "errors"
@@ -23,7 +25,7 @@ type Report struct {
     Number                int `json:"number"`         
     Checkdate                string `json:"checkdate"`         
     Checktime                string `json:"checktime"`         
-    Status                int `json:"status"`         
+    Status                report.Status `json:"status"`         
     Company                int64 `json:"company"`         
     Date                string `json:"date"` 
     
@@ -91,7 +93,7 @@ func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, e
 func (p *ReportManager) GetQuery() string {
     ret := ""
 
-    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_status, r_company, r_date from report_tb "
+    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_status, r_company, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_date from report_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -100,6 +102,8 @@ func (p *ReportManager) GetQuery() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and r_company = c_id "
     
 
     return ret;
@@ -108,7 +112,7 @@ func (p *ReportManager) GetQuery() string {
 func (p *ReportManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from report_tb "
+    str := "select count(*) from report_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -117,6 +121,8 @@ func (p *ReportManager) GetQuerySelect() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and r_company = c_id "
     
 
     return ret;
@@ -349,17 +355,6 @@ func (p *ReportManager) IncreaseNumber(value int, id int64) error {
     return err
 }
 
-func (p *ReportManager) IncreaseStatus(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_status = r_status + ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
 func (p *ReportManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -388,6 +383,7 @@ func (p *ReportManager) GetIdentity() int64 {
 
 func (p *Report) InitExtra() {
     p.Extra = map[string]interface{}{
+            "status":     report.GetStatus(p.Status),
 
     }
 }
@@ -396,10 +392,11 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     var item Report
     var err error
 
+    var _company Company
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Status, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Date)
         
         
         
@@ -430,7 +427,9 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     } else {
 
         item.InitExtra()
-        
+        _company.InitExtra()
+        item.AddExtra("company",  _company)
+
         return &item
     }
 }
@@ -440,9 +439,10 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
 
     for rows.Next() {
         var item Report
-        
+        var _company Company
+            
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Status, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -462,7 +462,9 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         }
         
         item.InitExtra()        
-        
+        _company.InitExtra()
+        item.AddExtra("company",  _company)
+
         items = append(items, item)
     }
 
@@ -477,6 +479,8 @@ func (p *ReportManager) Get(id int64) *Report {
 
     query := p.GetQuery() + " and r_id = ?"
 
+    
+    query += " and r_company = c_id"
     
     
     rows, err := p.Query(query, id)

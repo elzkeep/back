@@ -1,11 +1,11 @@
 package rest
 
-
 import (
-	"aoi/controllers"
-	"aoi/models"
+	"log"
+	"zkeep/controllers"
+	"zkeep/models"
 
-    "strings"
+	"strings"
 )
 
 type ReportController struct {
@@ -13,142 +13,133 @@ type ReportController struct {
 }
 
 func (c *ReportController) Read(id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
 	item := manager.Get(id)
 
-    
-    
-    c.Set("item", item)
+	c.Set("item", item)
 }
 
 func (c *ReportController) Index(page int, pagesize int) {
-    
-    
+
 	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
 
-    var args []interface{}
-    
-    _title := c.Get("title")
-    if _title != "" {
-        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
-        
-    }
-    _period := c.Geti("period")
-    if _period != 0 {
-        args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
-    }
-    _number := c.Geti("number")
-    if _number != 0 {
-        args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
-    }
-    _checkdate := c.Get("checkdate")
-    if _checkdate != "" {
-        args = append(args, models.Where{Column:"checkdate", Value:_checkdate, Compare:"like"})
-    }
-    _checktime := c.Get("checktime")
-    if _checktime != "" {
-        args = append(args, models.Where{Column:"checktime", Value:_checktime, Compare:"like"})
-    }
-    _status := c.Geti("status")
-    if _status != 0 {
-        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _company := c.Geti64("company")
-    if _company != 0 {
-        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
+	var args []interface{}
 
-    
-    
-    if page != 0 && pagesize != 0 {
-        args = append(args, models.Paging(page, pagesize))
-    }
-    
-    orderby := c.Get("orderby")
-    if orderby == "" {
-        if page != 0 && pagesize != 0 {
-            orderby = "id desc"
-            args = append(args, models.Ordering(orderby))
-        }
-    } else {
-        orderbys := strings.Split(orderby, ",")
+	_title := c.Get("title")
+	if _title != "" {
+		args = append(args, models.Where{Column: "title", Value: _title, Compare: "="})
 
-        str := ""
-        for i, v := range orderbys {
-            if i == 0 {
-                str += v
-            } else {
-                if strings.Contains(v, "_") {                   
-                    str += ", " + strings.Trim(v, " ")
-                } else {
-                    str += ", r_" + strings.Trim(v, " ")                
-                }
-            }
-        }
-        
-        args = append(args, models.Ordering(str))
-    }
-    
+	}
+	_period := c.Geti("period")
+	if _period != 0 {
+		args = append(args, models.Where{Column: "period", Value: _period, Compare: "="})
+	}
+	_number := c.Geti("number")
+	if _number != 0 {
+		args = append(args, models.Where{Column: "number", Value: _number, Compare: "="})
+	}
+	_checkdate := c.Get("checkdate")
+	if _checkdate != "" {
+		args = append(args, models.Where{Column: "checkdate", Value: _checkdate, Compare: "like"})
+	}
+	_checktime := c.Get("checktime")
+	if _checktime != "" {
+		args = append(args, models.Where{Column: "checktime", Value: _checktime, Compare: "like"})
+	}
+	_status := c.Geti("status")
+	if _status != 0 {
+		args = append(args, models.Where{Column: "status", Value: _status, Compare: "="})
+	}
+	_company := c.Geti64("company")
+	if _company != 0 {
+		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
+	}
+	_startdate := c.Get("startdate")
+	_enddate := c.Get("enddate")
+	if _startdate != "" && _enddate != "" {
+		var v [2]string
+		v[0] = _startdate
+		v[1] = _enddate
+		args = append(args, models.Where{Column: "date", Value: v, Compare: "between"})
+	} else if _startdate != "" {
+		args = append(args, models.Where{Column: "date", Value: _startdate, Compare: ">="})
+	} else if _enddate != "" {
+		args = append(args, models.Where{Column: "date", Value: _enddate, Compare: "<="})
+	}
+
+	log.Println(args)
+
+	if page != 0 && pagesize != 0 {
+		args = append(args, models.Paging(page, pagesize))
+	}
+
+	orderby := c.Get("orderby")
+	if orderby == "" {
+		if page != 0 && pagesize != 0 {
+			orderby = "id desc"
+			args = append(args, models.Ordering(orderby))
+		}
+	} else {
+		orderbys := strings.Split(orderby, ",")
+
+		str := ""
+		for i, v := range orderbys {
+			if i == 0 {
+				str += v
+			} else {
+				if strings.Contains(v, "_") {
+					str += ", " + strings.Trim(v, " ")
+				} else {
+					str += ", r_" + strings.Trim(v, " ")
+				}
+			}
+		}
+
+		args = append(args, models.Ordering(str))
+	}
+
 	items := manager.Find(args)
 	c.Set("items", items)
 
-    total := manager.Count(args)
+	total := manager.Count(args)
 	c.Set("total", total)
 }
 
 func (c *ReportController) Insert(item *models.Report) {
-    
-    
+
 	conn := c.NewConnection()
-    
+
 	manager := models.NewReportManager(conn)
 	manager.Insert(item)
 
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
+	id := manager.GetIdentity()
+	c.Result["id"] = id
+	item.Id = id
 }
 
-func (c *ReportController) Insertbatch(item *[]models.Report) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
+func (c *ReportController) Insertbatch(item *[]models.Report) {
+	if item == nil || len(*item) == 0 {
+		return
+	}
 
-    rows := len(*item)
-    
-    
-    
+	rows := len(*item)
+
 	conn := c.NewConnection()
-    
+
 	manager := models.NewReportManager(conn)
 
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
+	for i := 0; i < rows; i++ {
+		manager.Insert(&((*item)[i]))
+	}
 }
 
 func (c *ReportController) Update(item *models.Report) {
-    
-    
+
 	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
@@ -156,36 +147,29 @@ func (c *ReportController) Update(item *models.Report) {
 }
 
 func (c *ReportController) Delete(item *models.Report) {
-    
-    
-    conn := c.NewConnection()
+
+	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
 
-    
 	manager.Delete(item.Id)
 }
 
 func (c *ReportController) Deletebatch(item *[]models.Report) {
-    
-    
-    conn := c.NewConnection()
+
+	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
 
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
+	for _, v := range *item {
+
+		manager.Delete(v.Id)
+	}
 }
-
-
 
 // @Put()
 func (c *ReportController) UpdateTitle(title string, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -194,8 +178,7 @@ func (c *ReportController) UpdateTitle(title string, id int64) {
 
 // @Put()
 func (c *ReportController) UpdatePeriod(period int, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -204,8 +187,7 @@ func (c *ReportController) UpdatePeriod(period int, id int64) {
 
 // @Put()
 func (c *ReportController) UpdateNumber(number int, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -214,8 +196,7 @@ func (c *ReportController) UpdateNumber(number int, id int64) {
 
 // @Put()
 func (c *ReportController) UpdateCheckdate(checkdate string, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -224,8 +205,7 @@ func (c *ReportController) UpdateCheckdate(checkdate string, id int64) {
 
 // @Put()
 func (c *ReportController) UpdateChecktime(checktime string, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -234,8 +214,7 @@ func (c *ReportController) UpdateChecktime(checktime string, id int64) {
 
 // @Put()
 func (c *ReportController) UpdateStatus(status int, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
@@ -244,16 +223,9 @@ func (c *ReportController) UpdateStatus(status int, id int64) {
 
 // @Put()
 func (c *ReportController) UpdateCompany(company int64, id int64) {
-    
-    
+
 	conn := c.NewConnection()
 
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
-
-
-
-
-

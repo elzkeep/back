@@ -1,13 +1,12 @@
 package services
 
 import (
-	"aoi/config"
-	"aoi/global"
-	"aoi/router"
-	"crypto/tls"
 	"encoding/json"
 	"log"
 	"strings"
+	"zkeep/config"
+	"zkeep/global"
+	"zkeep/router"
 
 	"github.com/antoniodipinto/ikisocket"
 	"github.com/gofiber/fiber/v2"
@@ -89,40 +88,5 @@ func Http() {
 
 	router.SetRouter(app)
 
-	if config.Mode == "develop" {
-
-		log.Fatal(app.Listen(":" + config.Port))
-	} else {
-		go func() {
-			app := fiber.New(fiber.Config{
-				BodyLimit:     500 * 1024 * 1024,
-				Prefork:       false,
-				CaseSensitive: true,
-				StrictRouting: true,
-				JSONEncoder:   json.Marshal,
-				JSONDecoder:   json.Unmarshal,
-			})
-
-			app.Use(func(c *fiber.Ctx) error {
-				return c.Redirect("https://" + c.Hostname())
-			})
-
-			log.Fatal(app.Listen(":" + config.Port))
-		}()
-
-		cer, err := tls.LoadX509KeyPair("certs/ssl.crt", "certs/ssl.key")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		config := &tls.Config{Certificates: []tls.Certificate{cer}}
-
-		// Create custom listener
-		ln, err := tls.Listen("tcp", ":443", config)
-		if err != nil {
-			panic(err)
-		}
-
-		log.Fatal(app.Listener(ln))
-	}
+	log.Fatal(app.Listen(":" + config.Port))
 }

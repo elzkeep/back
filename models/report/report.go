@@ -1,4 +1,4 @@
-package gameundoitem
+package report
 
 
 type Status int
@@ -6,11 +6,13 @@ type Status int
 const (
     _ Status  = iota
 
-    StatusAccept
-    StatusReject
+    StatusNewer
+    StatusIng
+    StatusCheck
+    StatusComplete
 )
 
-var Statuss = []string{ "", "Accept", "Reject" }
+var Statuss = []string{ "", "신규", "점검중", "점검완료", "작성완료" }
 
 
 

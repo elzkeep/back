@@ -1,7 +1,7 @@
 package api
 
 import (
-	"aoi/controllers"
+	"zkeep/controllers"
 )
 
 type DownloadController struct {

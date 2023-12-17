@@ -2,9 +2,9 @@ version: "3"
 
 services:
   backend:
-    container_name: aoi_backend
+    container_name: zkeep_backend
     restart: always
-    image: netb.co.kr:5000/aoi
+    image: netb.co.kr:5000/zkeep
     network_mode: host    
     volumes:
-      - /home/aoi/back/webdata:/usr/local/main/webdata
+      - /home/zkeep/back/webdata:/usr/local/main/webdata

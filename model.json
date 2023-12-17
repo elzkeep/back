@@ -59,6 +59,21 @@
           "data": ["", "good:적합", "warning:부적합", "danger:요주의", "notuse:해당없음"]
         }
       ]
-    }
+    },
+    {
+      "name": "report",
+      "map": [        
+        {
+          "name": "status",
+          "data": ["", "newer:신규", "ing:점검중", "check:점검완료", "complete:작성완료"]
+        }
+      ],
+      "join": [
+        {
+          "name": "company",
+          "column": "company"
+        }
+      ]
+    }    
   ]   
 }

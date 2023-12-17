@@ -1,9 +1,9 @@
 package main
 
 import (
-	"aoi/config"
-	"aoi/models"
-	"aoi/services"
+	"zkeep/config"
+	"zkeep/models"
+	"zkeep/services"
 	"math/rand"
 	"runtime"
 	"time"

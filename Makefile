@@ -36,25 +36,25 @@ dockerbuild:
 	cd ../app && make release-web version=$(version) && cp -rf build/web ../back/
 
 docker: dockerbuild
-	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .
+	docker build --no-cache -t netb.co.kr:5000/zkeep:$(tag) .
 
 dockerrun:
-	docker run -d --name="aoi" -p 9303:9303 netb.co.kr:5000/aoi
+	docker run -d --name="zkeep" -p 9303:9303 netb.co.kr:5000/zkeep
 
 push: docker
-	docker push netb.co.kr:5000/aoi:$(tag)
+	docker push netb.co.kr:5000/zkeep:$(tag)
 
 deploy: push
-	docker-compose --context cicd pull
-	docker-compose --context cicd up -d
+	docker-compose --context dev pull
+	docker-compose --context dev up -d
 
 localdeploy: 
 	git pull
 	cd ../app && make release && cp -rf build/web ../back/	
-	docker build --no-cache -t netb.co.kr:5000/aoi:$(tag) .
-	docker push netb.co.kr:5000/aoi:$(tag)
-	docker-compose --context cicd pull
-	docker-compose --context cicd up -d
+	docker build --no-cache -t netb.co.kr:5000/zkeep:$(tag) .
+	docker push netb.co.kr:5000/zkeep:$(tag)
+	docker-compose --context dev pull
+	docker-compose --context dev up -d
 
 clean:
 	rm -f bin/main

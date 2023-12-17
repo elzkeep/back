@@ -1,8 +1,8 @@
 package api
 
 import (
-	"aoi/controllers"
-	"aoi/global"
+	"zkeep/controllers"
+	"zkeep/global"
 )
 
 type SmsController struct {

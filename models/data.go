@@ -1,9 +1,9 @@
 package models
 
 import (
-    //"aoi/config"
+    //"zkeep/config"
     
-    "aoi/models/data"
+    "zkeep/models/data"
     
     "database/sql"
     "errors"
