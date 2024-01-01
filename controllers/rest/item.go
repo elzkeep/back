@@ -79,6 +79,11 @@ func (c *ItemController) Index(page int, pagesize int) {
     if _value != 0 {
         args = append(args, models.Where{Column:"value", Value:_value, Compare:"="})    
     }
+    _content := c.Get("content")
+    if _content != "" {
+        args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
+        
+    }
     _unit := c.Get("unit")
     if _unit != "" {
         args = append(args, models.Where{Column:"unit", Value:_unit, Compare:"like"})
@@ -110,6 +115,10 @@ func (c *ItemController) Index(page int, pagesize int) {
     _order := c.Geti("order")
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
+    }
+    _topcategory := c.Geti("topcategory")
+    if _topcategory != 0 {
+        args = append(args, models.Where{Column:"topcategory", Value:_topcategory, Compare:"="})    
     }
     _data := c.Geti64("data")
     if _data != 0 {
@@ -237,6 +246,17 @@ func (c *ItemController) Deletebatch(item *[]models.Item) {
 }
 
 
+// @Delete()
+func (c *ItemController) DeleteByReportTopcategory(report int64 ,topcategory int) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewItemManager(conn)
+    
+    _manager.DeleteByReportTopcategory(report, topcategory)
+    
+}
+
 
 // @Put()
 func (c *ItemController) UpdateTitle(title string, id int64) {
@@ -349,6 +369,16 @@ func (c *ItemController) UpdateValue(value int, id int64) {
 }
 
 // @Put()
+func (c *ItemController) UpdateContent(content string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewItemManager(conn)
+	_manager.UpdateContent(content, id)
+}
+
+// @Put()
 func (c *ItemController) UpdateUnit(unit string, id int64) {
     
     
@@ -426,6 +456,16 @@ func (c *ItemController) UpdateOrder(order int, id int64) {
 
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateOrder(order, id)
+}
+
+// @Put()
+func (c *ItemController) UpdateTopcategory(topcategory int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewItemManager(conn)
+	_manager.UpdateTopcategory(topcategory, id)
 }
 
 // @Put()

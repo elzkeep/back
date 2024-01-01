@@ -34,6 +34,10 @@ func (c *DataController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _topcategory := c.Geti("topcategory")
+    if _topcategory != 0 {
+        args = append(args, models.Where{Column:"topcategory", Value:_topcategory, Compare:"="})    
+    }
     _title := c.Get("title")
     if _title != "" {
         args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
@@ -177,6 +181,27 @@ func (c *DataController) Deletebatch(item *[]models.Data) {
 }
 
 
+// @Delete()
+func (c *DataController) DeleteByReportTopcategory(report int64 ,topcategory int) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewDataManager(conn)
+    
+    _manager.DeleteByReportTopcategory(report, topcategory)
+    
+}
+
+
+// @Put()
+func (c *DataController) UpdateTopcategory(topcategory int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewDataManager(conn)
+	_manager.UpdateTopcategory(topcategory, id)
+}
 
 // @Put()
 func (c *DataController) UpdateTitle(title string, id int64) {

@@ -55,6 +55,26 @@ func (c *CompanyController) Index(page int, pagesize int) {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
     }
+    _buildingname := c.Get("buildingname")
+    if _buildingname != "" {
+        args = append(args, models.Where{Column:"buildingname", Value:_buildingname, Compare:"like"})
+    }
+    _buildingcompanyno := c.Get("buildingcompanyno")
+    if _buildingcompanyno != "" {
+        args = append(args, models.Where{Column:"buildingcompanyno", Value:_buildingcompanyno, Compare:"like"})
+    }
+    _buildingceo := c.Get("buildingceo")
+    if _buildingceo != "" {
+        args = append(args, models.Where{Column:"buildingceo", Value:_buildingceo, Compare:"like"})
+    }
+    _buildingaddress := c.Get("buildingaddress")
+    if _buildingaddress != "" {
+        args = append(args, models.Where{Column:"buildingaddress", Value:_buildingaddress, Compare:"like"})
+    }
+    _buildingaddressetc := c.Get("buildingaddressetc")
+    if _buildingaddressetc != "" {
+        args = append(args, models.Where{Column:"buildingaddressetc", Value:_buildingaddressetc, Compare:"like"})
+    }
     _type := c.Geti("type")
     if _type != 0 {
         args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
@@ -290,6 +310,56 @@ func (c *CompanyController) UpdateAddressetc(addressetc string, id int64) {
 
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateBuildingname(buildingname string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateBuildingname(buildingname, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateBuildingcompanyno(buildingcompanyno string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateBuildingcompanyno(buildingcompanyno, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateBuildingceo(buildingceo string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateBuildingceo(buildingceo, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateBuildingaddress(buildingaddress string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateBuildingaddress(buildingaddress, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateBuildingaddressetc(buildingaddressetc string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateBuildingaddressetc(buildingaddressetc, id)
 }
 
 // @Put()

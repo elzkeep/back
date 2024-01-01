@@ -1,12 +1,12 @@
 package main
 
 import (
-	"zkeep/config"
-	"zkeep/models"
-	"zkeep/services"
 	"math/rand"
 	"runtime"
 	"time"
+	"zkeep/config"
+	"zkeep/models"
+	"zkeep/services"
 
 	log "github.com/sirupsen/logrus"
 )

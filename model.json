@@ -4,7 +4,7 @@
   "user": "yuhki",
   "server": "crud.netb.co.kr",
   "password": "dkTkfl123!",
-  "auth": "none",
+  "auth": "jwt",
   "adminLevel": "3",  
   "table": [
     {
@@ -45,7 +45,10 @@
           "name": "type",
           "data": ["", "single:Single", "multi:Multi"]
         }
-      ]
+      ],
+      "method": [
+        "DeleteByReportTopcategory"        
+      ]      
     },
     {
       "name": "item",
@@ -58,6 +61,9 @@
           "name": "status",
           "data": ["", "good:적합", "warning:부적합", "danger:요주의", "notuse:해당없음"]
         }
+      ],
+      "method": [
+        "DeleteByReportTopcategory"        
       ]
     },
     {

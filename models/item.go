@@ -31,6 +31,7 @@ type Item struct {
     Value7                int `json:"value7"`         
     Value8                int `json:"value8"`         
     Value                int `json:"value"`         
+    Content                string `json:"content"`         
     Unit                string `json:"unit"`         
     Status                item.Status `json:"status"`         
     Reason                int `json:"reason"`         
@@ -39,6 +40,7 @@ type Item struct {
     Actiontext                string `json:"actiontext"`         
     Image                string `json:"image"`         
     Order                int `json:"order"`         
+    Topcategory                int `json:"topcategory"`         
     Data                int64 `json:"data"`         
     Report                int64 `json:"report"`         
     Date                string `json:"date"` 
@@ -107,7 +109,7 @@ func (p *ItemManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *ItemManager) GetQuery() string {
     ret := ""
 
-    str := "select i_id, i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_data, i_report, i_date from item_tb "
+    str := "select i_id, i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_content, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_topcategory, i_data, i_report, i_date from item_tb "
 
     if p.Index == "" {
         ret = str
@@ -173,11 +175,11 @@ func (p *ItemManager) Insert(item *Item) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into item_tb (i_id, i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_data, i_report, i_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Data, item.Report, item.Date)
+        query = "insert into item_tb (i_id, i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_content, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_topcategory, i_data, i_report, i_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Content, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Topcategory, item.Data, item.Report, item.Date)
     } else {
-        query = "insert into item_tb (i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_data, i_report, i_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Data, item.Report, item.Date)
+        query = "insert into item_tb (i_title, i_type, i_value1, i_value2, i_value3, i_value4, i_value5, i_value6, i_value7, i_value8, i_value, i_content, i_unit, i_status, i_reason, i_reasontext, i_action, i_actiontext, i_image, i_order, i_topcategory, i_data, i_report, i_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Content, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Topcategory, item.Data, item.Report, item.Date)
     }
     
     if err == nil {
@@ -256,8 +258,8 @@ func (p *ItemManager) Update(item *Item) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update item_tb set i_title = ?, i_type = ?, i_value1 = ?, i_value2 = ?, i_value3 = ?, i_value4 = ?, i_value5 = ?, i_value6 = ?, i_value7 = ?, i_value8 = ?, i_value = ?, i_unit = ?, i_status = ?, i_reason = ?, i_reasontext = ?, i_action = ?, i_actiontext = ?, i_image = ?, i_order = ?, i_data = ?, i_report = ?, i_date = ? where i_id = ?"
-	_, err := p.Exec(query , item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Data, item.Report, item.Date, item.Id)
+	query := "update item_tb set i_title = ?, i_type = ?, i_value1 = ?, i_value2 = ?, i_value3 = ?, i_value4 = ?, i_value5 = ?, i_value6 = ?, i_value7 = ?, i_value8 = ?, i_value = ?, i_content = ?, i_unit = ?, i_status = ?, i_reason = ?, i_reasontext = ?, i_action = ?, i_actiontext = ?, i_image = ?, i_order = ?, i_topcategory = ?, i_data = ?, i_report = ?, i_date = ? where i_id = ?"
+	_, err := p.Exec(query , item.Title, item.Type, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value, item.Content, item.Unit, item.Status, item.Reason, item.Reasontext, item.Action, item.Actiontext, item.Image, item.Order, item.Topcategory, item.Data, item.Report, item.Date, item.Id)
     
         
     return err
@@ -385,6 +387,17 @@ func (p *ItemManager) UpdateValue(value int, id int64) error {
     return err
 }
 
+func (p *ItemManager) UpdateContent(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update item_tb set i_content = ? where i_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *ItemManager) UpdateUnit(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -468,6 +481,17 @@ func (p *ItemManager) UpdateOrder(value int, id int64) error {
     }
 
 	query := "update item_tb set i_order = ? where i_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ItemManager) UpdateTopcategory(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update item_tb set i_topcategory = ? where i_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -629,6 +653,17 @@ func (p *ItemManager) IncreaseOrder(value int, id int64) error {
     return err
 }
 
+func (p *ItemManager) IncreaseTopcategory(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update item_tb set i_topcategory = i_topcategory + ? where i_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *ItemManager) IncreaseData(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -681,7 +716,11 @@ func (p *ItemManager) ReadRow(rows *sql.Rows) *Item {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Type, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value, &item.Unit, &item.Status, &item.Reason, &item.Reasontext, &item.Action, &item.Actiontext, &item.Image, &item.Order, &item.Data, &item.Report, &item.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Type, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value, &item.Content, &item.Unit, &item.Status, &item.Reason, &item.Reasontext, &item.Action, &item.Actiontext, &item.Image, &item.Order, &item.Topcategory, &item.Data, &item.Report, &item.Date)
+        
+        
+        
+        
         
         
         
@@ -752,12 +791,14 @@ func (p *ItemManager) ReadRows(rows *sql.Rows) []Item {
         var item Item
         
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Type, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value, &item.Unit, &item.Status, &item.Reason, &item.Reasontext, &item.Action, &item.Actiontext, &item.Image, &item.Order, &item.Data, &item.Report, &item.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Type, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value, &item.Content, &item.Unit, &item.Status, &item.Reason, &item.Reasontext, &item.Action, &item.Actiontext, &item.Image, &item.Order, &item.Topcategory, &item.Data, &item.Report, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
         
         
         
@@ -992,6 +1033,17 @@ func (p *ItemManager) Find(args []interface{}) []Item {
     return p.ReadRows(rows)
 }
 
+
+func (p *ItemManager) DeleteByReportTopcategory(report int64, topcategory int) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from item_tb where i_report = ? and i_topcategory = ?"
+    _, err := p.Exec(query, report, topcategory)
+
+    return err
+}
 
 
 

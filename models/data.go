@@ -20,6 +20,7 @@ import (
 type Data struct {
             
     Id                int64 `json:"id"`         
+    Topcategory                int `json:"topcategory"`         
     Title                string `json:"title"`         
     Type                data.Type `json:"type"`         
     Category                int `json:"category"`         
@@ -92,7 +93,7 @@ func (p *DataManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *DataManager) GetQuery() string {
     ret := ""
 
-    str := "select d_id, d_title, d_type, d_category, d_order, d_report, d_company, d_date from data_tb "
+    str := "select d_id, d_topcategory, d_title, d_type, d_category, d_order, d_report, d_company, d_date from data_tb "
 
     if p.Index == "" {
         ret = str
@@ -158,11 +159,11 @@ func (p *DataManager) Insert(item *Data) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into data_tb (d_id, d_title, d_type, d_category, d_order, d_report, d_company, d_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date)
+        query = "insert into data_tb (d_id, d_topcategory, d_title, d_type, d_category, d_order, d_report, d_company, d_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Topcategory, item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date)
     } else {
-        query = "insert into data_tb (d_title, d_type, d_category, d_order, d_report, d_company, d_date) values (?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date)
+        query = "insert into data_tb (d_topcategory, d_title, d_type, d_category, d_order, d_report, d_company, d_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Topcategory, item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date)
     }
     
     if err == nil {
@@ -241,13 +242,24 @@ func (p *DataManager) Update(item *Data) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update data_tb set d_title = ?, d_type = ?, d_category = ?, d_order = ?, d_report = ?, d_company = ?, d_date = ? where d_id = ?"
-	_, err := p.Exec(query , item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date, item.Id)
+	query := "update data_tb set d_topcategory = ?, d_title = ?, d_type = ?, d_category = ?, d_order = ?, d_report = ?, d_company = ?, d_date = ? where d_id = ?"
+	_, err := p.Exec(query , item.Topcategory, item.Title, item.Type, item.Category, item.Order, item.Report, item.Company, item.Date, item.Id)
     
         
     return err
 }
 
+
+func (p *DataManager) UpdateTopcategory(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update data_tb set d_topcategory = ? where d_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
 
 func (p *DataManager) UpdateTitle(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
@@ -316,6 +328,17 @@ func (p *DataManager) UpdateCompany(value int64, id int64) error {
 }
 
 
+
+func (p *DataManager) IncreaseTopcategory(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update data_tb set d_topcategory = d_topcategory + ? where d_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
 
 func (p *DataManager) IncreaseCategory(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
@@ -390,7 +413,9 @@ func (p *DataManager) ReadRow(rows *sql.Rows) *Data {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Type, &item.Category, &item.Order, &item.Report, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Topcategory, &item.Title, &item.Type, &item.Category, &item.Order, &item.Report, &item.Company, &item.Date)
+        
+        
         
         
         
@@ -431,12 +456,13 @@ func (p *DataManager) ReadRows(rows *sql.Rows) []Data {
         var item Data
         
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Type, &item.Category, &item.Order, &item.Report, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Topcategory, &item.Title, &item.Type, &item.Category, &item.Order, &item.Report, &item.Company, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         
@@ -656,6 +682,17 @@ func (p *DataManager) Find(args []interface{}) []Data {
     return p.ReadRows(rows)
 }
 
+
+func (p *DataManager) DeleteByReportTopcategory(report int64, topcategory int) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from data_tb where d_report = ? and d_topcategory = ?"
+    _, err := p.Exec(query, report, topcategory)
+
+    return err
+}
 
 
 
