@@ -3,8 +3,6 @@ package models
 import (
     //"zkeep/config"
     
-    "zkeep/models/report"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -17,36 +15,31 @@ import (
     
 )
 
-type Report struct {
+type License struct {
             
     Id                int64 `json:"id"`         
-    Title                string `json:"title"`         
-    Period                int `json:"period"`         
-    Number                int `json:"number"`         
-    Checkdate                string `json:"checkdate"`         
-    Checktime                string `json:"checktime"`         
-    Content                string `json:"content"`         
-    Status                report.Status `json:"status"`         
-    Company                int64 `json:"company"`         
+    User                int64 `json:"user"`         
+    Licensecategory                int64 `json:"licensecategory"`         
+    Licenselevel                int64 `json:"licenselevel"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type ReportManager struct {
+type LicenseManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Report) AddExtra(key string, value interface{}) {    
+func (c *License) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewReportManager(conn interface{}) *ReportManager {
-    var item ReportManager
+func NewLicenseManager(conn interface{}) *LicenseManager {
+    var item LicenseManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -65,17 +58,17 @@ func NewReportManager(conn interface{}) *ReportManager {
     return &item
 }
 
-func (p *ReportManager) Close() {
+func (p *LicenseManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *ReportManager) SetIndex(index string) {
+func (p *LicenseManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *ReportManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *LicenseManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -83,7 +76,7 @@ func (p *ReportManager) Exec(query string, params ...interface{}) (sql.Result, e
     }
 }
 
-func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *LicenseManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -91,10 +84,10 @@ func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, e
     }
 }
 
-func (p *ReportManager) GetQuery() string {
+func (p *LicenseManager) GetQuery() string {
     ret := ""
 
-    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date from report_tb, company_tb "
+    str := "select l_id, l_user, l_licensecategory, l_licenselevel, l_date from license_tb "
 
     if p.Index == "" {
         ret = str
@@ -104,16 +97,14 @@ func (p *ReportManager) GetQuery() string {
 
     ret += "where 1=1 "
     
-    ret += "and r_company = c_id "
-    
 
     return ret;
 }
 
-func (p *ReportManager) GetQuerySelect() string {
+func (p *LicenseManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from report_tb, company_tb "
+    str := "select count(*) from license_tb "
 
     if p.Index == "" {
         ret = str
@@ -123,18 +114,16 @@ func (p *ReportManager) GetQuerySelect() string {
 
     ret += "where 1=1 "
     
-    ret += "and r_company = c_id "
-    
 
     return ret;
 }
 
-func (p *ReportManager) Truncate() error {
+func (p *LicenseManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate report_tb "
+    query := "truncate license_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -144,7 +133,7 @@ func (p *ReportManager) Truncate() error {
     return nil
 }
 
-func (p *ReportManager) Insert(item *Report) error {
+func (p *LicenseManager) Insert(item *License) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -164,11 +153,11 @@ func (p *ReportManager) Insert(item *Report) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into report_tb (r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date)
+        query = "insert into license_tb (l_id, l_user, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.User, item.Licensecategory, item.Licenselevel, item.Date)
     } else {
-        query = "insert into report_tb (r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date)
+        query = "insert into license_tb (l_user, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query , item.User, item.Licensecategory, item.Licenselevel, item.Date)
     }
     
     if err == nil {
@@ -182,19 +171,19 @@ func (p *ReportManager) Insert(item *Report) error {
     return err
 }
 
-func (p *ReportManager) Delete(id int64) error {
+func (p *LicenseManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from report_tb where r_id = ?"
+    query := "delete from license_tb where l_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *ReportManager) DeleteWhere(args []interface{}) error {
+func (p *LicenseManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -208,15 +197,15 @@ func (p *ReportManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and r_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and r_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -230,14 +219,14 @@ func (p *ReportManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from report_tb where " + query[5:]
+    query = "delete from license_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *ReportManager) Update(item *Report) error {
+func (p *LicenseManager) Update(item *License) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -247,97 +236,42 @@ func (p *ReportManager) Update(item *Report) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update report_tb set r_title = ?, r_period = ?, r_number = ?, r_checkdate = ?, r_checktime = ?, r_content = ?, r_status = ?, r_company = ?, r_date = ? where r_id = ?"
-	_, err := p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date, item.Id)
+	query := "update license_tb set l_user = ?, l_licensecategory = ?, l_licenselevel = ?, l_date = ? where l_id = ?"
+	_, err := p.Exec(query , item.User, item.Licensecategory, item.Licenselevel, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *ReportManager) UpdateTitle(value string, id int64) error {
+func (p *LicenseManager) UpdateUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_title = ? where r_id = ?"
+	query := "update license_tb set l_user = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *ReportManager) UpdatePeriod(value int, id int64) error {
+func (p *LicenseManager) UpdateLicensecategory(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_period = ? where r_id = ?"
+	query := "update license_tb set l_licensecategory = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *ReportManager) UpdateNumber(value int, id int64) error {
+func (p *LicenseManager) UpdateLicenselevel(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_number = ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *ReportManager) UpdateCheckdate(value string, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_checkdate = ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *ReportManager) UpdateChecktime(value string, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_checktime = ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *ReportManager) UpdateContent(value string, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_content = ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *ReportManager) UpdateStatus(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_status = ? where r_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *ReportManager) UpdateCompany(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update report_tb set r_company = ? where r_id = ?"
+	query := "update license_tb set l_licenselevel = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -345,41 +279,41 @@ func (p *ReportManager) UpdateCompany(value int64, id int64) error {
 
 
 
-func (p *ReportManager) IncreasePeriod(value int, id int64) error {
+func (p *LicenseManager) IncreaseUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_period = r_period + ? where r_id = ?"
+	query := "update license_tb set l_user = l_user + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *ReportManager) IncreaseNumber(value int, id int64) error {
+func (p *LicenseManager) IncreaseLicensecategory(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_number = r_number + ? where r_id = ?"
+	query := "update license_tb set l_licensecategory = l_licensecategory + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *ReportManager) IncreaseCompany(value int64, id int64) error {
+func (p *LicenseManager) IncreaseLicenselevel(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update report_tb set r_company = r_company + ? where r_id = ?"
+	query := "update license_tb set l_licenselevel = l_licenselevel + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *ReportManager) GetIdentity() int64 {
+func (p *LicenseManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -393,32 +327,20 @@ func (p *ReportManager) GetIdentity() int64 {
     }
 }
 
-func (p *Report) InitExtra() {
+func (p *License) InitExtra() {
     p.Extra = map[string]interface{}{
-            "status":     report.GetStatus(p.Status),
 
     }
 }
 
-func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
-    var item Report
+func (p *LicenseManager) ReadRow(rows *sql.Rows) *License {
+    var item License
     var err error
 
-    var _company Company
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        err = rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date)
         
         
         
@@ -441,22 +363,19 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     } else {
 
         item.InitExtra()
-        _company.InitExtra()
-        item.AddExtra("company",  _company)
-
+        
         return &item
     }
 }
 
-func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
-    var items []Report
+func (p *LicenseManager) ReadRows(rows *sql.Rows) []License {
+    var items []License
 
     for rows.Next() {
-        var item Report
-        var _company Company
-            
+        var item License
+        
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -467,19 +386,12 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         
         
         
-        
-        
-        
-        
-        
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
         
         item.InitExtra()        
-        _company.InitExtra()
-        item.AddExtra("company",  _company)
-
+        
         items = append(items, item)
     }
 
@@ -487,15 +399,13 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
      return items
 }
 
-func (p *ReportManager) Get(id int64) *Report {
+func (p *LicenseManager) Get(id int64) *License {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and r_id = ?"
+    query := p.GetQuery() + " and l_id = ?"
 
-    
-    query += " and r_company = c_id"
     
     
     rows, err := p.Query(query, id)
@@ -510,7 +420,7 @@ func (p *ReportManager) Get(id int64) *Report {
     return p.ReadRow(rows)
 }
 
-func (p *ReportManager) Count(args []interface{}) int {
+func (p *LicenseManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -524,15 +434,15 @@ func (p *ReportManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and r_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and r_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -569,13 +479,13 @@ func (p *ReportManager) Count(args []interface{}) int {
     }
 }
 
-func (p *ReportManager) FindAll() []Report {
+func (p *LicenseManager) FindAll() []License {
     return p.Find(nil)
 }
 
-func (p *ReportManager) Find(args []interface{}) []Report {
+func (p *LicenseManager) Find(args []interface{}) []License {
     if p.Conn == nil && p.Tx == nil {
-        var items []Report
+        var items []License
         return items
     }
 
@@ -614,15 +524,15 @@ func (p *ReportManager) Find(args []interface{}) []Report {
             item := v
 
             if item.Compare == "in" {
-                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and r_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and r_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -644,10 +554,10 @@ func (p *ReportManager) Find(args []interface{}) []Report {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "r_id desc"
+            orderby = "l_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "r_" + orderby
+                orderby = "l_" + orderby
             }
             
         }
@@ -665,10 +575,10 @@ func (p *ReportManager) Find(args []interface{}) []Report {
         */
     } else {
         if orderby == "" {
-            orderby = "r_id"
+            orderby = "l_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "r_" + orderby
+                orderby = "l_" + orderby
             }
         }
         query += " order by " + orderby
@@ -678,7 +588,7 @@ func (p *ReportManager) Find(args []interface{}) []Report {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Report
+        var items []License
         return items
     }
 

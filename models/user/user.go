@@ -7,11 +7,12 @@ const (
     _ Level  = iota
 
     LevelNormal
-    LevelPremium
+    LevelManager
     LevelAdmin
+    LevelRootadmin
 )
 
-var Levels = []string{ "", "Normal", "Manager", "Administrator" }
+var Levels = []string{ "", "일반", "팀장", "관리자", "전체관리자" }
 
 type Status int
 

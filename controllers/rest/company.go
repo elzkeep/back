@@ -36,7 +36,7 @@ func (c *CompanyController) Index(page int, pagesize int) {
     
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
     _companyno := c.Get("companyno")
@@ -142,6 +142,10 @@ func (c *CompanyController) Index(page int, pagesize int) {
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _companygroup := c.Geti64("companygroup")
+    if _companygroup != 0 {
+        args = append(args, models.Where{Column:"companygroup", Value:_companygroup, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -490,6 +494,16 @@ func (c *CompanyController) UpdateStatus(status int, id int64) {
 
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateStatus(status, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateCompanygroup(companygroup int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateCompanygroup(companygroup, id)
 }
 
 

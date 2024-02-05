@@ -36,9 +36,9 @@ func (c *UserController) Index(page int, pagesize int) {
 
     var args []interface{}
     
-    _email := c.Get("email")
-    if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+    _loginid := c.Get("loginid")
+    if _loginid != "" {
+        args = append(args, models.Where{Column:"loginid", Value:_loginid, Compare:"like"})
     }
     _passwd := c.Get("passwd")
     if _passwd != "" {
@@ -49,6 +49,42 @@ func (c *UserController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
         
     }
+    _email := c.Get("email")
+    if _email != "" {
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+    }
+    _addressetc := c.Get("addressetc")
+    if _addressetc != "" {
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _startjoindate := c.Get("startjoindate")
+    _endjoindate := c.Get("endjoindate")
+    if _startjoindate != "" && _endjoindate != "" {        
+        var v [2]string
+        v[0] = _startjoindate
+        v[1] = _endjoindate  
+        args = append(args, models.Where{Column:"joindate", Value:v, Compare:"between"})    
+    } else if  _startjoindate != "" {          
+        args = append(args, models.Where{Column:"joindate", Value:_startjoindate, Compare:">="})
+    } else if  _endjoindate != "" {          
+        args = append(args, models.Where{Column:"joindate", Value:_endjoindate, Compare:"<="})            
+    }
+    _careeryear := c.Geti("careeryear")
+    if _careeryear != 0 {
+        args = append(args, models.Where{Column:"careeryear", Value:_careeryear, Compare:"="})    
+    }
+    _careermonth := c.Geti("careermonth")
+    if _careermonth != 0 {
+        args = append(args, models.Where{Column:"careermonth", Value:_careermonth, Compare:"="})    
+    }
     _level := c.Geti("level")
     if _level != 0 {
         args = append(args, models.Where{Column:"level", Value:_level, Compare:"="})    
@@ -57,13 +93,9 @@ func (c *UserController) Index(page int, pagesize int) {
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
     }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
-    _profile := c.Get("profile")
-    if _profile != "" {
-        args = append(args, models.Where{Column:"profile", Value:_profile, Compare:"like"})
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -184,13 +216,13 @@ func (c *UserController) Deletebatch(item *[]models.User) {
 
 
 
-func (c *UserController) GetByEmail(email string) *models.User {
+func (c *UserController) GetByLoginid(loginid string) *models.User {
     
     conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)
     
-    item := _manager.GetByEmail(email)
+    item := _manager.GetByLoginid(loginid)
     
     c.Set("item", item)
     
@@ -201,13 +233,13 @@ func (c *UserController) GetByEmail(email string) *models.User {
 }
 
 
-func (c *UserController) CountByEmail(email string) int {
+func (c *UserController) CountByLoginid(loginid string) int {
     
     conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)
     
-    item := _manager.CountByEmail(email)
+    item := _manager.CountByLoginid(loginid)
     
     
     
@@ -234,26 +266,15 @@ func (c *UserController) FindByLevel(level user.Level) []models.User {
     
 }
 
-// @Put()
-func (c *UserController) UpdateImageById(image string ,id int64) {
-    
-    conn := c.NewConnection()
-
-	_manager := models.NewUserManager(conn)
-    
-    _manager.UpdateImageById(image, id)
-    
-}
-
 
 // @Put()
-func (c *UserController) UpdateEmail(email string, id int64) {
+func (c *UserController) UpdateLoginid(loginid string, id int64) {
     
     
 	conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)
-	_manager.UpdateEmail(email, id)
+	_manager.UpdateLoginid(loginid, id)
 }
 
 // @Put()
@@ -277,6 +298,76 @@ func (c *UserController) UpdateName(name string, id int64) {
 }
 
 // @Put()
+func (c *UserController) UpdateEmail(email string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateEmail(email, id)
+}
+
+// @Put()
+func (c *UserController) UpdateTel(tel string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateTel(tel, id)
+}
+
+// @Put()
+func (c *UserController) UpdateAddress(address string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateAddress(address, id)
+}
+
+// @Put()
+func (c *UserController) UpdateAddressetc(addressetc string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateAddressetc(addressetc, id)
+}
+
+// @Put()
+func (c *UserController) UpdateJoindate(joindate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateJoindate(joindate, id)
+}
+
+// @Put()
+func (c *UserController) UpdateCareeryear(careeryear int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateCareeryear(careeryear, id)
+}
+
+// @Put()
+func (c *UserController) UpdateCareermonth(careermonth int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateCareermonth(careermonth, id)
+}
+
+// @Put()
 func (c *UserController) UpdateLevel(level int, id int64) {
     
     
@@ -297,23 +388,13 @@ func (c *UserController) UpdateStatus(status int, id int64) {
 }
 
 // @Put()
-func (c *UserController) UpdateImage(image string, id int64) {
+func (c *UserController) UpdateCompany(company int64, id int64) {
     
     
 	conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)
-	_manager.UpdateImage(image, id)
-}
-
-// @Put()
-func (c *UserController) UpdateProfile(profile string, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewUserManager(conn)
-	_manager.UpdateProfile(profile, id)
+	_manager.UpdateCompany(company, id)
 }
 
 

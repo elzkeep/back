@@ -1,12 +1,12 @@
 package router
 
 import (
-	"zkeep/models"
-	"zkeep/models/user"
 	"errors"
 	"log"
 	"net/url"
 	"time"
+	"zkeep/models"
+	"zkeep/models/user"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -77,7 +77,7 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 	conn := models.NewConnection()
 
 	manager := models.NewUserManager(conn)
-	item := manager.GetByEmail(loginid)
+	item := manager.GetByLoginid(loginid)
 
 	if item == nil {
 		return map[string]interface{}{

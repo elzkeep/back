@@ -12,7 +12,7 @@
       "map": [
         {
           "name": "level",
-          "data": ["", "normal:Normal", "premium:Manager", "admin:Administrator"]
+          "data": ["", "normal:일반", "manager:팀장", "admin:관리자", "rootadmin:전체관리자"]
         },
         {
           "name": "status",
@@ -20,11 +20,10 @@
         }
       ],  
       "method": [
-        "GetByEmail",
-        "CountByEmail",
-        "FindByLevel",        
-        "UpdateImageById"
-      ]
+        "GetByLoginid",
+        "CountByLoginid",
+        "FindByLevel"
+      ]      
     },    
     {
       "name": "token",             
@@ -80,6 +79,39 @@
           "column": "company"
         }
       ]
+    },
+    {
+      "name": "company",
+      "map": [        
+        {
+          "name": "type",
+          "data": ["", "work:점검", "building:건물"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "building",      
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "customer",
+      "map": [        
+        {
+          "name": "type",
+          "data": ["", "direct:직영", "outsourcing:위탁관리"]
+        }
+      ]      
     }    
   ]   
 }
