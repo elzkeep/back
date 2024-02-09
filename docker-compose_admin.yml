@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  backend:
+    container_name: zkeep_admin
+    restart: always
+    image: netb.co.kr:5000/zkeep_admin
+    ports:
+      - "9313:9303"
+    volumes:
+      - /home/zkeep/back/webdata:/usr/local/main/webdata

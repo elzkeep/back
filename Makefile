@@ -58,6 +58,22 @@ localdeploy:
 	docker-compose --context dev pull
 	docker-compose --context dev up -d
 
+admindockerbuild:
+	GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/main.linux main.go
+	cd ../front && npm run release && cp -rf dist ../back/
+
+admindocker: admindockerbuild
+	docker build -f Dockerfile_admin --no-cache -t netb.co.kr:5000/zkeep_admin:$(tag) .
+
+adminpush: admindocker
+	docker push netb.co.kr:5000/zkeep_admin:$(tag)
+
+admindeploy: adminpush
+	docker-compose --context dev -f docker-compose_admin.yml pull
+	docker-compose --context dev -f docker-compose_admin.yml up -d
+
+
+
 clean:
 	rm -f bin/main
 
