@@ -97,6 +97,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _company != 0 {
         args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
     }
+    _department := c.Geti64("department")
+    if _department != 0 {
+        args = append(args, models.Where{Column:"department", Value:_department, Compare:"="})    
+    }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
     if _startdate != "" && _enddate != "" {        
@@ -395,6 +399,16 @@ func (c *UserController) UpdateCompany(company int64, id int64) {
 
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateCompany(company, id)
+}
+
+// @Put()
+func (c *UserController) UpdateDepartment(department int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateDepartment(department, id)
 }
 
 
