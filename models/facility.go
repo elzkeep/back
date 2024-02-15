@@ -30,6 +30,16 @@ type Facility struct {
     Value8                string `json:"value8"`         
     Value9                string `json:"value9"`         
     Value10                string `json:"value10"`         
+    Value11                string `json:"value11"`         
+    Value12                string `json:"value12"`         
+    Value13                string `json:"value13"`         
+    Value14                string `json:"value14"`         
+    Value15                string `json:"value15"`         
+    Value16                string `json:"value16"`         
+    Value17                string `json:"value17"`         
+    Value18                string `json:"value18"`         
+    Value19                string `json:"value19"`         
+    Value20                string `json:"value20"`         
     Content                string `json:"content"`         
     Building                int64 `json:"building"`         
     Date                string `json:"date"` 
@@ -98,7 +108,7 @@ func (p *FacilityManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *FacilityManager) GetQuery() string {
     ret := ""
 
-    str := "select f_id, f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_content, f_building, f_date from facility_tb "
+    str := "select f_id, f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_value11, f_value12, f_value13, f_value14, f_value15, f_value16, f_value17, f_value18, f_value19, f_value20, f_content, f_building, f_date from facility_tb "
 
     if p.Index == "" {
         ret = str
@@ -164,11 +174,11 @@ func (p *FacilityManager) Insert(item *Facility) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into facility_tb (f_id, f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_content, f_building, f_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Content, item.Building, item.Date)
+        query = "insert into facility_tb (f_id, f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_value11, f_value12, f_value13, f_value14, f_value15, f_value16, f_value17, f_value18, f_value19, f_value20, f_content, f_building, f_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Value11, item.Value12, item.Value13, item.Value14, item.Value15, item.Value16, item.Value17, item.Value18, item.Value19, item.Value20, item.Content, item.Building, item.Date)
     } else {
-        query = "insert into facility_tb (f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_content, f_building, f_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Content, item.Building, item.Date)
+        query = "insert into facility_tb (f_category, f_parent, f_value1, f_value2, f_value3, f_value4, f_value5, f_value6, f_value7, f_value8, f_value9, f_value10, f_value11, f_value12, f_value13, f_value14, f_value15, f_value16, f_value17, f_value18, f_value19, f_value20, f_content, f_building, f_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Value11, item.Value12, item.Value13, item.Value14, item.Value15, item.Value16, item.Value17, item.Value18, item.Value19, item.Value20, item.Content, item.Building, item.Date)
     }
     
     if err == nil {
@@ -247,8 +257,8 @@ func (p *FacilityManager) Update(item *Facility) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update facility_tb set f_category = ?, f_parent = ?, f_value1 = ?, f_value2 = ?, f_value3 = ?, f_value4 = ?, f_value5 = ?, f_value6 = ?, f_value7 = ?, f_value8 = ?, f_value9 = ?, f_value10 = ?, f_content = ?, f_building = ?, f_date = ? where f_id = ?"
-	_, err := p.Exec(query , item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Content, item.Building, item.Date, item.Id)
+	query := "update facility_tb set f_category = ?, f_parent = ?, f_value1 = ?, f_value2 = ?, f_value3 = ?, f_value4 = ?, f_value5 = ?, f_value6 = ?, f_value7 = ?, f_value8 = ?, f_value9 = ?, f_value10 = ?, f_value11 = ?, f_value12 = ?, f_value13 = ?, f_value14 = ?, f_value15 = ?, f_value16 = ?, f_value17 = ?, f_value18 = ?, f_value19 = ?, f_value20 = ?, f_content = ?, f_building = ?, f_date = ? where f_id = ?"
+	_, err := p.Exec(query , item.Category, item.Parent, item.Value1, item.Value2, item.Value3, item.Value4, item.Value5, item.Value6, item.Value7, item.Value8, item.Value9, item.Value10, item.Value11, item.Value12, item.Value13, item.Value14, item.Value15, item.Value16, item.Value17, item.Value18, item.Value19, item.Value20, item.Content, item.Building, item.Date, item.Id)
     
         
     return err
@@ -387,6 +397,116 @@ func (p *FacilityManager) UpdateValue10(value string, id int64) error {
     return err
 }
 
+func (p *FacilityManager) UpdateValue11(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value11 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue12(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value12 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue13(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value13 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue14(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value14 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue15(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value15 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue16(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value16 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue17(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value17 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue18(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value18 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue19(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value19 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *FacilityManager) UpdateValue20(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update facility_tb set f_value20 = ? where f_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *FacilityManager) UpdateContent(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -472,7 +592,27 @@ func (p *FacilityManager) ReadRow(rows *sql.Rows) *Facility {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Category, &item.Parent, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value9, &item.Value10, &item.Content, &item.Building, &item.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Parent, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value9, &item.Value10, &item.Value11, &item.Value12, &item.Value13, &item.Value14, &item.Value15, &item.Value16, &item.Value17, &item.Value18, &item.Value19, &item.Value20, &item.Content, &item.Building, &item.Date)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -529,12 +669,22 @@ func (p *FacilityManager) ReadRows(rows *sql.Rows) []Facility {
         var item Facility
         
     
-        err := rows.Scan(&item.Id, &item.Category, &item.Parent, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value9, &item.Value10, &item.Content, &item.Building, &item.Date)
+        err := rows.Scan(&item.Id, &item.Category, &item.Parent, &item.Value1, &item.Value2, &item.Value3, &item.Value4, &item.Value5, &item.Value6, &item.Value7, &item.Value8, &item.Value9, &item.Value10, &item.Value11, &item.Value12, &item.Value13, &item.Value14, &item.Value15, &item.Value16, &item.Value17, &item.Value18, &item.Value19, &item.Value20, &item.Content, &item.Building, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         

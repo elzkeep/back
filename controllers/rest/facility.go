@@ -82,6 +82,46 @@ func (c *FacilityController) Index(page int, pagesize int) {
     if _value10 != "" {
         args = append(args, models.Where{Column:"value10", Value:_value10, Compare:"like"})
     }
+    _value11 := c.Get("value11")
+    if _value11 != "" {
+        args = append(args, models.Where{Column:"value11", Value:_value11, Compare:"like"})
+    }
+    _value12 := c.Get("value12")
+    if _value12 != "" {
+        args = append(args, models.Where{Column:"value12", Value:_value12, Compare:"like"})
+    }
+    _value13 := c.Get("value13")
+    if _value13 != "" {
+        args = append(args, models.Where{Column:"value13", Value:_value13, Compare:"like"})
+    }
+    _value14 := c.Get("value14")
+    if _value14 != "" {
+        args = append(args, models.Where{Column:"value14", Value:_value14, Compare:"like"})
+    }
+    _value15 := c.Get("value15")
+    if _value15 != "" {
+        args = append(args, models.Where{Column:"value15", Value:_value15, Compare:"like"})
+    }
+    _value16 := c.Get("value16")
+    if _value16 != "" {
+        args = append(args, models.Where{Column:"value16", Value:_value16, Compare:"like"})
+    }
+    _value17 := c.Get("value17")
+    if _value17 != "" {
+        args = append(args, models.Where{Column:"value17", Value:_value17, Compare:"like"})
+    }
+    _value18 := c.Get("value18")
+    if _value18 != "" {
+        args = append(args, models.Where{Column:"value18", Value:_value18, Compare:"like"})
+    }
+    _value19 := c.Get("value19")
+    if _value19 != "" {
+        args = append(args, models.Where{Column:"value19", Value:_value19, Compare:"like"})
+    }
+    _value20 := c.Get("value20")
+    if _value20 != "" {
+        args = append(args, models.Where{Column:"value20", Value:_value20, Compare:"like"})
+    }
     _content := c.Get("content")
     if _content != "" {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
@@ -339,6 +379,106 @@ func (c *FacilityController) UpdateValue10(value10 string, id int64) {
 
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue10(value10, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue11(value11 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue11(value11, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue12(value12 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue12(value12, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue13(value13 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue13(value13, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue14(value14 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue14(value14, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue15(value15 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue15(value15, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue16(value16 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue16(value16, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue17(value17 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue17(value17, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue18(value18 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue18(value18, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue19(value19 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue19(value19, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateValue20(value20 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateValue20(value20, id)
 }
 
 // @Put()
