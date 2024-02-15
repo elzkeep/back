@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"zkeep/controllers"
 )
 
@@ -10,7 +11,9 @@ type UploadController struct {
 
 // @POST()
 func (c *UploadController) Index() {
-	_, filename := c.GetUpload("", "file")
+	log.Println("UPLOAD ----------------")
+	_, filename := c.GetUpload("", "")
 
+	log.Println(filename)
 	c.Set("filename", filename)
 }

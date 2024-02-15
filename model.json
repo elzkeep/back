@@ -112,6 +112,12 @@
           "data": ["", "direct:직영", "outsourcing:위탁관리"]
         }
       ]      
+    },
+    {
+      "name": "facility",        
+      "method": [
+        "DeleteByBuildingCategory"        
+      ]      
     }    
   ]   
 }
