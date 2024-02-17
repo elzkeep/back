@@ -52,6 +52,12 @@ func Http() {
 		Level: compress.LevelBestCompression, // 1
 	}))
 
+	/*
+		app.Get("/*", func(ctx *fiber.Ctx) error {
+			return ctx.SendFile(fmt.Sprintf("%v/index.html", config.DocumentRoot), true)
+		})
+	*/
+
 	if chat.Use == true {
 		app.Use("/ws", func(c *fiber.Ctx) error {
 			if websocket.IsWebSocketUpgrade(c) {
