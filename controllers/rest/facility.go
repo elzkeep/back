@@ -42,6 +42,11 @@ func (c *FacilityController) Index(page int, pagesize int) {
     if _parent != 0 {
         args = append(args, models.Where{Column:"parent", Value:_parent, Compare:"="})    
     }
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        
+    }
     _value1 := c.Get("value1")
     if _value1 != "" {
         args = append(args, models.Where{Column:"value1", Value:_value1, Compare:"like"})
@@ -299,6 +304,16 @@ func (c *FacilityController) UpdateParent(parent int64, id int64) {
 
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateParent(parent, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateName(name string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateName(name, id)
 }
 
 // @Put()

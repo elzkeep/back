@@ -1800,6 +1800,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/facility/name", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var name_ string
+			if v, flag := results["name"]; flag {
+				name_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.FacilityController
+			controller.Init(c)
+			controller.UpdateName(name_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/facility/value1", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
