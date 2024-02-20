@@ -28,6 +28,8 @@ type Report struct {
     Content                string `json:"content"`         
     Status                report.Status `json:"status"`         
     Company                int64 `json:"company"`         
+    User                int64 `json:"user"`         
+    Building                int64 `json:"building"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -94,7 +96,7 @@ func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, e
 func (p *ReportManager) GetQuery() string {
     ret := ""
 
-    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date from report_tb, company_tb "
+    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date from report_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -164,11 +166,11 @@ func (p *ReportManager) Insert(item *Report) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into report_tb (r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date)
+        query = "insert into report_tb (r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date)
     } else {
-        query = "insert into report_tb (r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date)
+        query = "insert into report_tb (r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date)
     }
     
     if err == nil {
@@ -247,8 +249,8 @@ func (p *ReportManager) Update(item *Report) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update report_tb set r_title = ?, r_period = ?, r_number = ?, r_checkdate = ?, r_checktime = ?, r_content = ?, r_status = ?, r_company = ?, r_date = ? where r_id = ?"
-	_, err := p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.Date, item.Id)
+	query := "update report_tb set r_title = ?, r_period = ?, r_number = ?, r_checkdate = ?, r_checktime = ?, r_content = ?, r_status = ?, r_company = ?, r_user = ?, r_building = ?, r_date = ? where r_id = ?"
+	_, err := p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date, item.Id)
     
         
     return err
@@ -343,6 +345,28 @@ func (p *ReportManager) UpdateCompany(value int64, id int64) error {
     return err
 }
 
+func (p *ReportManager) UpdateUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_user = ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ReportManager) UpdateBuilding(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_building = ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 
 func (p *ReportManager) IncreasePeriod(value int, id int64) error {
@@ -378,6 +402,28 @@ func (p *ReportManager) IncreaseCompany(value int64, id int64) error {
     return err
 }
 
+func (p *ReportManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_user = r_user + ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ReportManager) IncreaseBuilding(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_building = r_building + ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 func (p *ReportManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
@@ -408,7 +454,11 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        
+        
+        
+        
         
         
         
@@ -456,12 +506,14 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         var _company Company
             
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
         
         
         

@@ -68,6 +68,14 @@ func (c *ReportController) Index(page int, pagesize int) {
     if _company != 0 {
         args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
     }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _building := c.Geti64("building")
+    if _building != 0 {
+        args = append(args, models.Where{Column:"building", Value:_building, Compare:"="})    
+    }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
     if _startdate != "" && _enddate != "" {        
@@ -265,6 +273,26 @@ func (c *ReportController) UpdateCompany(company int64, id int64) {
 
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateCompany(company, id)
+}
+
+// @Put()
+func (c *ReportController) UpdateUser(user int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewReportManager(conn)
+	_manager.UpdateUser(user, id)
+}
+
+// @Put()
+func (c *ReportController) UpdateBuilding(building int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewReportManager(conn)
+	_manager.UpdateBuilding(building, id)
 }
 
 
