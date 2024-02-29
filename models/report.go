@@ -96,7 +96,7 @@ func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, e
 func (p *ReportManager) GetQuery() string {
     ret := ""
 
-    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date from report_tb, company_tb "
+    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date, u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from report_tb, company_tb, user_tb, building_tb "
 
     if p.Index == "" {
         ret = str
@@ -107,6 +107,10 @@ func (p *ReportManager) GetQuery() string {
     ret += "where 1=1 "
     
     ret += "and r_company = c_id "
+    
+    ret += "and r_user = u_id "
+    
+    ret += "and r_building = b_id "
     
 
     return ret;
@@ -115,7 +119,7 @@ func (p *ReportManager) GetQuery() string {
 func (p *ReportManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from report_tb, company_tb "
+    str := "select count(*) from report_tb, company_tb, user_tb, building_tb "
 
     if p.Index == "" {
         ret = str
@@ -126,6 +130,10 @@ func (p *ReportManager) GetQuerySelect() string {
     ret += "where 1=1 "
     
     ret += "and r_company = c_id "
+    
+    ret += "and r_user = u_id "
+    
+    ret += "and r_building = b_id "
     
 
     return ret;
@@ -451,10 +459,12 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     var err error
 
     var _company Company
+    var _user User
+    var _building Building
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
         
         
         
@@ -493,6 +503,10 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
         item.InitExtra()
         _company.InitExtra()
         item.AddExtra("company",  _company)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+_building.InitExtra()
+        item.AddExtra("building",  _building)
 
         return &item
     }
@@ -504,9 +518,11 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
     for rows.Next() {
         var item Report
         var _company Company
+            var _user User
+            var _building Building
             
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -531,6 +547,10 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         item.InitExtra()        
         _company.InitExtra()
         item.AddExtra("company",  _company)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+_building.InitExtra()
+        item.AddExtra("building",  _building)
 
         items = append(items, item)
     }
@@ -548,6 +568,10 @@ func (p *ReportManager) Get(id int64) *Report {
 
     
     query += " and r_company = c_id"
+    
+    query += " and r_user = u_id"
+    
+    query += " and r_building = b_id"
     
     
     rows, err := p.Query(query, id)

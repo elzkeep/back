@@ -16,7 +16,7 @@
         },
         {
           "name": "status",
-          "data": ["", "use:사용", "notuser:사용안함"]
+          "data": ["", "use:사용", "notuse:사용안함"]
         }
       ],  
       "method": [
@@ -77,6 +77,14 @@
         {
           "name": "company",
           "column": "company"
+        },
+        {
+          "name": "user",
+          "column": "user"
+        },
+        {
+          "name": "building",
+          "column": "building"
         }
       ]
     },
@@ -111,12 +119,50 @@
           "name": "type",
           "data": ["", "direct:직영", "outsourcing:위탁관리"]
         }
-      ]      
+      ],
+      "join": [
+        {
+          "name": "building",
+          "column": "building"
+        }
+      ]
     },
     {
       "name": "facility",        
       "method": [
         "DeleteByBuildingCategory"        
+      ]      
+    },
+    {
+      "name": "billing",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "wait:입금대기", "complete:입금완료"]
+        },
+        {
+          "name": "giro",
+          "data": ["", "wait:미발행", "complete:발행"]
+        }
+      ],
+      "join": [
+        {
+          "name": "building",
+          "column": "building"
+        }
+      ]
+    },
+    {
+      "name": "billinglist",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "wait:입금대기", "complete:입금완료"]
+        },
+        {
+          "name": "giro",
+          "data": ["", "wait:미발행", "complete:발행"]
+        }
       ]      
     }    
   ]   

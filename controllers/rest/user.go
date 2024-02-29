@@ -89,6 +89,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _level != 0 {
         args = append(args, models.Where{Column:"level", Value:_level, Compare:"="})    
     }
+    _score := c.Geti("score")
+    if _score != 0 {
+        args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -379,6 +383,16 @@ func (c *UserController) UpdateLevel(level int, id int64) {
 
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateLevel(level, id)
+}
+
+// @Put()
+func (c *UserController) UpdateScore(score models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateScore(score, id)
 }
 
 // @Put()

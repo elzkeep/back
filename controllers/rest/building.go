@@ -55,6 +55,10 @@ func (c *BuildingController) Index(page int, pagesize int) {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
     }
+    _score := c.Geti("score")
+    if _score != 0 {
+        args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -230,6 +234,16 @@ func (c *BuildingController) UpdateAddressetc(addressetc string, id int64) {
 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateScore(score models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateScore(score, id)
 }
 
 // @Put()

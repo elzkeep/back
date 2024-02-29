@@ -55,8 +55,8 @@ localdeploy:
 	cd ../app && make release && cp -rf build/web ../back/	
 	docker build --no-cache -t netb.co.kr:5000/zkeep:$(tag) .
 	docker push netb.co.kr:5000/zkeep:$(tag)
-	docker-compose --context dev pull
-	docker-compose --context dev up -d
+	docker-compose --context dev -f docker-compose.yml  pull
+	docker-compose --context dev -f docker-compose.yml  up -d
 
 admindockerbuild:
 	GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/main.linux main.go

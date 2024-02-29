@@ -15,36 +15,31 @@ import (
     
 )
 
-type Building struct {
+type Companylicense struct {
             
     Id                int64 `json:"id"`         
-    Name                string `json:"name"`         
-    Conpanyno                string `json:"conpanyno"`         
-    Ceo                string `json:"ceo"`         
-    Address                string `json:"address"`         
-    Addressetc                string `json:"addressetc"`         
-    Score                Double `json:"score"`         
-    Status                int `json:"status"`         
     Company                int64 `json:"company"`         
+    Licensecategory                int64 `json:"licensecategory"`         
+    Licenselevel                int64 `json:"licenselevel"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type BuildingManager struct {
+type CompanylicenseManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Building) AddExtra(key string, value interface{}) {    
+func (c *Companylicense) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewBuildingManager(conn interface{}) *BuildingManager {
-    var item BuildingManager
+func NewCompanylicenseManager(conn interface{}) *CompanylicenseManager {
+    var item CompanylicenseManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -63,17 +58,17 @@ func NewBuildingManager(conn interface{}) *BuildingManager {
     return &item
 }
 
-func (p *BuildingManager) Close() {
+func (p *CompanylicenseManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *BuildingManager) SetIndex(index string) {
+func (p *CompanylicenseManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *CompanylicenseManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -81,7 +76,7 @@ func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result,
     }
 }
 
-func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *CompanylicenseManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -89,10 +84,10 @@ func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows,
     }
 }
 
-func (p *BuildingManager) GetQuery() string {
+func (p *CompanylicenseManager) GetQuery() string {
     ret := ""
 
-    str := "select b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from building_tb "
+    str := "select l_id, l_company, l_licensecategory, l_licenselevel, l_date from companylicense_tb "
 
     if p.Index == "" {
         ret = str
@@ -106,10 +101,10 @@ func (p *BuildingManager) GetQuery() string {
     return ret;
 }
 
-func (p *BuildingManager) GetQuerySelect() string {
+func (p *CompanylicenseManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from building_tb "
+    str := "select count(*) from companylicense_tb "
 
     if p.Index == "" {
         ret = str
@@ -123,12 +118,12 @@ func (p *BuildingManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *BuildingManager) Truncate() error {
+func (p *CompanylicenseManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate building_tb "
+    query := "truncate companylicense_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -138,7 +133,7 @@ func (p *BuildingManager) Truncate() error {
     return nil
 }
 
-func (p *BuildingManager) Insert(item *Building) error {
+func (p *CompanylicenseManager) Insert(item *Companylicense) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -158,11 +153,11 @@ func (p *BuildingManager) Insert(item *Building) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into building_tb (b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into companylicense_tb (l_id, l_company, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Company, item.Licensecategory, item.Licenselevel, item.Date)
     } else {
-        query = "insert into building_tb (b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into companylicense_tb (l_company, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Company, item.Licensecategory, item.Licenselevel, item.Date)
     }
     
     if err == nil {
@@ -176,19 +171,19 @@ func (p *BuildingManager) Insert(item *Building) error {
     return err
 }
 
-func (p *BuildingManager) Delete(id int64) error {
+func (p *CompanylicenseManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from building_tb where b_id = ?"
+    query := "delete from companylicense_tb where l_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *BuildingManager) DeleteWhere(args []interface{}) error {
+func (p *CompanylicenseManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -202,15 +197,15 @@ func (p *BuildingManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -224,14 +219,14 @@ func (p *BuildingManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from building_tb where " + query[5:]
+    query = "delete from companylicense_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *BuildingManager) Update(item *Building) error {
+func (p *CompanylicenseManager) Update(item *Companylicense) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -241,97 +236,42 @@ func (p *BuildingManager) Update(item *Building) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update building_tb set b_name = ?, b_conpanyno = ?, b_ceo = ?, b_address = ?, b_addressetc = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
-	_, err := p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date, item.Id)
+	query := "update companylicense_tb set l_company = ?, l_licensecategory = ?, l_licenselevel = ?, l_date = ? where l_id = ?"
+	_, err := p.Exec(query , item.Company, item.Licensecategory, item.Licenselevel, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *BuildingManager) UpdateName(value string, id int64) error {
+func (p *CompanylicenseManager) UpdateCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_name = ? where b_id = ?"
+	query := "update companylicense_tb set l_company = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateConpanyno(value string, id int64) error {
+func (p *CompanylicenseManager) UpdateLicensecategory(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_conpanyno = ? where b_id = ?"
+	query := "update companylicense_tb set l_licensecategory = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateCeo(value string, id int64) error {
+func (p *CompanylicenseManager) UpdateLicenselevel(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_ceo = ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) UpdateAddress(value string, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_address = ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) UpdateAddressetc(value string, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_addressetc = ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) UpdateScore(value Double, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_score = ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) UpdateStatus(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_status = ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) UpdateCompany(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_company = ? where b_id = ?"
+	query := "update companylicense_tb set l_licenselevel = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -339,41 +279,41 @@ func (p *BuildingManager) UpdateCompany(value int64, id int64) error {
 
 
 
-func (p *BuildingManager) IncreaseScore(value Double, id int64) error {
+func (p *CompanylicenseManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_score = b_score + ? where b_id = ?"
+	query := "update companylicense_tb set l_company = l_company + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) IncreaseStatus(value int, id int64) error {
+func (p *CompanylicenseManager) IncreaseLicensecategory(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_status = b_status + ? where b_id = ?"
+	query := "update companylicense_tb set l_licensecategory = l_licensecategory + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) IncreaseCompany(value int64, id int64) error {
+func (p *CompanylicenseManager) IncreaseLicenselevel(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_company = b_company + ? where b_id = ?"
+	query := "update companylicense_tb set l_licenselevel = l_licenselevel + ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *BuildingManager) GetIdentity() int64 {
+func (p *CompanylicenseManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -387,30 +327,20 @@ func (p *BuildingManager) GetIdentity() int64 {
     }
 }
 
-func (p *Building) InitExtra() {
+func (p *Companylicense) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
-    var item Building
+func (p *CompanylicenseManager) ReadRow(rows *sql.Rows) *Companylicense {
+    var item Companylicense
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        err = rows.Scan(&item.Id, &item.Company, &item.Licensecategory, &item.Licenselevel, &item.Date)
         
         
         
@@ -438,24 +368,19 @@ func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
     }
 }
 
-func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
-    var items []Building
+func (p *CompanylicenseManager) ReadRows(rows *sql.Rows) []Companylicense {
+    var items []Companylicense
 
     for rows.Next() {
-        var item Building
+        var item Companylicense
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Company, &item.Licensecategory, &item.Licenselevel, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
-        
-        
-        
-        
-        
         
         
         
@@ -474,12 +399,12 @@ func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
      return items
 }
 
-func (p *BuildingManager) Get(id int64) *Building {
+func (p *CompanylicenseManager) Get(id int64) *Companylicense {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and b_id = ?"
+    query := p.GetQuery() + " and l_id = ?"
 
     
     
@@ -495,7 +420,7 @@ func (p *BuildingManager) Get(id int64) *Building {
     return p.ReadRow(rows)
 }
 
-func (p *BuildingManager) Count(args []interface{}) int {
+func (p *CompanylicenseManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -509,15 +434,15 @@ func (p *BuildingManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -554,13 +479,13 @@ func (p *BuildingManager) Count(args []interface{}) int {
     }
 }
 
-func (p *BuildingManager) FindAll() []Building {
+func (p *CompanylicenseManager) FindAll() []Companylicense {
     return p.Find(nil)
 }
 
-func (p *BuildingManager) Find(args []interface{}) []Building {
+func (p *CompanylicenseManager) Find(args []interface{}) []Companylicense {
     if p.Conn == nil && p.Tx == nil {
-        var items []Building
+        var items []Companylicense
         return items
     }
 
@@ -599,15 +524,15 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and l_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and l_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and l_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -629,10 +554,10 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "b_id desc"
+            orderby = "l_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "b_" + orderby
+                orderby = "l_" + orderby
             }
             
         }
@@ -650,10 +575,10 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
         */
     } else {
         if orderby == "" {
-            orderby = "b_id"
+            orderby = "l_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "b_" + orderby
+                orderby = "l_" + orderby
             }
         }
         query += " order by " + orderby
@@ -663,7 +588,7 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Building
+        var items []Companylicense
         return items
     }
 

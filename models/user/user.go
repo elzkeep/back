@@ -20,7 +20,7 @@ const (
     _ Status  = iota
 
     StatusUse
-    StatusNotuser
+    StatusNotuse
 )
 
 var Statuss = []string{ "", "사용", "사용안함" }

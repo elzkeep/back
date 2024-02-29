@@ -7,44 +7,51 @@ import (
     "errors"
     "fmt"
     "strings"
-    "time"
-
+    
     log "github.com/sirupsen/logrus"    
     _ "github.com/go-sql-driver/mysql"
 
     
 )
 
-type Building struct {
+type Userlist struct {
             
     Id                int64 `json:"id"`         
+    Loginid                string `json:"loginid"`         
+    Passwd                string `json:"passwd"`         
     Name                string `json:"name"`         
-    Conpanyno                string `json:"conpanyno"`         
-    Ceo                string `json:"ceo"`         
+    Email                string `json:"email"`         
+    Tel                string `json:"tel"`         
     Address                string `json:"address"`         
     Addressetc                string `json:"addressetc"`         
+    Joindate                string `json:"joindate"`         
+    Careeryear                int `json:"careeryear"`         
+    Careermonth                int `json:"careermonth"`         
+    Level                int `json:"level"`         
     Score                Double `json:"score"`         
     Status                int `json:"status"`         
     Company                int64 `json:"company"`         
-    Date                string `json:"date"` 
+    Department                int64 `json:"department"`         
+    Date                string `json:"date"`         
+    Totalscore                Double `json:"totalscore"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type BuildingManager struct {
+type UserlistManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Building) AddExtra(key string, value interface{}) {    
+func (c *Userlist) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewBuildingManager(conn interface{}) *BuildingManager {
-    var item BuildingManager
+func NewUserlistManager(conn interface{}) *UserlistManager {
+    var item UserlistManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -63,17 +70,17 @@ func NewBuildingManager(conn interface{}) *BuildingManager {
     return &item
 }
 
-func (p *BuildingManager) Close() {
+func (p *UserlistManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *BuildingManager) SetIndex(index string) {
+func (p *UserlistManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *UserlistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -81,7 +88,7 @@ func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result,
     }
 }
 
-func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *UserlistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -89,10 +96,10 @@ func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows,
     }
 }
 
-func (p *BuildingManager) GetQuery() string {
+func (p *UserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from building_tb "
+    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date, u_totalscore from userlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -106,10 +113,10 @@ func (p *BuildingManager) GetQuery() string {
     return ret;
 }
 
-func (p *BuildingManager) GetQuerySelect() string {
+func (p *UserlistManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from building_tb "
+    str := "select count(*) from userlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -123,12 +130,12 @@ func (p *BuildingManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *BuildingManager) Truncate() error {
+func (p *UserlistManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate building_tb "
+    query := "truncate userlist_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -138,57 +145,21 @@ func (p *BuildingManager) Truncate() error {
     return nil
 }
 
-func (p *BuildingManager) Insert(item *Building) error {
+
+
+func (p *UserlistManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    if item.Date == "" {
-        t := time.Now().UTC().Add(time.Hour * 9)
-        //t := time.Now()
-        item.Date = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
-    }
-
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-    query := ""
-    var res sql.Result
-    var err error
-    if item.Id > 0 {
-        query = "insert into building_tb (b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
-    } else {
-        query = "insert into building_tb (b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
-    }
-    
-    if err == nil {
-        p.Result = &res
-        
-    } else {
-        log.Println(err)
-        p.Result = nil
-    }
-
-    return err
-}
-
-func (p *BuildingManager) Delete(id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-    query := "delete from building_tb where b_id = ?"
+    query := "delete from userlist_vw where u_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *BuildingManager) DeleteWhere(args []interface{}) error {
+func (p *UserlistManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -202,15 +173,15 @@ func (p *BuildingManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and u_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and u_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and u_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -224,156 +195,105 @@ func (p *BuildingManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from building_tb where " + query[5:]
+    query = "delete from userlist_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *BuildingManager) Update(item *Building) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-    
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-	query := "update building_tb set b_name = ?, b_conpanyno = ?, b_ceo = ?, b_address = ?, b_addressetc = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
-	_, err := p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date, item.Id)
-    
-        
-    return err
-}
 
 
-func (p *BuildingManager) UpdateName(value string, id int64) error {
+func (p *UserlistManager) IncreaseCareeryear(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_name = ? where b_id = ?"
+	query := "update userlist_vw set u_careeryear = u_careeryear + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateConpanyno(value string, id int64) error {
+func (p *UserlistManager) IncreaseCareermonth(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_conpanyno = ? where b_id = ?"
+	query := "update userlist_vw set u_careermonth = u_careermonth + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateCeo(value string, id int64) error {
+func (p *UserlistManager) IncreaseLevel(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_ceo = ? where b_id = ?"
+	query := "update userlist_vw set u_level = u_level + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateAddress(value string, id int64) error {
+func (p *UserlistManager) IncreaseScore(value Double, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_address = ? where b_id = ?"
+	query := "update userlist_vw set u_score = u_score + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateAddressetc(value string, id int64) error {
+func (p *UserlistManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_addressetc = ? where b_id = ?"
+	query := "update userlist_vw set u_status = u_status + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateScore(value Double, id int64) error {
+func (p *UserlistManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_score = ? where b_id = ?"
+	query := "update userlist_vw set u_company = u_company + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateStatus(value int, id int64) error {
+func (p *UserlistManager) IncreaseDepartment(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_status = ? where b_id = ?"
+	query := "update userlist_vw set u_department = u_department + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BuildingManager) UpdateCompany(value int64, id int64) error {
+func (p *UserlistManager) IncreaseTotalscore(value Double, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update building_tb set b_company = ? where b_id = ?"
+	query := "update userlist_vw set u_totalscore = u_totalscore + ? where u_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-
-func (p *BuildingManager) IncreaseScore(value Double, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_score = b_score + ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) IncreaseStatus(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_status = b_status + ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BuildingManager) IncreaseCompany(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update building_tb set b_company = b_company + ? where b_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-
-func (p *BuildingManager) GetIdentity() int64 {
+func (p *UserlistManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -387,24 +307,40 @@ func (p *BuildingManager) GetIdentity() int64 {
     }
 }
 
-func (p *Building) InitExtra() {
+func (p *Userlist) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
-    var item Building
+func (p *UserlistManager) ReadRow(rows *sql.Rows) *Userlist {
+    var item Userlist
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
         
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+            item.Joindate = ""
+        }
         
         
         
@@ -423,6 +359,8 @@ func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
         
     } else {
         return nil
@@ -438,14 +376,14 @@ func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
     }
 }
 
-func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
-    var items []Building
+func (p *UserlistManager) ReadRows(rows *sql.Rows) []Userlist {
+    var items []Userlist
 
     for rows.Next() {
-        var item Building
+        var item Userlist
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -460,10 +398,20 @@ func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
         
         
         
+        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+            item.Joindate = ""
+        }
+        
+        
+        
+        
+        
+        
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
         
         item.InitExtra()        
         
@@ -474,12 +422,12 @@ func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
      return items
 }
 
-func (p *BuildingManager) Get(id int64) *Building {
+func (p *UserlistManager) Get(id int64) *Userlist {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and b_id = ?"
+    query := p.GetQuery() + " and u_id = ?"
 
     
     
@@ -495,7 +443,7 @@ func (p *BuildingManager) Get(id int64) *Building {
     return p.ReadRow(rows)
 }
 
-func (p *BuildingManager) Count(args []interface{}) int {
+func (p *UserlistManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -509,15 +457,15 @@ func (p *BuildingManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and u_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and u_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and u_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -554,13 +502,13 @@ func (p *BuildingManager) Count(args []interface{}) int {
     }
 }
 
-func (p *BuildingManager) FindAll() []Building {
+func (p *UserlistManager) FindAll() []Userlist {
     return p.Find(nil)
 }
 
-func (p *BuildingManager) Find(args []interface{}) []Building {
+func (p *UserlistManager) Find(args []interface{}) []Userlist {
     if p.Conn == nil && p.Tx == nil {
-        var items []Building
+        var items []Userlist
         return items
     }
 
@@ -599,15 +547,15 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
             item := v
 
             if item.Compare == "in" {
-                query += " and b_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and u_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and b_" + item.Column + " between ? and ?"
+                query += " and u_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and b_" + item.Column + " " + item.Compare + " ?"
+                query += " and u_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -629,10 +577,10 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "b_id desc"
+            orderby = "u_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "b_" + orderby
+                orderby = "u_" + orderby
             }
             
         }
@@ -650,10 +598,10 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
         */
     } else {
         if orderby == "" {
-            orderby = "b_id"
+            orderby = "u_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "b_" + orderby
+                orderby = "u_" + orderby
             }
         }
         query += " order by " + orderby
@@ -663,7 +611,7 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Building
+        var items []Userlist
         return items
     }
 

@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  backend:
+  admin:
     container_name: zkeep_admin
     restart: always
     image: netb.co.kr:5000/zkeep_admin
