@@ -4,3 +4,44 @@ select billing_tb.*, b_name as bi_buildingname, c_billingname as bi_billingname,
 
 drop view userlist_vw;
 create view userlist_vw as select *, ifnull((select sum(b_score) from building_tb, customer_tb where b_id = cu_building and cu_user = u_id), 0) as u_totalscore from user_tb;
+
+
+drop view statisticsyear_vw;
+create view statisticsyear_vw as
+select
+0 as bi_id,
+date_format(bi_billdate, '%Y') as bi_duration,
+count(bi_id) as bi_total,
+count(bi_id)* bi_price as bi_totalprice,
+now() as bi_billdate
+from billing_tb where bi_status = 2
+group by date_format(bi_billdate, '%Y');
+
+
+drop view statisticsmonth_vw;
+create view statisticsmonth_vw as
+select
+0 as bi_id,
+date_format(bi_billdate, '%Y') as bi_year,
+date_format(bi_billdate, '%Y-%m') as bi_duration,
+count(bi_id) as bi_total,
+count(bi_id)* bi_price as bi_totalprice,
+now() as bi_billdate
+from billing_tb where bi_status = 2
+group by date_format(bi_billdate, '%Y'), date_format(bi_billdate, '%Y-%m');
+
+drop view statisticsday_vw;
+create view statisticsday_vw as
+select
+0 as bi_id,
+date_format(bi_billdate, '%Y-%m') as bi_month,
+date_format(bi_billdate, '%Y-%m-%d') as bi_duration,
+count(bi_id) as bi_total,
+count(bi_id)* bi_price as bi_totalprice,
+now() as bi_billdate
+from billing_tb where bi_status = 2
+group by date_format(bi_billdate, '%Y-%m'), date_format(bi_billdate, '%Y-%m-%d');
+
+drop view calendarcompanylist_vw;
+create view calendarcompanylist_vw as
+select r_company as r_id, r_company, date_format(r_checkdate, '%Y-%m') as r_month, date_format(r_checkdate, '%Y-%m-%d') as r_day, r_status, count(*) as r_count, now() as r_checkdate from report_tb group by r_company, date_format(r_checkdate, '%Y-%m'), date_format(r_checkdate, '%Y-%m-%d'), r_status;

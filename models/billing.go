@@ -679,7 +679,7 @@ func (p *BillingManager) Sum(args []interface{}) *Billing {
     var params []interface{}
 
     
-    query := "select price from billing_tb"
+    query := "select sum(bi_price) from billing_tb"
 
     if p.Index != "" {
         query = query + " use index(" + p.Index + ") "

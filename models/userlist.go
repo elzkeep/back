@@ -622,4 +622,125 @@ func (p *UserlistManager) Find(args []interface{}) []Userlist {
 
 
 
+func (p *UserlistManager) Sum(args []interface{}) *Userlist {
+    if p.Conn == nil && p.Tx == nil {
+        var item Userlist
+        return &item
+    }
 
+    var params []interface{}
+
+    
+    query := "select sum(u_score) from userlist_vw"
+
+    if p.Index != "" {
+        query = query + " use index(" + p.Index + ") "
+    }
+
+    query += "where 1=1 "
+
+    page := 0
+    pagesize := 0
+    orderby := ""
+    
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case PagingType:
+            item := v
+            page = item.Page
+            pagesize = item.Pagesize
+        case OrderingType:
+            item := v
+            orderby = item.Order
+        case LimitType:
+            item := v
+            page = 1
+            pagesize = item.Limit
+        case OptionType:
+            item := v
+            if item.Limit > 0 {
+                page = 1
+                pagesize = item.Limit
+            } else {
+                page = item.Page
+                pagesize = item.Pagesize                
+            }
+            orderby = item.Order
+        case Where:
+            item := v
+
+            if item.Compare == "in" {
+                query += " and u_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+            } else if item.Compare == "between" {
+                query += " and u_" + item.Column + " between ? and ?"
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                query += " and u_" + item.Column + " " + item.Compare + " ?"
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+             query += " and " + item.Query
+        }        
+    }
+    
+    startpage := (page - 1) * pagesize
+    
+    if page > 0 && pagesize > 0 {
+        if orderby == "" {
+            orderby = "u_id desc"
+        } else {
+            if !strings.Contains(orderby, "_") {                   
+                orderby = "u_" + orderby
+            }
+            
+        }
+        query += " order by " + orderby
+        //if config.Database == "mysql" {
+            query += " limit ? offset ?"
+            params = append(params, pagesize)
+            params = append(params, startpage)
+            /*
+        } else if config.Database == "mssql" || config.Database == "sqlserver" {
+            query += "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
+            params = append(params, startpage)
+            params = append(params, pagesize)
+        }
+        */
+    } else {
+        if orderby == "" {
+            orderby = "u_id"
+        } else {
+            if !strings.Contains(orderby, "_") {
+                orderby = "u_" + orderby
+            }
+        }
+        query += " order by " + orderby
+    }
+
+    rows, err := p.Query(query, params...)
+
+    var item Userlist
+    
+    if err != nil {
+        log.Printf("query error : %v, %v\n", err, query)
+        return &item
+    }
+
+    defer rows.Close()
+
+    if rows.Next() {
+        
+        rows.Scan(&item.Score)        
+    }
+
+    return &item        
+}

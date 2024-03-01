@@ -3,8 +3,6 @@ package models
 import (
     //"zkeep/config"
     
-    "zkeep/models/billinglist"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -16,38 +14,32 @@ import (
     
 )
 
-type Billinglist struct {
+type Statisticsmonth struct {
             
     Id                int64 `json:"id"`         
-    Price                int `json:"price"`         
-    Status                billinglist.Status `json:"status"`         
-    Giro                billinglist.Giro `json:"giro"`         
-    Billdate                string `json:"billdate"`         
-    Company                int64 `json:"company"`         
-    Building                int64 `json:"building"`         
-    Date                string `json:"date"`         
-    Buildingname                string `json:"buildingname"`         
-    Billingname                string `json:"billingname"`         
-    Billingtel                string `json:"billingtel"`         
-    Billingemail                string `json:"billingemail"` 
+    Year                string `json:"year"`         
+    Duration                string `json:"duration"`         
+    Total                int64 `json:"total"`         
+    Totalprice                int64 `json:"totalprice"`         
+    Billdate                string `json:"billdate"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type BillinglistManager struct {
+type StatisticsmonthManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Billinglist) AddExtra(key string, value interface{}) {    
+func (c *Statisticsmonth) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewBillinglistManager(conn interface{}) *BillinglistManager {
-    var item BillinglistManager
+func NewStatisticsmonthManager(conn interface{}) *StatisticsmonthManager {
+    var item StatisticsmonthManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -66,17 +58,17 @@ func NewBillinglistManager(conn interface{}) *BillinglistManager {
     return &item
 }
 
-func (p *BillinglistManager) Close() {
+func (p *StatisticsmonthManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *BillinglistManager) SetIndex(index string) {
+func (p *StatisticsmonthManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *StatisticsmonthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -84,7 +76,7 @@ func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Resu
     }
 }
 
-func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *StatisticsmonthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -92,10 +84,10 @@ func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Ro
     }
 }
 
-func (p *BillinglistManager) GetQuery() string {
+func (p *StatisticsmonthManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinglist_vw "
+    str := "select bi_id, bi_year, bi_duration, bi_total, bi_totalprice, bi_billdate from statisticsmonth_vw "
 
     if p.Index == "" {
         ret = str
@@ -109,10 +101,10 @@ func (p *BillinglistManager) GetQuery() string {
     return ret;
 }
 
-func (p *BillinglistManager) GetQuerySelect() string {
+func (p *StatisticsmonthManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from billinglist_vw "
+    str := "select count(*) from statisticsmonth_vw "
 
     if p.Index == "" {
         ret = str
@@ -126,12 +118,12 @@ func (p *BillinglistManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *BillinglistManager) Truncate() error {
+func (p *StatisticsmonthManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate billinglist_vw "
+    query := "truncate statisticsmonth_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -143,19 +135,19 @@ func (p *BillinglistManager) Truncate() error {
 
 
 
-func (p *BillinglistManager) Delete(id int64) error {
+func (p *StatisticsmonthManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from billinglist_vw where bi_id = ?"
+    query := "delete from statisticsmonth_vw where bi_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
+func (p *StatisticsmonthManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -191,7 +183,7 @@ func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from billinglist_vw where " + query[5:]
+    query = "delete from statisticsmonth_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
@@ -200,41 +192,30 @@ func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
 
 
 
-func (p *BillinglistManager) IncreasePrice(value int, id int64) error {
+func (p *StatisticsmonthManager) IncreaseTotal(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update billinglist_vw set bi_price = bi_price + ? where bi_id = ?"
+	query := "update statisticsmonth_vw set bi_total = bi_total + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BillinglistManager) IncreaseCompany(value int64, id int64) error {
+func (p *StatisticsmonthManager) IncreaseTotalprice(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update billinglist_vw set bi_company = bi_company + ? where bi_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *BillinglistManager) IncreaseBuilding(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update billinglist_vw set bi_building = bi_building + ? where bi_id = ?"
+	query := "update statisticsmonth_vw set bi_totalprice = bi_totalprice + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *BillinglistManager) GetIdentity() int64 {
+func (p *StatisticsmonthManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -248,22 +229,20 @@ func (p *BillinglistManager) GetIdentity() int64 {
     }
 }
 
-func (p *Billinglist) InitExtra() {
+func (p *Statisticsmonth) InitExtra() {
     p.Extra = map[string]interface{}{
-            "status":     billinglist.GetStatus(p.Status),
-            "giro":     billinglist.GetGiro(p.Giro),
 
     }
 }
 
-func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
-    var item Billinglist
+func (p *StatisticsmonthManager) ReadRow(rows *sql.Rows) *Statisticsmonth {
+    var item Statisticsmonth
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Year, &item.Duration, &item.Total, &item.Totalprice, &item.Billdate)
         
         
         
@@ -272,26 +251,12 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
         
         
         
-        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
+        
+        
+        
+        if item.Billdate == "0000-00-00 00:00:00" || item.Billdate == "1000-01-01 00:00:00" {
             item.Billdate = ""
         }
-        
-        
-        
-        
-        
-        
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
-        
-        
-        
-        
-        
-        
-        
-        
         
     } else {
         return nil
@@ -307,14 +272,14 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
     }
 }
 
-func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
-    var items []Billinglist
+func (p *StatisticsmonthManager) ReadRows(rows *sql.Rows) []Statisticsmonth {
+    var items []Statisticsmonth
 
     for rows.Next() {
-        var item Billinglist
+        var item Statisticsmonth
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Year, &item.Duration, &item.Total, &item.Totalprice, &item.Billdate)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -324,19 +289,11 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
         
         
         
-        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
+        
+        
+        if item.Billdate == "0000-00-00 00:00:00" || item.Billdate == "1000-01-01 00:00:00" {
             item.Billdate = ""
         }
-        
-        
-        
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
-        
-        
-        
-        
         
         item.InitExtra()        
         
@@ -347,7 +304,7 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
      return items
 }
 
-func (p *BillinglistManager) Get(id int64) *Billinglist {
+func (p *StatisticsmonthManager) Get(id int64) *Statisticsmonth {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
@@ -368,7 +325,7 @@ func (p *BillinglistManager) Get(id int64) *Billinglist {
     return p.ReadRow(rows)
 }
 
-func (p *BillinglistManager) Count(args []interface{}) int {
+func (p *StatisticsmonthManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -427,13 +384,13 @@ func (p *BillinglistManager) Count(args []interface{}) int {
     }
 }
 
-func (p *BillinglistManager) FindAll() []Billinglist {
+func (p *StatisticsmonthManager) FindAll() []Statisticsmonth {
     return p.Find(nil)
 }
 
-func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
+func (p *StatisticsmonthManager) Find(args []interface{}) []Statisticsmonth {
     if p.Conn == nil && p.Tx == nil {
-        var items []Billinglist
+        var items []Statisticsmonth
         return items
     }
 
@@ -536,7 +493,7 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Billinglist
+        var items []Statisticsmonth
         return items
     }
 
@@ -547,16 +504,16 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
 
 
 
-func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
+func (p *StatisticsmonthManager) Sum(args []interface{}) *Statisticsmonth {
     if p.Conn == nil && p.Tx == nil {
-        var item Billinglist
+        var item Statisticsmonth
         return &item
     }
 
     var params []interface{}
 
     
-    query := "select sum(bi_price) from billinglist_vw"
+    query := "select sum(bi_totalprice) from statisticsmonth_vw"
 
     if p.Index != "" {
         query = query + " use index(" + p.Index + ") "
@@ -653,7 +610,7 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
 
     rows, err := p.Query(query, params...)
 
-    var item Billinglist
+    var item Statisticsmonth
     
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -664,7 +621,7 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
 
     if rows.Next() {
         
-        rows.Scan(&item.Price)        
+        rows.Scan(&item.Totalprice)        
     }
 
     return &item        

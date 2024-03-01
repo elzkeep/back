@@ -3,8 +3,6 @@ package models
 import (
     //"zkeep/config"
     
-    "zkeep/models/billinglist"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -16,38 +14,33 @@ import (
     
 )
 
-type Billinglist struct {
+type Calendarcompanylist struct {
             
     Id                int64 `json:"id"`         
-    Price                int `json:"price"`         
-    Status                billinglist.Status `json:"status"`         
-    Giro                billinglist.Giro `json:"giro"`         
-    Billdate                string `json:"billdate"`         
     Company                int64 `json:"company"`         
-    Building                int64 `json:"building"`         
-    Date                string `json:"date"`         
-    Buildingname                string `json:"buildingname"`         
-    Billingname                string `json:"billingname"`         
-    Billingtel                string `json:"billingtel"`         
-    Billingemail                string `json:"billingemail"` 
+    Month                string `json:"month"`         
+    Day                string `json:"day"`         
+    Status                int `json:"status"`         
+    Count                int64 `json:"count"`         
+    Checkdate                string `json:"checkdate"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type BillinglistManager struct {
+type CalendarcompanylistManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Billinglist) AddExtra(key string, value interface{}) {    
+func (c *Calendarcompanylist) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewBillinglistManager(conn interface{}) *BillinglistManager {
-    var item BillinglistManager
+func NewCalendarcompanylistManager(conn interface{}) *CalendarcompanylistManager {
+    var item CalendarcompanylistManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -66,17 +59,17 @@ func NewBillinglistManager(conn interface{}) *BillinglistManager {
     return &item
 }
 
-func (p *BillinglistManager) Close() {
+func (p *CalendarcompanylistManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *BillinglistManager) SetIndex(index string) {
+func (p *CalendarcompanylistManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *CalendarcompanylistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -84,7 +77,7 @@ func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Resu
     }
 }
 
-func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *CalendarcompanylistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -92,10 +85,10 @@ func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Ro
     }
 }
 
-func (p *BillinglistManager) GetQuery() string {
+func (p *CalendarcompanylistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinglist_vw "
+    str := "select r_id, r_company, r_month, r_day, r_status, r_count, r_checkdate from calendarcompanylist_vw "
 
     if p.Index == "" {
         ret = str
@@ -109,10 +102,10 @@ func (p *BillinglistManager) GetQuery() string {
     return ret;
 }
 
-func (p *BillinglistManager) GetQuerySelect() string {
+func (p *CalendarcompanylistManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from billinglist_vw "
+    str := "select count(*) from calendarcompanylist_vw "
 
     if p.Index == "" {
         ret = str
@@ -126,12 +119,12 @@ func (p *BillinglistManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *BillinglistManager) Truncate() error {
+func (p *CalendarcompanylistManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate billinglist_vw "
+    query := "truncate calendarcompanylist_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -143,19 +136,19 @@ func (p *BillinglistManager) Truncate() error {
 
 
 
-func (p *BillinglistManager) Delete(id int64) error {
+func (p *CalendarcompanylistManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from billinglist_vw where bi_id = ?"
+    query := "delete from calendarcompanylist_vw where r_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
+func (p *CalendarcompanylistManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -169,15 +162,15 @@ func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and bi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " and r_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " and r_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -191,7 +184,7 @@ func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from billinglist_vw where " + query[5:]
+    query = "delete from calendarcompanylist_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
@@ -200,41 +193,41 @@ func (p *BillinglistManager) DeleteWhere(args []interface{}) error {
 
 
 
-func (p *BillinglistManager) IncreasePrice(value int, id int64) error {
+func (p *CalendarcompanylistManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update billinglist_vw set bi_price = bi_price + ? where bi_id = ?"
+	query := "update calendarcompanylist_vw set r_company = r_company + ? where r_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BillinglistManager) IncreaseCompany(value int64, id int64) error {
+func (p *CalendarcompanylistManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update billinglist_vw set bi_company = bi_company + ? where bi_id = ?"
+	query := "update calendarcompanylist_vw set r_status = r_status + ? where r_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *BillinglistManager) IncreaseBuilding(value int64, id int64) error {
+func (p *CalendarcompanylistManager) IncreaseCount(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update billinglist_vw set bi_building = bi_building + ? where bi_id = ?"
+	query := "update calendarcompanylist_vw set r_count = r_count + ? where r_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *BillinglistManager) GetIdentity() int64 {
+func (p *CalendarcompanylistManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -248,22 +241,20 @@ func (p *BillinglistManager) GetIdentity() int64 {
     }
 }
 
-func (p *Billinglist) InitExtra() {
+func (p *Calendarcompanylist) InitExtra() {
     p.Extra = map[string]interface{}{
-            "status":     billinglist.GetStatus(p.Status),
-            "giro":     billinglist.GetGiro(p.Giro),
 
     }
 }
 
-func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
-    var item Billinglist
+func (p *CalendarcompanylistManager) ReadRow(rows *sql.Rows) *Calendarcompanylist {
+    var item Calendarcompanylist
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Company, &item.Month, &item.Day, &item.Status, &item.Count, &item.Checkdate)
         
         
         
@@ -272,26 +263,14 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
         
         
         
-        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
-            item.Billdate = ""
+        
+        
+        
+        
+        
+        if item.Checkdate == "0000-00-00 00:00:00" || item.Checkdate == "1000-01-01 00:00:00" {
+            item.Checkdate = ""
         }
-        
-        
-        
-        
-        
-        
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
-        
-        
-        
-        
-        
-        
-        
-        
         
     } else {
         return nil
@@ -307,14 +286,14 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
     }
 }
 
-func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
-    var items []Billinglist
+func (p *CalendarcompanylistManager) ReadRows(rows *sql.Rows) []Calendarcompanylist {
+    var items []Calendarcompanylist
 
     for rows.Next() {
-        var item Billinglist
+        var item Calendarcompanylist
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Company, &item.Month, &item.Day, &item.Status, &item.Count, &item.Checkdate)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -324,19 +303,12 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
         
         
         
-        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
-            item.Billdate = ""
+        
+        
+        
+        if item.Checkdate == "0000-00-00 00:00:00" || item.Checkdate == "1000-01-01 00:00:00" {
+            item.Checkdate = ""
         }
-        
-        
-        
-        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
-            item.Date = ""
-        }
-        
-        
-        
-        
         
         item.InitExtra()        
         
@@ -347,12 +319,12 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
      return items
 }
 
-func (p *BillinglistManager) Get(id int64) *Billinglist {
+func (p *CalendarcompanylistManager) Get(id int64) *Calendarcompanylist {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and bi_id = ?"
+    query := p.GetQuery() + " and r_id = ?"
 
     
     
@@ -368,7 +340,7 @@ func (p *BillinglistManager) Get(id int64) *Billinglist {
     return p.ReadRow(rows)
 }
 
-func (p *BillinglistManager) Count(args []interface{}) int {
+func (p *CalendarcompanylistManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -382,15 +354,15 @@ func (p *BillinglistManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and bi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " and r_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " and r_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -427,13 +399,13 @@ func (p *BillinglistManager) Count(args []interface{}) int {
     }
 }
 
-func (p *BillinglistManager) FindAll() []Billinglist {
+func (p *CalendarcompanylistManager) FindAll() []Calendarcompanylist {
     return p.Find(nil)
 }
 
-func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
+func (p *CalendarcompanylistManager) Find(args []interface{}) []Calendarcompanylist {
     if p.Conn == nil && p.Tx == nil {
-        var items []Billinglist
+        var items []Calendarcompanylist
         return items
     }
 
@@ -472,15 +444,15 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
             item := v
 
             if item.Compare == "in" {
-                query += " and bi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and r_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " and r_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " and r_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -502,10 +474,10 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "bi_id desc"
+            orderby = "r_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "bi_" + orderby
+                orderby = "r_" + orderby
             }
             
         }
@@ -523,10 +495,10 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
         */
     } else {
         if orderby == "" {
-            orderby = "bi_id"
+            orderby = "r_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "bi_" + orderby
+                orderby = "r_" + orderby
             }
         }
         query += " order by " + orderby
@@ -536,7 +508,7 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Billinglist
+        var items []Calendarcompanylist
         return items
     }
 
@@ -547,16 +519,16 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
 
 
 
-func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
+func (p *CalendarcompanylistManager) Sum(args []interface{}) *Calendarcompanylist {
     if p.Conn == nil && p.Tx == nil {
-        var item Billinglist
+        var item Calendarcompanylist
         return &item
     }
 
     var params []interface{}
 
     
-    query := "select sum(bi_price) from billinglist_vw"
+    query := "select sum(r_count) from calendarcompanylist_vw"
 
     if p.Index != "" {
         query = query + " use index(" + p.Index + ") "
@@ -595,15 +567,15 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
             item := v
 
             if item.Compare == "in" {
-                query += " and bi_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and r_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " and r_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " and r_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -621,10 +593,10 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "bi_id desc"
+            orderby = "r_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "bi_" + orderby
+                orderby = "r_" + orderby
             }
             
         }
@@ -642,10 +614,10 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
         */
     } else {
         if orderby == "" {
-            orderby = "bi_id"
+            orderby = "r_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "bi_" + orderby
+                orderby = "r_" + orderby
             }
         }
         query += " order by " + orderby
@@ -653,7 +625,7 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
 
     rows, err := p.Query(query, params...)
 
-    var item Billinglist
+    var item Calendarcompanylist
     
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -664,7 +636,7 @@ func (p *BillinglistManager) Sum(args []interface{}) *Billinglist {
 
     if rows.Next() {
         
-        rows.Scan(&item.Price)        
+        rows.Scan(&item.Count)        
     }
 
     return &item        
