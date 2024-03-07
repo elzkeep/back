@@ -166,6 +166,9 @@ func (p *ReportManager) Insert(item *Report) error {
     }
 
     
+    if item.Checkdate == "" {
+       item.Checkdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -253,6 +256,9 @@ func (p *ReportManager) Update(item *Report) error {
     }
     
     
+    if item.Checkdate == "" {
+       item.Checkdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -473,7 +479,9 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
         
         
         
-        
+        if item.Checkdate == "0000-00-00" || item.Checkdate == "1000-01-01" {
+            item.Checkdate = ""
+        }
         
         
         
@@ -532,7 +540,9 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         
         
         
-        
+        if item.Checkdate == "0000-00-00" || item.Checkdate == "1000-01-01" {
+            item.Checkdate = ""
+        }
         
         
         

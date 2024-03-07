@@ -1,15 +1,13 @@
 package router
 
 import (
-	"encoding/json"
-	"log"
-	"strconv"
-	"strings"
+    "encoding/json"
+    "strconv"
+    "strings"
 	"zkeep/controllers/api"
 	"zkeep/controllers/rest"
-	"zkeep/models"
-	"zkeep/models/user"
-
+    "zkeep/models"
+    "zkeep/models/user"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,7 +16,7 @@ func getArrayCommal(name string) []int64 {
 
 	var items []int64
 	for _, item := range values {
-		n, _ := strconv.ParseInt(item, 10, 64)
+        n, _ := strconv.ParseInt(item, 10, 64)
 		items = append(items, n)
 	}
 
@@ -30,7 +28,7 @@ func getArrayCommai(name string) []int {
 
 	var items []int
 	for _, item := range values {
-		n, _ := strconv.Atoi(item)
+        n, _ := strconv.Atoi(item)
 		items = append(items, n)
 	}
 
@@ -39,10 +37,10 @@ func getArrayCommai(name string) []int {
 
 func SetRouter(r *fiber.App) {
 
-	r.Get("/api/jwt", func(c *fiber.Ctx) error {
+    r.Get("/api/jwt", func(c *fiber.Ctx) error {
 		loginid := c.Query("loginid")
-		passwd := c.Query("passwd")
-		return c.JSON(JwtAuth(c, loginid, passwd))
+        passwd := c.Query("passwd")
+        return c.JSON(JwtAuth(c, loginid, passwd))
 	})
 	apiGroup := r.Group("/api")
 	r.Use(JwtAuthRequired)
@@ -77,7 +75,7 @@ func SetRouter(r *fiber.App) {
 			controller.Init(c)
 			controller.File(id_)
 			controller.Close()
-			return nil
+            return nil
 		})
 
 		apiGroup.Get("/report/search/:page", func(c *fiber.Ctx) error {
@@ -98,7 +96,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -163,7 +161,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -177,7 +175,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -191,7 +189,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -205,7 +203,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -219,7 +217,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -401,7 +399,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -415,7 +413,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -429,7 +427,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -443,7 +441,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -457,7 +455,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -676,7 +674,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -690,7 +688,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -704,7 +702,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -718,7 +716,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -732,7 +730,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1221,7 +1219,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1235,7 +1233,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1249,7 +1247,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1263,7 +1261,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1277,7 +1275,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1367,7 +1365,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1381,7 +1379,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1395,7 +1393,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1409,7 +1407,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1423,7 +1421,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1779,7 +1777,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1793,7 +1791,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1807,7 +1805,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1821,7 +1819,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -1835,7 +1833,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2011,7 +2009,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2025,7 +2023,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2039,7 +2037,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2053,7 +2051,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2067,7 +2065,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2157,7 +2155,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2171,7 +2169,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2185,7 +2183,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2199,7 +2197,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2213,7 +2211,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2826,7 +2824,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2840,7 +2838,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2854,7 +2852,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2868,7 +2866,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -2882,7 +2880,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3362,7 +3360,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3376,7 +3374,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3390,7 +3388,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3404,7 +3402,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3418,7 +3416,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3508,7 +3506,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3522,7 +3520,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3536,7 +3534,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3550,7 +3548,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3564,7 +3562,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3635,7 +3633,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3649,7 +3647,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3663,7 +3661,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3677,7 +3675,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3691,7 +3689,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3762,7 +3760,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3776,7 +3774,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3790,7 +3788,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3804,7 +3802,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3818,7 +3816,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -3989,7 +3987,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insert(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -4003,7 +4001,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Insertbatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -4017,7 +4015,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Update(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -4031,7 +4029,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Delete(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -4045,7 +4043,7 @@ func SetRouter(r *fiber.App) {
 			if item_ != nil {
 				controller.Deletebatch(item_)
 			} else {
-				controller.Result["code"] = "error"
+			    controller.Result["code"] = "error"
 			}
 			controller.Close()
 			return c.JSON(controller.Result)
@@ -4365,7 +4363,6 @@ func SetRouter(r *fiber.App) {
 		})
 
 		apiGroup.Get("/user/sum", func(c *fiber.Ctx) error {
-			log.Println("/user/sum")
 			var controller rest.UserController
 			controller.Init(c)
 			controller.Sum()

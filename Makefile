@@ -3,16 +3,16 @@ tag=latest
 all: server
 
 server: dummy
-	buildtool-model ./ 
 	buildtool-model ./ dart
-	buildtool-model ./ typescript
+	buildtool-model ./ javascript
+	buildtool-model ./ 
 	buildtool-router_fiber ./ > ./router/router.go
 	go build -o bin/main main.go
 
 model: dummy
-	buildtool-model ./ 
 	buildtool-model ./ dart
-	buildtool-model ./ typescript
+	buildtool-model ./ javascript
+	buildtool-model ./ 
 	buildtool-router_fiber ./ > ./router/router.go
 	go build -o bin/main main.go
 

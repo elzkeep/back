@@ -47,9 +47,17 @@ func (c *ReportController) Index(page int, pagesize int) {
     if _number != 0 {
         args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
     }
-    _checkdate := c.Get("checkdate")
-    if _checkdate != "" {
-        args = append(args, models.Where{Column:"checkdate", Value:_checkdate, Compare:"like"})
+    _startcheckdate := c.Get("startcheckdate")
+    _endcheckdate := c.Get("endcheckdate")
+    if _startcheckdate != "" && _endcheckdate != "" {        
+        var v [2]string
+        v[0] = _startcheckdate
+        v[1] = _endcheckdate  
+        args = append(args, models.Where{Column:"checkdate", Value:v, Compare:"between"})    
+    } else if  _startcheckdate != "" {          
+        args = append(args, models.Where{Column:"checkdate", Value:_startcheckdate, Compare:">="})
+    } else if  _endcheckdate != "" {          
+        args = append(args, models.Where{Column:"checkdate", Value:_endcheckdate, Compare:"<="})            
     }
     _checktime := c.Get("checktime")
     if _checktime != "" {
