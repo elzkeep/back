@@ -26,6 +26,9 @@ type Report struct {
     Checkdate                string `json:"checkdate"`         
     Checktime                string `json:"checktime"`         
     Content                string `json:"content"`         
+    Image                string `json:"image"`         
+    Sign1                string `json:"sign1"`         
+    Sign2                string `json:"sign2"`         
     Status                report.Status `json:"status"`         
     Company                int64 `json:"company"`         
     User                int64 `json:"user"`         
@@ -96,7 +99,7 @@ func (p *ReportManager) Query(query string, params ...interface{}) (*sql.Rows, e
 func (p *ReportManager) GetQuery() string {
     ret := ""
 
-    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date, u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from report_tb, company_tb, user_tb, building_tb "
+    str := "select r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_image, r_sign1, r_sign2, r_status, r_company, r_user, r_building, r_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_buildingname, c_buildingcompanyno, c_buildingceo, c_buildingaddress, c_buildingaddressetc, c_type, c_checkdate, c_managername, c_managertel, c_manageremail, c_contractstartdate, c_contractenddate, c_contractprice, c_billingdate, c_billingname, c_billingtel, c_billingemail, c_status, c_companygroup, c_date, u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from report_tb, company_tb, user_tb, building_tb "
 
     if p.Index == "" {
         ret = str
@@ -177,11 +180,11 @@ func (p *ReportManager) Insert(item *Report) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into report_tb (r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date)
+        query = "insert into report_tb (r_id, r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_image, r_sign1, r_sign2, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Image, item.Sign1, item.Sign2, item.Status, item.Company, item.User, item.Building, item.Date)
     } else {
-        query = "insert into report_tb (r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date)
+        query = "insert into report_tb (r_title, r_period, r_number, r_checkdate, r_checktime, r_content, r_image, r_sign1, r_sign2, r_status, r_company, r_user, r_building, r_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Image, item.Sign1, item.Sign2, item.Status, item.Company, item.User, item.Building, item.Date)
     }
     
     if err == nil {
@@ -263,8 +266,8 @@ func (p *ReportManager) Update(item *Report) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update report_tb set r_title = ?, r_period = ?, r_number = ?, r_checkdate = ?, r_checktime = ?, r_content = ?, r_status = ?, r_company = ?, r_user = ?, r_building = ?, r_date = ? where r_id = ?"
-	_, err := p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Status, item.Company, item.User, item.Building, item.Date, item.Id)
+	query := "update report_tb set r_title = ?, r_period = ?, r_number = ?, r_checkdate = ?, r_checktime = ?, r_content = ?, r_image = ?, r_sign1 = ?, r_sign2 = ?, r_status = ?, r_company = ?, r_user = ?, r_building = ?, r_date = ? where r_id = ?"
+	_, err := p.Exec(query , item.Title, item.Period, item.Number, item.Checkdate, item.Checktime, item.Content, item.Image, item.Sign1, item.Sign2, item.Status, item.Company, item.User, item.Building, item.Date, item.Id)
     
         
     return err
@@ -332,6 +335,39 @@ func (p *ReportManager) UpdateContent(value string, id int64) error {
     }
 
 	query := "update report_tb set r_content = ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ReportManager) UpdateImage(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_image = ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ReportManager) UpdateSign1(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_sign1 = ? where r_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *ReportManager) UpdateSign2(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update report_tb set r_sign2 = ? where r_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -470,7 +506,7 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Image, &item.Sign1, &item.Sign2, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
         
         
         
@@ -482,6 +518,12 @@ func (p *ReportManager) ReadRow(rows *sql.Rows) *Report {
         if item.Checkdate == "0000-00-00" || item.Checkdate == "1000-01-01" {
             item.Checkdate = ""
         }
+        
+        
+        
+        
+        
+        
         
         
         
@@ -530,7 +572,7 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
             var _building Building
             
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Period, &item.Number, &item.Checkdate, &item.Checktime, &item.Content, &item.Image, &item.Sign1, &item.Sign2, &item.Status, &item.Company, &item.User, &item.Building, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Buildingname, &_company.Buildingcompanyno, &_company.Buildingceo, &_company.Buildingaddress, &_company.Buildingaddressetc, &_company.Type, &_company.Checkdate, &_company.Managername, &_company.Managertel, &_company.Manageremail, &_company.Contractstartdate, &_company.Contractenddate, &_company.Contractprice, &_company.Billingdate, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Companygroup, &_company.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Name, &_user.Email, &_user.Tel, &_user.Address, &_user.Addressetc, &_user.Joindate, &_user.Careeryear, &_user.Careermonth, &_user.Level, &_user.Score, &_user.Status, &_user.Company, &_user.Department, &_user.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -543,6 +585,9 @@ func (p *ReportManager) ReadRows(rows *sql.Rows) []Report {
         if item.Checkdate == "0000-00-00" || item.Checkdate == "1000-01-01" {
             item.Checkdate = ""
         }
+        
+        
+        
         
         
         

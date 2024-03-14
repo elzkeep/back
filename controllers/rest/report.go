@@ -68,6 +68,18 @@ func (c *ReportController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
         
     }
+    _image := c.Get("image")
+    if _image != "" {
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+    }
+    _sign1 := c.Get("sign1")
+    if _sign1 != "" {
+        args = append(args, models.Where{Column:"sign1", Value:_sign1, Compare:"like"})
+    }
+    _sign2 := c.Get("sign2")
+    if _sign2 != "" {
+        args = append(args, models.Where{Column:"sign2", Value:_sign2, Compare:"like"})
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -261,6 +273,36 @@ func (c *ReportController) UpdateContent(content string, id int64) {
 
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateContent(content, id)
+}
+
+// @Put()
+func (c *ReportController) UpdateImage(image string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewReportManager(conn)
+	_manager.UpdateImage(image, id)
+}
+
+// @Put()
+func (c *ReportController) UpdateSign1(sign1 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewReportManager(conn)
+	_manager.UpdateSign1(sign1, id)
+}
+
+// @Put()
+func (c *ReportController) UpdateSign2(sign2 string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewReportManager(conn)
+	_manager.UpdateSign2(sign2, id)
 }
 
 // @Put()
