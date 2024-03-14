@@ -1,13 +1,14 @@
 package router
 
 import (
-    "encoding/json"
-    "strconv"
-    "strings"
+	"encoding/json"
+	"strconv"
+	"strings"
 	"zkeep/controllers/api"
 	"zkeep/controllers/rest"
-    "zkeep/models"
-    "zkeep/models/user"
+	"zkeep/models"
+	"zkeep/models/user"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -3875,6 +3876,20 @@ func SetRouter(r *fiber.App) {
 			var controller rest.ReportController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/report", func(c *fiber.Ctx) error {
+			item_ := &models.Report{}
+			c.BodyParser(item_)
+			var controller rest.ReportController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
