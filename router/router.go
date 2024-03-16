@@ -153,6 +153,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/billing/count", func(c *fiber.Ctx) error {
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/billing", func(c *fiber.Ctx) error {
 			item_ := &models.Billing{}
 			c.BodyParser(item_)
@@ -364,6 +372,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/billinglist/count", func(c *fiber.Ctx) error {
+			var controller rest.BillinglistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/billinglist/sum", func(c *fiber.Ctx) error {
 			var controller rest.BillinglistController
 			controller.Init(c)
@@ -387,6 +403,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BuildingController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/building/count", func(c *fiber.Ctx) error {
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -639,6 +663,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/calendarcompanylist/count", func(c *fiber.Ctx) error {
+			var controller rest.CalendarcompanylistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/calendarcompanylist/sum", func(c *fiber.Ctx) error {
 			var controller rest.CalendarcompanylistController
 			controller.Init(c)
@@ -662,6 +694,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CompanyController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/company/count", func(c *fiber.Ctx) error {
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -945,6 +985,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/companylicense/count", func(c *fiber.Ctx) error {
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/companylicense", func(c *fiber.Ctx) error {
 			item_ := &models.Companylicense{}
 			c.BodyParser(item_)
@@ -1087,6 +1135,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customer/count", func(c *fiber.Ctx) error {
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1503,6 +1559,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/customercompany/count", func(c *fiber.Ctx) error {
+			var controller rest.CustomercompanyController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/customercompany/sum", func(c *fiber.Ctx) error {
 			var controller rest.CustomercompanyController
 			controller.Init(c)
@@ -1526,6 +1590,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.DataController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/data/count", func(c *fiber.Ctx) error {
+			var controller rest.DataController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1762,6 +1834,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/department/count", func(c *fiber.Ctx) error {
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/department", func(c *fiber.Ctx) error {
 			item_ := &models.Department{}
 			c.BodyParser(item_)
@@ -1904,6 +1984,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.FacilityController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/facility/count", func(c *fiber.Ctx) error {
+			var controller rest.FacilityController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -2577,6 +2665,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/item/count", func(c *fiber.Ctx) error {
+			var controller rest.ItemController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/item", func(c *fiber.Ctx) error {
 			item_ := &models.Item{}
 			c.BodyParser(item_)
@@ -3113,6 +3209,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/license/count", func(c *fiber.Ctx) error {
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/license", func(c *fiber.Ctx) error {
 			item_ := &models.License{}
 			c.BodyParser(item_)
@@ -3259,6 +3363,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/licensecategory/count", func(c *fiber.Ctx) error {
+			var controller rest.LicensecategoryController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/licensecategory", func(c *fiber.Ctx) error {
 			item_ := &models.Licensecategory{}
 			c.BodyParser(item_)
@@ -3382,6 +3494,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.LicenselevelController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/licenselevel/count", func(c *fiber.Ctx) error {
+			var controller rest.LicenselevelController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3513,6 +3633,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/notice/count", func(c *fiber.Ctx) error {
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/notice", func(c *fiber.Ctx) error {
 			item_ := &models.Notice{}
 			c.BodyParser(item_)
@@ -3636,6 +3764,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.ReportController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/report/count", func(c *fiber.Ctx) error {
+			var controller rest.ReportController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3962,6 +4098,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/statisticsday/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsdayController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/statisticsday/sum", func(c *fiber.Ctx) error {
 			var controller rest.StatisticsdayController
 			controller.Init(c)
@@ -3985,6 +4129,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.StatisticsmonthController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsmonth/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsmonthController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4016,6 +4168,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/statisticsyear/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsyearController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/statisticsyear/sum", func(c *fiber.Ctx) error {
 			var controller rest.StatisticsyearController
 			controller.Init(c)
@@ -4039,6 +4199,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/count", func(c *fiber.Ctx) error {
+			var controller rest.UserController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4458,6 +4626,14 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserlistController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/userlist/count", func(c *fiber.Ctx) error {
+			var controller rest.UserlistController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

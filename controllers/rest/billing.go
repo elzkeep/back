@@ -118,6 +118,67 @@ func (c *BillingController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+func (c *BillingController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewBillingManager(conn)
+
+    var args []interface{}
+    
+    _price := c.Geti("price")
+    if _price != 0 {
+        args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _giro := c.Geti("giro")
+    if _giro != 0 {
+        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"="})    
+    }
+    _startbilldate := c.Get("startbilldate")
+    _endbilldate := c.Get("endbilldate")
+    if _startbilldate != "" && _endbilldate != "" {        
+        var v [2]string
+        v[0] = _startbilldate
+        v[1] = _endbilldate  
+        args = append(args, models.Where{Column:"billdate", Value:v, Compare:"between"})    
+    } else if  _startbilldate != "" {          
+        args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
+    } else if  _endbilldate != "" {          
+        args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+    }
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _building := c.Geti64("building")
+    if _building != 0 {
+        args = append(args, models.Where{Column:"building", Value:_building, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
 func (c *BillingController) Insert(item *models.Billing) {
     
     

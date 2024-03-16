@@ -96,6 +96,45 @@ func (c *NoticeController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+func (c *NoticeController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewNoticeManager(conn)
+
+    var args []interface{}
+    
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
+    _content := c.Get("content")
+    if _content != "" {
+        args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
+        
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
 func (c *NoticeController) Insert(item *models.Notice) {
     
     

@@ -170,6 +170,119 @@ func (c *CustomerController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+func (c *CustomerController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewCustomerManager(conn)
+
+    var args []interface{}
+    
+    _type := c.Geti("type")
+    if _type != 0 {
+        args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
+    }
+    _checkdate := c.Geti("checkdate")
+    if _checkdate != 0 {
+        args = append(args, models.Where{Column:"checkdate", Value:_checkdate, Compare:"="})    
+    }
+    _managername := c.Get("managername")
+    if _managername != "" {
+        args = append(args, models.Where{Column:"managername", Value:_managername, Compare:"like"})
+    }
+    _managertel := c.Get("managertel")
+    if _managertel != "" {
+        args = append(args, models.Where{Column:"managertel", Value:_managertel, Compare:"like"})
+    }
+    _manageremail := c.Get("manageremail")
+    if _manageremail != "" {
+        args = append(args, models.Where{Column:"manageremail", Value:_manageremail, Compare:"like"})
+    }
+    _startcontractstartdate := c.Get("startcontractstartdate")
+    _endcontractstartdate := c.Get("endcontractstartdate")
+    if _startcontractstartdate != "" && _endcontractstartdate != "" {        
+        var v [2]string
+        v[0] = _startcontractstartdate
+        v[1] = _endcontractstartdate  
+        args = append(args, models.Where{Column:"contractstartdate", Value:v, Compare:"between"})    
+    } else if  _startcontractstartdate != "" {          
+        args = append(args, models.Where{Column:"contractstartdate", Value:_startcontractstartdate, Compare:">="})
+    } else if  _endcontractstartdate != "" {          
+        args = append(args, models.Where{Column:"contractstartdate", Value:_endcontractstartdate, Compare:"<="})            
+    }
+    _startcontractenddate := c.Get("startcontractenddate")
+    _endcontractenddate := c.Get("endcontractenddate")
+    if _startcontractenddate != "" && _endcontractenddate != "" {        
+        var v [2]string
+        v[0] = _startcontractenddate
+        v[1] = _endcontractenddate  
+        args = append(args, models.Where{Column:"contractenddate", Value:v, Compare:"between"})    
+    } else if  _startcontractenddate != "" {          
+        args = append(args, models.Where{Column:"contractenddate", Value:_startcontractenddate, Compare:">="})
+    } else if  _endcontractenddate != "" {          
+        args = append(args, models.Where{Column:"contractenddate", Value:_endcontractenddate, Compare:"<="})            
+    }
+    _contractprice := c.Geti("contractprice")
+    if _contractprice != 0 {
+        args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
+    }
+    _contractday := c.Geti("contractday")
+    if _contractday != 0 {
+        args = append(args, models.Where{Column:"contractday", Value:_contractday, Compare:"="})    
+    }
+    _billingdate := c.Geti("billingdate")
+    if _billingdate != 0 {
+        args = append(args, models.Where{Column:"billingdate", Value:_billingdate, Compare:"="})    
+    }
+    _billingname := c.Get("billingname")
+    if _billingname != "" {
+        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"like"})
+    }
+    _billingtel := c.Get("billingtel")
+    if _billingtel != "" {
+        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"like"})
+    }
+    _billingemail := c.Get("billingemail")
+    if _billingemail != "" {
+        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _building := c.Geti64("building")
+    if _building != 0 {
+        args = append(args, models.Where{Column:"building", Value:_building, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
 func (c *CustomerController) Insert(item *models.Customer) {
     
     

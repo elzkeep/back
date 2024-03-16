@@ -98,6 +98,47 @@ func (c *LicenseController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+func (c *LicenseController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewLicenseManager(conn)
+
+    var args []interface{}
+    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _licensecategory := c.Geti64("licensecategory")
+    if _licensecategory != 0 {
+        args = append(args, models.Where{Column:"licensecategory", Value:_licensecategory, Compare:"="})    
+    }
+    _licenselevel := c.Geti64("licenselevel")
+    if _licenselevel != 0 {
+        args = append(args, models.Where{Column:"licenselevel", Value:_licenselevel, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
 func (c *LicenseController) Insert(item *models.License) {
     
     

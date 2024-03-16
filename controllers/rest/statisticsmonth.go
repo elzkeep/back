@@ -102,6 +102,51 @@ func (c *StatisticsmonthController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+func (c *StatisticsmonthController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewStatisticsmonthManager(conn)
+
+    var args []interface{}
+    
+    _year := c.Get("year")
+    if _year != "" {
+        args = append(args, models.Where{Column:"year", Value:_year, Compare:"like"})
+    }
+    _duration := c.Get("duration")
+    if _duration != "" {
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+    }
+    _total := c.Geti64("total")
+    if _total != 0 {
+        args = append(args, models.Where{Column:"total", Value:_total, Compare:"="})    
+    }
+    _totalprice := c.Geti64("totalprice")
+    if _totalprice != 0 {
+        args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
+    }
+    _startbilldate := c.Get("startbilldate")
+    _endbilldate := c.Get("endbilldate")
+    if _startbilldate != "" && _endbilldate != "" {        
+        var v [2]string
+        v[0] = _startbilldate
+        v[1] = _endbilldate  
+        args = append(args, models.Where{Column:"billdate", Value:v, Compare:"between"})    
+    } else if  _startbilldate != "" {          
+        args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
+    } else if  _endbilldate != "" {          
+        args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
 
 
 
