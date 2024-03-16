@@ -22,7 +22,8 @@
       "method": [
         "GetByLoginid",
         "CountByLoginid",
-        "FindByLevel"
+        "FindByLevel",
+        "CountByCompany"
       ]      
     },    
     {
@@ -164,6 +165,15 @@
           "data": ["", "wait:미발행", "complete:발행"]
         }
       ]      
-    }    
+    },
+    {
+      "name": "customercompany",      
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    }
   ]   
 }

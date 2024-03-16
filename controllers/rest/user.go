@@ -275,6 +275,23 @@ func (c *UserController) FindByLevel(level user.Level) []models.User {
 }
 
 
+func (c *UserController) CountByCompany(company int64) int {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+    
+    item := _manager.CountByCompany(company)
+    
+    
+    
+    c.Set("count", item)
+    
+    return item
+    
+}
+
+
 // @Put()
 func (c *UserController) UpdateLoginid(loginid string, id int64) {
     

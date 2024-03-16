@@ -850,6 +850,17 @@ func (p *UserManager) FindByLevel(level user.Level, args ...interface{}) []User 
     return p.Find(rets)
 }
 
+func (p *UserManager) CountByCompany(company int64, args ...interface{}) int {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+    
+    if company != 0 { 
+        rets = append(rets, Where{Column:"company", Value:company, Compare:"="})
+     }
+    
+    return p.Count(rets)
+}
+
 
 func (p *UserManager) Sum(args []interface{}) *User {
     if p.Conn == nil && p.Tx == nil {
