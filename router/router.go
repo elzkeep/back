@@ -46,6 +46,15 @@ func SetRouter(r *fiber.App) {
 	r.Use(JwtAuthRequired)
 	{
 
+		apiGroup.Get("/billing/print/:ids", func(c *fiber.Ctx) error {
+			ids_ := getArrayCommal(c.Query("ids"))
+			var controller api.BillingController
+			controller.Init(c)
+			controller.Print(ids_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/dashboard", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Query("company"), 10, 64)
 			var controller api.DashboardController

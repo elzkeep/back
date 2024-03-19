@@ -103,7 +103,7 @@ func (p *CustomerManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *CustomerManager) GetQuery() string {
     ret := ""
 
-    str := "select cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractday, cu_billingdate, cu_billingname, cu_billingtel, cu_billingemail, cu_status, cu_user, cu_company, cu_building, cu_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from customer_tb, building_tb "
+    str := "select cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractday, cu_billingdate, cu_billingname, cu_billingtel, cu_billingemail, cu_status, cu_user, cu_company, cu_building, cu_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_status, c_date from customer_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -114,6 +114,8 @@ func (p *CustomerManager) GetQuery() string {
     ret += "where 1=1 "
     
     ret += "and cu_building = b_id "
+    
+    ret += "and b_company = c_id "
     
 
     return ret;
@@ -122,7 +124,7 @@ func (p *CustomerManager) GetQuery() string {
 func (p *CustomerManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from customer_tb, building_tb "
+    str := "select count(*) from customer_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -132,7 +134,9 @@ func (p *CustomerManager) GetQuerySelect() string {
 
     ret += "where 1=1 "
     
-    ret += "and cu_building = b_id "
+    ret += "and cu_building = b_id "    
+    
+    ret += "and b_company = c_id "    
     
 
     return ret;
@@ -580,10 +584,11 @@ func (p *CustomerManager) ReadRow(rows *sql.Rows) *Customer {
     var err error
 
     var _building Building
+    var _company Company
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractday, &item.Billingdate, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err = rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractday, &item.Billingdate, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Date)
         
         
         
@@ -640,6 +645,8 @@ func (p *CustomerManager) ReadRow(rows *sql.Rows) *Customer {
         item.InitExtra()
         _building.InitExtra()
         item.AddExtra("building",  _building)
+_company.InitExtra()
+        item.AddExtra("company",  _company)
 
         return &item
     }
@@ -651,9 +658,10 @@ func (p *CustomerManager) ReadRows(rows *sql.Rows) []Customer {
     for rows.Next() {
         var item Customer
         var _building Building
+            var _company Company
             
     
-        err := rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractday, &item.Billingdate, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err := rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractday, &item.Billingdate, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -689,6 +697,8 @@ func (p *CustomerManager) ReadRows(rows *sql.Rows) []Customer {
         item.InitExtra()        
         _building.InitExtra()
         item.AddExtra("building",  _building)
+_company.InitExtra()
+        item.AddExtra("company",  _company)
 
         items = append(items, item)
     }
@@ -705,7 +715,9 @@ func (p *CustomerManager) Get(id int64) *Customer {
     query := p.GetQuery() + " and cu_id = ?"
 
     
-    query += " and cu_building = b_id"
+    query += " and cu_building = b_id "    
+    
+    query += " and b_company = c_id "    
     
     
     rows, err := p.Query(query, id)

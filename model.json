@@ -125,6 +125,10 @@
         {
           "name": "building",
           "column": "building"
+        },
+        {
+          "name": "company",
+          "column": "b_company"
         }
       ]
     },

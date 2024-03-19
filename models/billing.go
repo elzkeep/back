@@ -121,7 +121,7 @@ func (p *BillingManager) GetQuerySelect() string {
 
     ret += "where 1=1 "
     
-    ret += "and bi_building = b_id "
+    ret += "and bi_building = b_id "    
     
 
     return ret;
@@ -476,7 +476,7 @@ func (p *BillingManager) Get(id int64) *Billing {
     query := p.GetQuery() + " and bi_id = ?"
 
     
-    query += " and bi_building = b_id"
+    query += " and bi_building = b_id "    
     
     
     rows, err := p.Query(query, id)

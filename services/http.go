@@ -2,6 +2,8 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"zkeep/config"
@@ -26,6 +28,25 @@ func Http() {
 		StrictRouting: true,
 		JSONEncoder:   json.Marshal,
 		JSONDecoder:   json.Unmarshal,
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+
+			// Retrieve the custom status code if it's a *fiber.Error
+			var e *fiber.Error
+			if errors.As(err, &e) {
+				code = e.Code
+			}
+
+			// Send custom error page
+			err = ctx.Status(code).SendFile(fmt.Sprintf("%v/index.html", config.DocumentRoot))
+			if err != nil {
+				// In case the SendFile fails
+				return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+			}
+
+			// Return from handler
+			return nil
+		},
 	})
 
 	sites := strings.Join(config.Cors, ", ")
@@ -91,6 +112,12 @@ func Http() {
 
 	app.Static("/webdata", "./webdata")
 	app.Static("/", config.DocumentRoot)
+
+	/*
+		app.Get("/*", func(ctx *fiber.Ctx) error {
+			return ctx.SendFile(fmt.Sprintf("%v/index.html", config.DocumentRoot))
+		})
+	*/
 
 	router.SetRouter(app)
 

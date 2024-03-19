@@ -132,11 +132,11 @@ func (p *ReportManager) GetQuerySelect() string {
 
     ret += "where 1=1 "
     
-    ret += "and r_company = c_id "
+    ret += "and r_company = c_id "    
     
-    ret += "and r_user = u_id "
+    ret += "and r_user = u_id "    
     
-    ret += "and r_building = b_id "
+    ret += "and r_building = b_id "    
     
 
     return ret;
@@ -622,11 +622,11 @@ func (p *ReportManager) Get(id int64) *Report {
     query := p.GetQuery() + " and r_id = ?"
 
     
-    query += " and r_company = c_id"
+    query += " and r_company = c_id "    
     
-    query += " and r_user = u_id"
+    query += " and r_user = u_id "    
     
-    query += " and r_building = b_id"
+    query += " and r_building = b_id "    
     
     
     rows, err := p.Query(query, id)
