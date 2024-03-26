@@ -87,6 +87,16 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Get("/external", func(c *fiber.Ctx) error {
+			filenames_ := c.Query("filenames")
+			type_, _ := strconv.Atoi(c.Query("type"))
+			var controller api.ExternalController
+			controller.Init(c)
+			controller.Index(filenames_, type_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/report/search/:page", func(c *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(c.Params("page"))
 			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))

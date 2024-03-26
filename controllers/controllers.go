@@ -313,7 +313,11 @@ func (c *Controller) GetUpload(uploadPath string, name string) (string, string) 
 	t := time.Now()
 	u2 := uuid.NewV4()
 
-	filename := fmt.Sprintf("%v/%04d%02d%02d%02d%02d%02d_%v%v", uploadPath, t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), strings.Replace(u2.String(), "-", "", -1), filepath.Ext(file.Filename))
+	filename := fmt.Sprintf("%04d%02d%02d%02d%02d%02d_%v%v", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), strings.Replace(u2.String(), "-", "", -1), filepath.Ext(file.Filename))
+	if uploadPath != "" {
+		filename = path.Join(uploadPath, filename)
+	}
+
 	fullFilename := path.Join(config.UploadPath, filename)
 
 	log.Println("path : ", config.UploadPath, fullFilename)
