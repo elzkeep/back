@@ -2965,6 +2965,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/department/parent", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var parent_ int64
+			if v, flag := results["parent"]; flag {
+				parent_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.UpdateParent(parent_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/department/company", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
