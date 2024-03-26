@@ -29,6 +29,37 @@ type Company struct {
     Billingname                string `json:"billingname"`         
     Billingtel                string `json:"billingtel"`         
     Billingemail                string `json:"billingemail"`         
+    Bankname                string `json:"bankname"`         
+    Bankno                string `json:"bankno"`         
+    Businesscondition                string `json:"businesscondition"`         
+    Businessitem                string `json:"businessitem"`         
+    Content                string `json:"content"`         
+    X1                Double `json:"x1"`         
+    Y1                Double `json:"y1"`         
+    X2                Double `json:"x2"`         
+    Y2                Double `json:"y2"`         
+    X3                Double `json:"x3"`         
+    Y3                Double `json:"y3"`         
+    X4                Double `json:"x4"`         
+    Y4                Double `json:"y4"`         
+    X5                Double `json:"x5"`         
+    Y5                Double `json:"y5"`         
+    X6                Double `json:"x6"`         
+    Y6                Double `json:"y6"`         
+    X7                Double `json:"x7"`         
+    Y7                Double `json:"y7"`         
+    X8                Double `json:"x8"`         
+    Y8                Double `json:"y8"`         
+    X9                Double `json:"x9"`         
+    Y9                Double `json:"y9"`         
+    X10                Double `json:"x10"`         
+    Y10                Double `json:"y10"`         
+    X11                Double `json:"x11"`         
+    Y11                Double `json:"y11"`         
+    X12                Double `json:"x12"`         
+    Y12                Double `json:"y12"`         
+    X13                Double `json:"x13"`         
+    Y13                Double `json:"y13"`         
     Status                int `json:"status"`         
     Date                string `json:"date"` 
     
@@ -96,7 +127,7 @@ func (p *CompanyManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *CompanyManager) GetQuery() string {
     ret := ""
 
-    str := "select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_status, c_date from company_tb "
+    str := "select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from company_tb "
 
     if p.Index == "" {
         ret = str
@@ -162,11 +193,11 @@ func (p *CompanyManager) Insert(item *Company) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into company_tb (c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_status, c_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Status, item.Date)
+        query = "insert into company_tb (c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Bankname, item.Bankno, item.Businesscondition, item.Businessitem, item.Content, item.X1, item.Y1, item.X2, item.Y2, item.X3, item.Y3, item.X4, item.Y4, item.X5, item.Y5, item.X6, item.Y6, item.X7, item.Y7, item.X8, item.Y8, item.X9, item.Y9, item.X10, item.Y10, item.X11, item.Y11, item.X12, item.Y12, item.X13, item.Y13, item.Status, item.Date)
     } else {
-        query = "insert into company_tb (c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_status, c_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Status, item.Date)
+        query = "insert into company_tb (c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Bankname, item.Bankno, item.Businesscondition, item.Businessitem, item.Content, item.X1, item.Y1, item.X2, item.Y2, item.X3, item.Y3, item.X4, item.Y4, item.X5, item.Y5, item.X6, item.Y6, item.X7, item.Y7, item.X8, item.Y8, item.X9, item.Y9, item.X10, item.Y10, item.X11, item.Y11, item.X12, item.Y12, item.X13, item.Y13, item.Status, item.Date)
     }
     
     if err == nil {
@@ -245,8 +276,8 @@ func (p *CompanyManager) Update(item *Company) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update company_tb set c_name = ?, c_companyno = ?, c_ceo = ?, c_address = ?, c_addressetc = ?, c_type = ?, c_billingname = ?, c_billingtel = ?, c_billingemail = ?, c_status = ?, c_date = ? where c_id = ?"
-	_, err := p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Status, item.Date, item.Id)
+	query := "update company_tb set c_name = ?, c_companyno = ?, c_ceo = ?, c_address = ?, c_addressetc = ?, c_type = ?, c_billingname = ?, c_billingtel = ?, c_billingemail = ?, c_bankname = ?, c_bankno = ?, c_businesscondition = ?, c_businessitem = ?, c_content = ?, c_x1 = ?, c_y1 = ?, c_x2 = ?, c_y2 = ?, c_x3 = ?, c_y3 = ?, c_x4 = ?, c_y4 = ?, c_x5 = ?, c_y5 = ?, c_x6 = ?, c_y6 = ?, c_x7 = ?, c_y7 = ?, c_x8 = ?, c_y8 = ?, c_x9 = ?, c_y9 = ?, c_x10 = ?, c_y10 = ?, c_x11 = ?, c_y11 = ?, c_x12 = ?, c_y12 = ?, c_x13 = ?, c_y13 = ?, c_status = ?, c_date = ? where c_id = ?"
+	_, err := p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Address, item.Addressetc, item.Type, item.Billingname, item.Billingtel, item.Billingemail, item.Bankname, item.Bankno, item.Businesscondition, item.Businessitem, item.Content, item.X1, item.Y1, item.X2, item.Y2, item.X3, item.Y3, item.X4, item.Y4, item.X5, item.Y5, item.X6, item.Y6, item.X7, item.Y7, item.X8, item.Y8, item.X9, item.Y9, item.X10, item.Y10, item.X11, item.Y11, item.X12, item.Y12, item.X13, item.Y13, item.Status, item.Date, item.Id)
     
         
     return err
@@ -352,6 +383,347 @@ func (p *CompanyManager) UpdateBillingemail(value string, id int64) error {
     return err
 }
 
+func (p *CompanyManager) UpdateBankname(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_bankname = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateBankno(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_bankno = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateBusinesscondition(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_businesscondition = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateBusinessitem(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_businessitem = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateContent(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_content = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX1(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x1 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY1(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y1 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX2(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x2 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY2(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y2 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX3(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x3 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY3(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y3 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX4(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x4 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY4(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y4 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX5(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x5 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY5(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y5 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX6(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x6 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY6(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y6 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX7(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x7 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY7(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y7 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX8(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x8 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY8(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y8 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX9(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x9 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY9(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y9 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX10(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x10 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY10(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y10 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX11(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x11 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY11(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y11 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX12(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x12 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY12(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y12 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateX13(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x13 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) UpdateY13(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y13 = ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *CompanyManager) UpdateStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -364,6 +736,292 @@ func (p *CompanyManager) UpdateStatus(value int, id int64) error {
 }
 
 
+
+func (p *CompanyManager) IncreaseX1(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x1 = c_x1 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY1(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y1 = c_y1 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX2(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x2 = c_x2 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY2(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y2 = c_y2 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX3(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x3 = c_x3 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY3(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y3 = c_y3 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX4(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x4 = c_x4 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY4(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y4 = c_y4 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX5(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x5 = c_x5 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY5(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y5 = c_y5 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX6(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x6 = c_x6 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY6(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y6 = c_y6 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX7(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x7 = c_x7 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY7(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y7 = c_y7 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX8(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x8 = c_x8 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY8(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y8 = c_y8 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX9(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x9 = c_x9 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY9(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y9 = c_y9 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX10(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x10 = c_x10 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY10(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y10 = c_y10 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX11(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x11 = c_x11 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY11(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y11 = c_y11 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX12(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x12 = c_x12 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY12(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y12 = c_y12 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseX13(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_x13 = c_x13 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *CompanyManager) IncreaseY13(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update company_tb set c_y13 = c_y13 + ? where c_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
 
 func (p *CompanyManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
@@ -405,7 +1063,69 @@ func (p *CompanyManager) ReadRow(rows *sql.Rows) *Company {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Type, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Type, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Bankname, &item.Bankno, &item.Businesscondition, &item.Businessitem, &item.Content, &item.X1, &item.Y1, &item.X2, &item.Y2, &item.X3, &item.Y3, &item.X4, &item.Y4, &item.X5, &item.Y5, &item.X6, &item.Y6, &item.X7, &item.Y7, &item.X8, &item.Y8, &item.X9, &item.Y9, &item.X10, &item.Y10, &item.X11, &item.Y11, &item.X12, &item.Y12, &item.X13, &item.Y13, &item.Status, &item.Date)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -454,12 +1174,43 @@ func (p *CompanyManager) ReadRows(rows *sql.Rows) []Company {
         var item Company
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Type, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Status, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Type, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Bankname, &item.Bankno, &item.Businesscondition, &item.Businessitem, &item.Content, &item.X1, &item.Y1, &item.X2, &item.Y2, &item.X3, &item.Y3, &item.X4, &item.Y4, &item.X5, &item.Y5, &item.X6, &item.Y6, &item.X7, &item.Y7, &item.X8, &item.Y8, &item.X9, &item.Y9, &item.X10, &item.Y10, &item.X11, &item.Y11, &item.X12, &item.Y12, &item.X13, &item.Y13, &item.Status, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -683,6 +1434,20 @@ func (p *CompanyManager) Find(args []interface{}) []Company {
     return p.ReadRows(rows)
 }
 
+
+func (p *CompanyManager) GetByCompanyno(companyno string, args ...interface{}) *Company {
+    if companyno != "" {
+        args = append(args, Where{Column:"companyno", Value:companyno, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
 
 
 

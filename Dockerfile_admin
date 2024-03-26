@@ -5,7 +5,10 @@ RUN  mkdir -p /usr/local/main
 COPY ./bin/main.linux /usr/local/main/main
 COPY ./.env.yml /usr/local/main/.env.yml
 ADD ./dist /usr/local/main/web
+RUN  mkdir -p /usr/local/main/fonts
 RUN  mkdir -p /usr/local/main/webdata
+RUN  mkdir -p /usr/local/main/webdata/temp
+COPY ./fonts/noto.ttf /usr/local/main/fonts/noto.ttf
 
 WORKDIR /usr/local/main
 CMD    ./main --mode production

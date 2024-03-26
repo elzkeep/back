@@ -82,6 +82,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
     if _contractprice != 0 {
         args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
     }
+    _contractvat := c.Geti("contractvat")
+    if _contractvat != 0 {
+        args = append(args, models.Where{Column:"contractvat", Value:_contractvat, Compare:"="})    
+    }
     _contractday := c.Geti("contractday")
     if _contractday != 0 {
         args = append(args, models.Where{Column:"contractday", Value:_contractday, Compare:"="})    
@@ -89,6 +93,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
     _billingdate := c.Geti("billingdate")
     if _billingdate != 0 {
         args = append(args, models.Where{Column:"billingdate", Value:_billingdate, Compare:"="})    
+    }
+    _billingtype := c.Geti("billingtype")
+    if _billingtype != 0 {
+        args = append(args, models.Where{Column:"billingtype", Value:_billingtype, Compare:"="})    
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
@@ -101,6 +109,34 @@ func (c *CustomerController) Index(page int, pagesize int) {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+    }
+    _addressetc := c.Get("addressetc")
+    if _addressetc != "" {
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _collectmonth := c.Geti("collectmonth")
+    if _collectmonth != 0 {
+        args = append(args, models.Where{Column:"collectmonth", Value:_collectmonth, Compare:"="})    
+    }
+    _collectday := c.Geti("collectday")
+    if _collectday != 0 {
+        args = append(args, models.Where{Column:"collectday", Value:_collectday, Compare:"="})    
+    }
+    _manager := c.Get("manager")
+    if _manager != "" {
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _fax := c.Get("fax")
+    if _fax != "" {
+        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"like"})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -227,6 +263,10 @@ func (c *CustomerController) Count() {
     if _contractprice != 0 {
         args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
     }
+    _contractvat := c.Geti("contractvat")
+    if _contractvat != 0 {
+        args = append(args, models.Where{Column:"contractvat", Value:_contractvat, Compare:"="})    
+    }
     _contractday := c.Geti("contractday")
     if _contractday != 0 {
         args = append(args, models.Where{Column:"contractday", Value:_contractday, Compare:"="})    
@@ -234,6 +274,10 @@ func (c *CustomerController) Count() {
     _billingdate := c.Geti("billingdate")
     if _billingdate != 0 {
         args = append(args, models.Where{Column:"billingdate", Value:_billingdate, Compare:"="})    
+    }
+    _billingtype := c.Geti("billingtype")
+    if _billingtype != 0 {
+        args = append(args, models.Where{Column:"billingtype", Value:_billingtype, Compare:"="})    
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
@@ -246,6 +290,34 @@ func (c *CustomerController) Count() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+    }
+    _addressetc := c.Get("addressetc")
+    if _addressetc != "" {
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _collectmonth := c.Geti("collectmonth")
+    if _collectmonth != 0 {
+        args = append(args, models.Where{Column:"collectmonth", Value:_collectmonth, Compare:"="})    
+    }
+    _collectday := c.Geti("collectday")
+    if _collectday != 0 {
+        args = append(args, models.Where{Column:"collectday", Value:_collectday, Compare:"="})    
+    }
+    _manager := c.Get("manager")
+    if _manager != "" {
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _fax := c.Get("fax")
+    if _fax != "" {
+        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"like"})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -350,6 +422,51 @@ func (c *CustomerController) Deletebatch(item *[]models.Customer) {
 
 
 
+func (c *CustomerController) CountByCompanyBuilding(company int64 ,building int64) int {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+    
+    item := _manager.CountByCompanyBuilding(company, building)
+    
+    
+    
+    c.Set("count", item)
+    
+    return item
+    
+}
+
+
+func (c *CustomerController) GetByCompanyBuilding(company int64 ,building int64) *models.Customer {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+    
+    item := _manager.GetByCompanyBuilding(company, building)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+// @Delete()
+func (c *CustomerController) DeleteByCompanyBuilding(company int64 ,building int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+    
+    _manager.DeleteByCompanyBuilding(company, building)
+    
+}
+
+
 // @Put()
 func (c *CustomerController) UpdateType(typeid int, id int64) {
     
@@ -431,6 +548,16 @@ func (c *CustomerController) UpdateContractprice(contractprice int, id int64) {
 }
 
 // @Put()
+func (c *CustomerController) UpdateContractvat(contractvat int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateContractvat(contractvat, id)
+}
+
+// @Put()
 func (c *CustomerController) UpdateContractday(contractday int, id int64) {
     
     
@@ -448,6 +575,16 @@ func (c *CustomerController) UpdateBillingdate(billingdate int, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingdate(billingdate, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateBillingtype(billingtype int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateBillingtype(billingtype, id)
 }
 
 // @Put()
@@ -478,6 +615,76 @@ func (c *CustomerController) UpdateBillingemail(billingemail string, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingemail(billingemail, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateAddress(address string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateAddress(address, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateAddressetc(addressetc string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateAddressetc(addressetc, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateCollectmonth(collectmonth int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateCollectmonth(collectmonth, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateCollectday(collectday int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateCollectday(collectday, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateManager(manager string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateManager(manager, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateTel(tel string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateTel(tel, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateFax(fax string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateFax(fax, id)
 }
 
 // @Put()

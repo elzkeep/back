@@ -92,7 +92,7 @@ func (p *BillingManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *BillingManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_company, bi_building, bi_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from billing_tb, building_tb "
+    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_company, bi_building, bi_date, b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from billing_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -104,6 +104,8 @@ func (p *BillingManager) GetQuery() string {
     
     ret += "and bi_building = b_id "
     
+    ret += "and b_company = c_id "
+    
 
     return ret;
 }
@@ -111,7 +113,7 @@ func (p *BillingManager) GetQuery() string {
 func (p *BillingManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from billing_tb, building_tb "
+    str := "select count(*) from billing_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -122,6 +124,8 @@ func (p *BillingManager) GetQuerySelect() string {
     ret += "where 1=1 "
     
     ret += "and bi_building = b_id "    
+    
+    ret += "and b_company = c_id "    
     
 
     return ret;
@@ -388,10 +392,11 @@ func (p *BillingManager) ReadRow(rows *sql.Rows) *Billing {
     var err error
 
     var _building Building
+    var _company Company
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         
         
         
@@ -424,6 +429,8 @@ func (p *BillingManager) ReadRow(rows *sql.Rows) *Billing {
         item.InitExtra()
         _building.InitExtra()
         item.AddExtra("building",  _building)
+_company.InitExtra()
+        item.AddExtra("company",  _company)
 
         return &item
     }
@@ -435,9 +442,10 @@ func (p *BillingManager) ReadRows(rows *sql.Rows) []Billing {
     for rows.Next() {
         var item Billing
         var _building Building
+            var _company Company
             
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Score, &_building.Status, &_building.Company, &_building.Date)
+        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Conpanyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -460,6 +468,8 @@ func (p *BillingManager) ReadRows(rows *sql.Rows) []Billing {
         item.InitExtra()        
         _building.InitExtra()
         item.AddExtra("building",  _building)
+_company.InitExtra()
+        item.AddExtra("company",  _company)
 
         items = append(items, item)
     }
@@ -477,6 +487,8 @@ func (p *BillingManager) Get(id int64) *Billing {
 
     
     query += " and bi_building = b_id "    
+    
+    query += " and b_company = c_id "    
     
     
     rows, err := p.Query(query, id)

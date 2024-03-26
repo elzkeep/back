@@ -861,6 +861,23 @@ func (p *UserManager) CountByCompany(company int64, args ...interface{}) int {
     return p.Count(rets)
 }
 
+func (p *UserManager) GetByCompanyName(company int64, name string, args ...interface{}) *User {
+    if company != 0 {
+        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+    }
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 
 func (p *UserManager) Sum(args []interface{}) *User {
     if p.Conn == nil && p.Tx == nil {

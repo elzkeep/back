@@ -29,6 +29,7 @@ func Http() {
 		JSONEncoder:   json.Marshal,
 		JSONDecoder:   json.Unmarshal,
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			log.Println("ErrorHandler")
 			code := fiber.StatusInternalServerError
 
 			// Retrieve the custom status code if it's a *fiber.Error
@@ -112,6 +113,7 @@ func Http() {
 
 	app.Static("/webdata", "./webdata")
 	app.Static("/", config.DocumentRoot)
+	//app.Static("/assets", fmt.Sprintf("%v/assets", config.DocumentRoot))
 
 	/*
 		app.Get("/*", func(ctx *fiber.Ctx) error {

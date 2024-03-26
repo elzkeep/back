@@ -23,7 +23,8 @@
         "GetByLoginid",
         "CountByLoginid",
         "FindByLevel",
-        "CountByCompany"
+        "CountByCompany",
+        "GetByCompanyName"
       ]      
     },    
     {
@@ -102,6 +103,9 @@
           "name": "name",
           "type": "like"
         }
+      ],
+      "method": [
+        "GetByCompanyno"        
       ]
     },
     {
@@ -111,6 +115,9 @@
           "name": "name",
           "type": "like"
         }
+      ],
+      "method": [
+        "GetByCompanyName"        
       ]
     },
     {
@@ -130,6 +137,11 @@
           "name": "company",
           "column": "b_company"
         }
+      ],
+      "method": [
+        "CountByCompanyBuilding",
+        "GetByCompanyBuilding",
+        "DeleteByCompanyBuilding"
       ]
     },
     {
@@ -154,6 +166,10 @@
         {
           "name": "building",
           "column": "building"
+        },
+        {
+          "name": "company",
+          "column": "b_company"
         }
       ]
     },

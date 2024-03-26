@@ -390,6 +390,23 @@ func (c *UserController) CountByCompany(company int64) int {
 }
 
 
+func (c *UserController) GetByCompanyName(company int64 ,name string) *models.User {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+    
+    item := _manager.GetByCompanyName(company, name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 // @Put()
 func (c *UserController) UpdateLoginid(loginid string, id int64) {
     

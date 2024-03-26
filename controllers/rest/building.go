@@ -55,6 +55,54 @@ func (c *BuildingController) Index(page int, pagesize int) {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
     }
+    _contractvolumn := c.Geti("contractvolumn")
+    if _contractvolumn != 0 {
+        args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
+    }
+    _receivevolumn := c.Geti("receivevolumn")
+    if _receivevolumn != 0 {
+        args = append(args, models.Where{Column:"receivevolumn", Value:_receivevolumn, Compare:"="})    
+    }
+    _generatevolumn := c.Geti("generatevolumn")
+    if _generatevolumn != 0 {
+        args = append(args, models.Where{Column:"generatevolumn", Value:_generatevolumn, Compare:"="})    
+    }
+    _sunlightvolumn := c.Geti("sunlightvolumn")
+    if _sunlightvolumn != 0 {
+        args = append(args, models.Where{Column:"sunlightvolumn", Value:_sunlightvolumn, Compare:"="})    
+    }
+    _volttype := c.Geti("volttype")
+    if _volttype != 0 {
+        args = append(args, models.Where{Column:"volttype", Value:_volttype, Compare:"="})    
+    }
+    _weight := c.Geti("weight")
+    if _weight != 0 {
+        args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _checkcount := c.Geti("checkcount")
+    if _checkcount != 0 {
+        args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
+    }
+    _receivevolt := c.Geti("receivevolt")
+    if _receivevolt != 0 {
+        args = append(args, models.Where{Column:"receivevolt", Value:_receivevolt, Compare:"="})    
+    }
+    _generatevolt := c.Geti("generatevolt")
+    if _generatevolt != 0 {
+        args = append(args, models.Where{Column:"generatevolt", Value:_generatevolt, Compare:"="})    
+    }
+    _periodic := c.Geti("periodic")
+    if _periodic != 0 {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _usage := c.Get("usage")
+    if _usage != "" {
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+    }
+    _district := c.Get("district")
+    if _district != "" {
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
+    }
     _score := c.Geti("score")
     if _score != 0 {
         args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
@@ -148,6 +196,54 @@ func (c *BuildingController) Count() {
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _contractvolumn := c.Geti("contractvolumn")
+    if _contractvolumn != 0 {
+        args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
+    }
+    _receivevolumn := c.Geti("receivevolumn")
+    if _receivevolumn != 0 {
+        args = append(args, models.Where{Column:"receivevolumn", Value:_receivevolumn, Compare:"="})    
+    }
+    _generatevolumn := c.Geti("generatevolumn")
+    if _generatevolumn != 0 {
+        args = append(args, models.Where{Column:"generatevolumn", Value:_generatevolumn, Compare:"="})    
+    }
+    _sunlightvolumn := c.Geti("sunlightvolumn")
+    if _sunlightvolumn != 0 {
+        args = append(args, models.Where{Column:"sunlightvolumn", Value:_sunlightvolumn, Compare:"="})    
+    }
+    _volttype := c.Geti("volttype")
+    if _volttype != 0 {
+        args = append(args, models.Where{Column:"volttype", Value:_volttype, Compare:"="})    
+    }
+    _weight := c.Geti("weight")
+    if _weight != 0 {
+        args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _checkcount := c.Geti("checkcount")
+    if _checkcount != 0 {
+        args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
+    }
+    _receivevolt := c.Geti("receivevolt")
+    if _receivevolt != 0 {
+        args = append(args, models.Where{Column:"receivevolt", Value:_receivevolt, Compare:"="})    
+    }
+    _generatevolt := c.Geti("generatevolt")
+    if _generatevolt != 0 {
+        args = append(args, models.Where{Column:"generatevolt", Value:_generatevolt, Compare:"="})    
+    }
+    _periodic := c.Geti("periodic")
+    if _periodic != 0 {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _usage := c.Get("usage")
+    if _usage != "" {
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+    }
+    _district := c.Get("district")
+    if _district != "" {
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
     }
     _score := c.Geti("score")
     if _score != 0 {
@@ -248,6 +344,23 @@ func (c *BuildingController) Deletebatch(item *[]models.Building) {
 
 
 
+func (c *BuildingController) GetByCompanyName(company int64 ,name string) *models.Building {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+    
+    item := _manager.GetByCompanyName(company, name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 // @Put()
 func (c *BuildingController) UpdateName(name string, id int64) {
     
@@ -296,6 +409,126 @@ func (c *BuildingController) UpdateAddressetc(addressetc string, id int64) {
 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateContractvolumn(contractvolumn models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateContractvolumn(contractvolumn, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateReceivevolumn(receivevolumn models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateReceivevolumn(receivevolumn, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateGeneratevolumn(generatevolumn models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateGeneratevolumn(generatevolumn, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateSunlightvolumn(sunlightvolumn models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateSunlightvolumn(sunlightvolumn, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateVolttype(volttype int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateVolttype(volttype, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateWeight(weight models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateWeight(weight, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateCheckcount(checkcount int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCheckcount(checkcount, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateReceivevolt(receivevolt int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateReceivevolt(receivevolt, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateGeneratevolt(generatevolt int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateGeneratevolt(generatevolt, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdatePeriodic(periodic int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePeriodic(periodic, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateUsage(usage string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateUsage(usage, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateDistrict(district string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateDistrict(district, id)
 }
 
 // @Put()
@@ -362,6 +595,54 @@ func (c *BuildingController) Sum() {
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _contractvolumn := c.Geti("contractvolumn")
+    if _contractvolumn != 0 {
+        args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
+    }
+    _receivevolumn := c.Geti("receivevolumn")
+    if _receivevolumn != 0 {
+        args = append(args, models.Where{Column:"receivevolumn", Value:_receivevolumn, Compare:"="})    
+    }
+    _generatevolumn := c.Geti("generatevolumn")
+    if _generatevolumn != 0 {
+        args = append(args, models.Where{Column:"generatevolumn", Value:_generatevolumn, Compare:"="})    
+    }
+    _sunlightvolumn := c.Geti("sunlightvolumn")
+    if _sunlightvolumn != 0 {
+        args = append(args, models.Where{Column:"sunlightvolumn", Value:_sunlightvolumn, Compare:"="})    
+    }
+    _volttype := c.Geti("volttype")
+    if _volttype != 0 {
+        args = append(args, models.Where{Column:"volttype", Value:_volttype, Compare:"="})    
+    }
+    _weight := c.Geti("weight")
+    if _weight != 0 {
+        args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _checkcount := c.Geti("checkcount")
+    if _checkcount != 0 {
+        args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
+    }
+    _receivevolt := c.Geti("receivevolt")
+    if _receivevolt != 0 {
+        args = append(args, models.Where{Column:"receivevolt", Value:_receivevolt, Compare:"="})    
+    }
+    _generatevolt := c.Geti("generatevolt")
+    if _generatevolt != 0 {
+        args = append(args, models.Where{Column:"generatevolt", Value:_generatevolt, Compare:"="})    
+    }
+    _periodic := c.Geti("periodic")
+    if _periodic != 0 {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _usage := c.Get("usage")
+    if _usage != "" {
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+    }
+    _district := c.Get("district")
+    if _district != "" {
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
     }
     _score := c.Geti("score")
     if _score != 0 {

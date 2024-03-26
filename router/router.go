@@ -46,15 +46,6 @@ func SetRouter(r *fiber.App) {
 	r.Use(JwtAuthRequired)
 	{
 
-		apiGroup.Get("/billing/print/:ids", func(c *fiber.Ctx) error {
-			ids_ := getArrayCommal(c.Query("ids"))
-			var controller api.BillingController
-			controller.Init(c)
-			controller.Print(ids_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/dashboard", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Query("company"), 10, 64)
 			var controller api.DashboardController
@@ -83,6 +74,15 @@ func SetRouter(r *fiber.App) {
 			var controller api.DownloadController
 			controller.Init(c)
 			controller.File(id_)
+			controller.Close()
+            return nil
+		})
+
+		apiGroup.Get("/download/giro/:ids", func(c *fiber.Ctx) error {
+			ids_ := getArrayCommal(c.Params("ids"))
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.Giro(ids_)
 			controller.Close()
             return nil
 		})
@@ -494,6 +494,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/building/get/companyname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			name_ := c.Query("name")
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.GetByCompanyName(company_, name_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/building/name", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -585,6 +595,229 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BuildingController
 			controller.Init(c)
 			controller.UpdateAddressetc(addressetc_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/contractvolumn", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var contractvolumn_ models.Double
+			contractvolumn__ref := &contractvolumn_
+			c.BodyParser(contractvolumn__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateContractvolumn(contractvolumn_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/receivevolumn", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var receivevolumn_ models.Double
+			receivevolumn__ref := &receivevolumn_
+			c.BodyParser(receivevolumn__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateReceivevolumn(receivevolumn_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/generatevolumn", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var generatevolumn_ models.Double
+			generatevolumn__ref := &generatevolumn_
+			c.BodyParser(generatevolumn__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateGeneratevolumn(generatevolumn_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/sunlightvolumn", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var sunlightvolumn_ models.Double
+			sunlightvolumn__ref := &sunlightvolumn_
+			c.BodyParser(sunlightvolumn__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateSunlightvolumn(sunlightvolumn_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/volttype", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var volttype_ int
+			if v, flag := results["volttype"]; flag {
+				volttype_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateVolttype(volttype_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/weight", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var weight_ models.Double
+			weight__ref := &weight_
+			c.BodyParser(weight__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateWeight(weight_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/checkcount", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var checkcount_ int
+			if v, flag := results["checkcount"]; flag {
+				checkcount_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCheckcount(checkcount_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/receivevolt", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var receivevolt_ int
+			if v, flag := results["receivevolt"]; flag {
+				receivevolt_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateReceivevolt(receivevolt_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/generatevolt", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var generatevolt_ int
+			if v, flag := results["generatevolt"]; flag {
+				generatevolt_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateGeneratevolt(generatevolt_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/periodic", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var periodic_ int
+			if v, flag := results["periodic"]; flag {
+				periodic_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePeriodic(periodic_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/usage", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var usage_ string
+			if v, flag := results["usage"]; flag {
+				usage_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateUsage(usage_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/district", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var district_ string
+			if v, flag := results["district"]; flag {
+				district_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateDistrict(district_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -785,6 +1018,15 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/company/get/companyno/:companyno", func(c *fiber.Ctx) error {
+			companyno_ := c.Params("companyno")
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.GetByCompanyno(companyno_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/company/name", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -952,6 +1194,569 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CompanyController
 			controller.Init(c)
 			controller.UpdateBillingemail(billingemail_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/bankname", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var bankname_ string
+			if v, flag := results["bankname"]; flag {
+				bankname_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateBankname(bankname_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/bankno", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var bankno_ string
+			if v, flag := results["bankno"]; flag {
+				bankno_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateBankno(bankno_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/businesscondition", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var businesscondition_ string
+			if v, flag := results["businesscondition"]; flag {
+				businesscondition_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateBusinesscondition(businesscondition_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/businessitem", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var businessitem_ string
+			if v, flag := results["businessitem"]; flag {
+				businessitem_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateBusinessitem(businessitem_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/content", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var content_ string
+			if v, flag := results["content"]; flag {
+				content_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateContent(content_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x1", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x1_ models.Double
+			x1__ref := &x1_
+			c.BodyParser(x1__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX1(x1_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y1", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y1_ models.Double
+			y1__ref := &y1_
+			c.BodyParser(y1__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY1(y1_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x2", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x2_ models.Double
+			x2__ref := &x2_
+			c.BodyParser(x2__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX2(x2_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y2", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y2_ models.Double
+			y2__ref := &y2_
+			c.BodyParser(y2__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY2(y2_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x3", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x3_ models.Double
+			x3__ref := &x3_
+			c.BodyParser(x3__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX3(x3_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y3", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y3_ models.Double
+			y3__ref := &y3_
+			c.BodyParser(y3__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY3(y3_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x4", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x4_ models.Double
+			x4__ref := &x4_
+			c.BodyParser(x4__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX4(x4_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y4", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y4_ models.Double
+			y4__ref := &y4_
+			c.BodyParser(y4__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY4(y4_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x5", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x5_ models.Double
+			x5__ref := &x5_
+			c.BodyParser(x5__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX5(x5_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y5", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y5_ models.Double
+			y5__ref := &y5_
+			c.BodyParser(y5__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY5(y5_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x6", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x6_ models.Double
+			x6__ref := &x6_
+			c.BodyParser(x6__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX6(x6_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y6", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y6_ models.Double
+			y6__ref := &y6_
+			c.BodyParser(y6__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY6(y6_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x7", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x7_ models.Double
+			x7__ref := &x7_
+			c.BodyParser(x7__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX7(x7_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y7", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y7_ models.Double
+			y7__ref := &y7_
+			c.BodyParser(y7__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY7(y7_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x8", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x8_ models.Double
+			x8__ref := &x8_
+			c.BodyParser(x8__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX8(x8_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y8", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y8_ models.Double
+			y8__ref := &y8_
+			c.BodyParser(y8__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY8(y8_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x9", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x9_ models.Double
+			x9__ref := &x9_
+			c.BodyParser(x9__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX9(x9_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y9", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y9_ models.Double
+			y9__ref := &y9_
+			c.BodyParser(y9__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY9(y9_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x10", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x10_ models.Double
+			x10__ref := &x10_
+			c.BodyParser(x10__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX10(x10_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y10", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y10_ models.Double
+			y10__ref := &y10_
+			c.BodyParser(y10__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY10(y10_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x11", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x11_ models.Double
+			x11__ref := &x11_
+			c.BodyParser(x11__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX11(x11_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y11", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y11_ models.Double
+			y11__ref := &y11_
+			c.BodyParser(y11__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY11(y11_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x12", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x12_ models.Double
+			x12__ref := &x12_
+			c.BodyParser(x12__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX12(x12_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y12", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y12_ models.Double
+			y12__ref := &y12_
+			c.BodyParser(y12__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY12(y12_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/x13", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var x13_ models.Double
+			x13__ref := &x13_
+			c.BodyParser(x13__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateX13(x13_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/y13", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var y13_ models.Double
+			y13__ref := &y13_
+			c.BodyParser(y13__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateY13(y13_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1226,6 +2031,36 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/customer/count/companybuilding/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.CountByCompanyBuilding(company_, building_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customer/get/companybuilding/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.GetByCompanyBuilding(company_, building_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/customer/bycompanybuilding", func(c *fiber.Ctx) error {
+			item_ := &models.Customer{}
+			c.BodyParser(item_)
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.DeleteByCompanyBuilding(item_.Company, item_.Building)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/customer/type", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1378,6 +2213,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/customer/contractvat", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var contractvat_ int
+			if v, flag := results["contractvat"]; flag {
+				contractvat_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateContractvat(contractvat_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/customer/contractday", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1412,6 +2266,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.UpdateBillingdate(billingdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/billingtype", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var billingtype_ int
+			if v, flag := results["billingtype"]; flag {
+				billingtype_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateBillingtype(billingtype_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1469,6 +2342,139 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.UpdateBillingemail(billingemail_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/address", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var address_ string
+			if v, flag := results["address"]; flag {
+				address_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateAddress(address_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/addressetc", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var addressetc_ string
+			if v, flag := results["addressetc"]; flag {
+				addressetc_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateAddressetc(addressetc_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/collectmonth", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var collectmonth_ int
+			if v, flag := results["collectmonth"]; flag {
+				collectmonth_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateCollectmonth(collectmonth_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/collectday", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var collectday_ int
+			if v, flag := results["collectday"]; flag {
+				collectday_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateCollectday(collectday_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/manager", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var manager_ string
+			if v, flag := results["manager"]; flag {
+				manager_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateManager(manager_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/tel", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var tel_ string
+			if v, flag := results["tel"]; flag {
+				tel_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateTel(tel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/fax", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var fax_ string
+			if v, flag := results["fax"]; flag {
+				fax_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateFax(fax_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4324,6 +5330,16 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserController
 			controller.Init(c)
 			controller.CountByCompany(company_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/get/companyname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			name_ := c.Query("name")
+			var controller rest.UserController
+			controller.Init(c)
+			controller.GetByCompanyName(company_, name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

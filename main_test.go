@@ -1,236 +1,169 @@
 package main_test
 
 import (
+	"fmt"
 	"log"
-	"math"
+	"path"
+	"regexp"
+	"strings"
 	"testing"
-
-	"github.com/bmizerany/assert"
+	"zkeep/config"
+	"zkeep/global"
+	"zkeep/models"
+	"zkeep/models/user"
 )
 
-/*
-func TestBuild(t *testing.T) {
-	g := game.NewGame()
-
-	g.AddFaction(&factions.Monks{})
-	g.AddFaction(&factions.Lizards{})
-
-	g.BuildStart()
-
-	assert.Equal(t, nil, g.FirstBuild(0, 1, 6))
-
-	assert.Equal(t, nil, g.FirstBuild(1, 0, 0))
-	assert.Equal(t, nil, g.FirstBuild(1, 4, 1))
-
-	assert.Equal(t, nil, g.FirstBuild(0, 4, 3))
-
-	assert.Equal(t, nil, g.GetRoundTile(1, 1))
-	assert.Equal(t, nil, g.GetRoundTile(0, 0))
-
-	g.Factions[0].Print()
-	g.Factions[1].Print()
-
-	//assert.NotEqual(t, nil, g.Build(0, 4, 3))
-	//assert.NotEqual(t, nil, g.Build(0, 3, 4))
-
-	assert.Equal(t, nil, g.AdvanceShip(0))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.AdvanceShip(1))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.AdvanceSpade(0))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.AdvanceSpade(1))
-	g.TurnEnd(1)
-
-	assert.Equal(t, nil, g.Build(0, 3, 4))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.AdvanceSpade(1))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.Build(0, 3, 5))
-	g.TurnEnd(0)
-
-	assert.Equal(t, nil, g.AdvanceShip(1))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.Upgrade(0, 3, 5, resources.TP))
-
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.SendScholar(1, game.Banking))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.SendScholar(0, game.Engineering))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.SendScholar(1, game.Banking))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.SendScholar(0, game.Engineering))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.SendScholar(1, game.Engineering))
-	g.TurnEnd(1)
-
-	assert.Equal(t, nil, g.PowerAction(0, int(action.Coin)))
-	g.TurnEnd(0)
-	assert.NotEqual(t, nil, g.PowerAction(1, int(action.Coin)))
-	g.TurnEnd(1)
-
-	g.Factions[0].Print()
-	g.Factions[1].Print()
-
-	g.Map.Print()
-	g.Sciences.Print()
+func GetCell(col string, row int) string {
+	return fmt.Sprintf("%v%v", col, row)
 }
 
-func TestExtraAction(t *testing.T) {
-	g := game.NewGame()
+func TestExcel(t *testing.T) {
+	var companyId int64 = 1
 
-	g.AddFaction(&factions.Monks{})
-	g.AddFaction(&factions.Lizards{})
+	db := models.NewConnection()
+	defer db.Close()
 
-	g.BuildStart()
+	conn, _ := db.Begin()
+	defer conn.Rollback()
 
-	assert.Equal(t, nil, g.FirstBuild(0, 1, 6))
+	companyManager := models.NewCompanyManager(conn)
+	buildingManager := models.NewBuildingManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+	userManager := models.NewUserManager(conn)
 
-	assert.Equal(t, nil, g.FirstBuild(1, 0, 0))
-	assert.Equal(t, nil, g.FirstBuild(1, 4, 1))
-
-	assert.Equal(t, nil, g.FirstBuild(0, 4, 3))
-
-	assert.Equal(t, nil, g.GetRoundTile(1, 1))
-	assert.Equal(t, nil, g.GetRoundTile(0, 0))
-
-	assert.Equal(t, nil, g.AdvanceShip(0))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.AdvanceShip(1))
-	g.TurnEnd(1)
-
-	assert.Equal(t, nil, g.PowerAction(0, int(action.Spade)))
-	assert.Equal(t, nil, g.Build(0, 3, 4))
-	//assert.Equal(t, nil, g.Build(0, 3, 5))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.AdvanceSpade(1))
-	g.TurnEnd(1)
-	assert.Equal(t, nil, g.PowerAction(0, int(action.Bridge)))
-	assert.Equal(t, nil, g.Bridge(0, 4, 3, 5, 4))
-	g.TurnEnd(1)
-
-	g.Factions[0].Print()
-	g.Factions[1].Print()
-
-	g.Map.Print()
-	g.Sciences.Print()
-}
-
-func TestDistance(t *testing.T) {
-	g := game.NewGame()
-
-	g.AddFaction(&factions.Monks{})
-	g.AddFaction(&factions.Lizards{})
-
-	g.BuildStart()
-
-	assert.Equal(t, nil, g.FirstBuild(0, 1, 6))
-
-	assert.Equal(t, nil, g.FirstBuild(1, 0, 0))
-	assert.Equal(t, nil, g.FirstBuild(1, 4, 1))
-
-	assert.Equal(t, nil, g.FirstBuild(0, 4, 3))
-
-	log.Println("-------------------------------")
-	log.Println(g.Map.CheckDistance(0, 3, 2, 2))
-}
-
-func TestCity(t *testing.T) {
-	g := game.NewGame()
-
-	g.AddFaction(&factions.Monks{})
-
-	g.BuildStart()
-
-	assert.Equal(t, nil, g.FirstBuild(0, 1, 6))
-	assert.Equal(t, nil, g.FirstBuild(0, 4, 3))
-
-	assert.Equal(t, nil, g.GetRoundTile(0, 0))
-
-	assert.Equal(t, nil, g.Build(0, 2, 6))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 2, 5))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.PowerAction(0, int(action.Bridge)))
-	assert.Equal(t, nil, g.Bridge(0, 2, 6, 3, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 3, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 4, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 5, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 3, 4))
-	assert.Equal(t, nil, g.City(0, game.ScienceCity))
-	g.TurnEnd(0)
-
-	g.Map.Print()
-	g.Sciences.Print()
-}
-
-func TestCityUpgrade(t *testing.T) {
-	g := game.NewGame()
-
-	g.AddFaction(&factions.Monks{})
-
-	g.BuildStart()
-
-	assert.Equal(t, nil, g.FirstBuild(0, 1, 6))
-	assert.Equal(t, nil, g.FirstBuild(0, 4, 3))
-
-	assert.Equal(t, nil, g.GetRoundTile(0, 1))
-
-	assert.Equal(t, nil, g.Build(0, 2, 6))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 2, 5))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.PowerAction(0, int(action.Bridge)))
-	assert.Equal(t, nil, g.Bridge(0, 2, 6, 3, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 3, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 4, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Build(0, 5, 7))
-	g.TurnEnd(0)
-	assert.Equal(t, nil, g.Upgrade(0, 5, 7, resources.TP))
-	assert.Equal(t, nil, g.City(0, game.ScienceCity))
-	g.TurnEnd(0)
-
-	g.Map.Print()
-	g.Sciences.Print()
-}
-*/
-
-func TestElo(t *testing.T) {
-	elo_k := 16.0
-	//first := 1000
-	rank := 1
-
-	a := 1480.0
-	b := 1000.0
-
-	var1 := 1.0 / (1.0 + math.Pow(10, (b-a)/400.0))
-	var2 := 1.0 / (1.0 + math.Pow(10, (a-b)/400.0))
-
-	s1 := 1.0
-	s2 := 0.0
-	if rank == 1 {
-		s1 = 1.0
-		s2 = 0.0
-	} else if rank == 2 {
-		s1 = 0.0
-		s2 = 1.0
-	} else {
-		s1 = 0.5
-		s2 = 0.5
+	filename := "1.xlsx"
+	fullFilename := path.Join(config.UploadPath, filename)
+	f := global.NewExcelReader(fullFilename)
+	if f == nil {
+		log.Println("not found file")
+		return
 	}
 
-	ret1 := elo_k * (s1 - var1)
-	ret2 := elo_k * (s2 - var2)
+	sheet := "수용가현황"
+	f.SetSheet(sheet)
 
-	log.Println(ret1, ret2)
+	pos := 5
+	for {
+		item := models.Company{}
+		building := models.Building{}
+		customer := models.Customer{}
 
-	assert.Equal(t, true, ret1 == ret2)
+		no := f.GetCell("A", pos)
+
+		if no == "" {
+			break
+		}
+
+		userName := f.GetCell("M", pos)
+
+		userFind := userManager.GetByCompanyName(companyId, userName)
+
+		var userId int64 = 0
+		if userFind == nil {
+			userItem := models.User{}
+			userItem.Level = user.LevelNormal
+			userItem.Company = companyId
+			userItem.Loginid = item.Name
+			userItem.Passwd = "0000"
+
+			err := userManager.Insert(&userItem)
+			userId = userManager.GetIdentity()
+		} else {
+			userId = userFind.Id
+		}
+
+		item.Name = f.GetCell("Y", pos)
+		item.Companyno = f.GetCell("Z", pos)
+		item.Ceo = f.GetCell("AA", pos)
+		item.Businesscondition = f.GetCell("AB", pos)
+		item.Businessitem = f.GetCell("AC", pos)
+		item.Address = f.GetCell("AD", pos)
+
+		var companyId int64 = 0
+
+		companyFind := companyManager.GetByCompanyno(item.Companyno)
+
+		if companyFind == nil {
+			companyManager.Insert(&item)
+			companyId = companyManager.GetIdentity()
+		} else {
+			companyId = companyFind.Id
+		}
+
+		building.Name = f.GetCell("C", pos)
+		building.Address = f.GetCell("D", pos)
+		building.Contractvolumn = models.Double(global.Atol(f.GetCell("E", pos)))
+		building.Receivevolumn = models.Double(global.Atol(f.GetCell("F", pos)))
+		building.Generatevolumn = models.Double(global.Atol(f.GetCell("G", pos)))
+		building.Sunlightvolumn = models.Double(global.Atol(f.GetCell("H", pos)))
+		building.Ceo = f.GetCell("AN", pos)
+
+		volttype := f.GetCell("I", pos)
+
+		if volttype == "고압" {
+			building.Volttype = 2
+		} else {
+			building.Volttype = 1
+		}
+
+		building.Checkcount = global.Atoi(f.GetCell("K", pos))
+
+		building.Receivevolt = global.Atoi(strings.ReplaceAll(f.GetCell("O", pos), "V", ""))
+		building.Usage = f.GetCell("T", pos)
+		building.District = f.GetCell("U", pos)
+		building.Company = companyId
+
+		var buildingId int64 = 0
+
+		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
+		if buildingFind == nil {
+			buildingManager.Insert(&building)
+			buildingId = buildingManager.GetIdentity()
+		} else {
+			buildingId = buildingFind.Id
+		}
+
+		customer.Managername = f.GetCell("V", pos)
+		customer.Managertel = f.GetCell("W", pos)
+		customer.Manageremail = f.GetCell("X", pos)
+		customer.Address = f.GetCell("AM", pos)
+		customer.Manager = f.GetCell("AN", pos)
+		customer.Contractprice = global.Atoi(f.GetCell("AQ", pos))
+		customer.Contractvat = global.Atoi(f.GetCell("AR", pos))
+		customer.Status = 1
+
+		str := f.GetCell("AU", pos)
+
+		r, _ := regexp.Compile("[0-9]+")
+		collectday := r.FindString(str)
+
+		if strings.Contains(str, "당월") {
+			customer.Collectmonth = 1
+		} else {
+			customer.Collectmonth = 2
+		}
+
+		if collectday == "" {
+			customer.Collectday = 0
+		} else {
+			customer.Collectday = global.Atoi(collectday)
+		}
+
+		if f.GetCell("AT", pos) == "지로" {
+			customer.Billingtype = 1
+		} else {
+			customer.Billingtype = 2
+		}
+
+		customer.Building = buildingId
+		customer.User = userId
+		customer.Company = companyId
+
+		customerManager.DeleteByCompanyBuilding(companyId, buildingId)
+		customerManager.Insert(&customer)
+
+		pos++
+	}
+
+	conn.Commit()
 }

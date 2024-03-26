@@ -23,6 +23,18 @@ type Building struct {
     Ceo                string `json:"ceo"`         
     Address                string `json:"address"`         
     Addressetc                string `json:"addressetc"`         
+    Contractvolumn                Double `json:"contractvolumn"`         
+    Receivevolumn                Double `json:"receivevolumn"`         
+    Generatevolumn                Double `json:"generatevolumn"`         
+    Sunlightvolumn                Double `json:"sunlightvolumn"`         
+    Volttype                int `json:"volttype"`         
+    Weight                Double `json:"weight"`         
+    Checkcount                int `json:"checkcount"`         
+    Receivevolt                int `json:"receivevolt"`         
+    Generatevolt                int `json:"generatevolt"`         
+    Periodic                int `json:"periodic"`         
+    Usage                string `json:"usage"`         
+    District                string `json:"district"`         
     Score                Double `json:"score"`         
     Status                int `json:"status"`         
     Company                int64 `json:"company"`         
@@ -92,7 +104,7 @@ func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *BuildingManager) GetQuery() string {
     ret := ""
 
-    str := "select b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date from building_tb "
+    str := "select b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date from building_tb "
 
     if p.Index == "" {
         ret = str
@@ -158,11 +170,11 @@ func (p *BuildingManager) Insert(item *Building) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into building_tb (b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into building_tb (b_id, b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Usage, item.District, item.Score, item.Status, item.Company, item.Date)
     } else {
-        query = "insert into building_tb (b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into building_tb (b_name, b_conpanyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Usage, item.District, item.Score, item.Status, item.Company, item.Date)
     }
     
     if err == nil {
@@ -241,8 +253,8 @@ func (p *BuildingManager) Update(item *Building) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update building_tb set b_name = ?, b_conpanyno = ?, b_ceo = ?, b_address = ?, b_addressetc = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
-	_, err := p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Score, item.Status, item.Company, item.Date, item.Id)
+	query := "update building_tb set b_name = ?, b_conpanyno = ?, b_ceo = ?, b_address = ?, b_addressetc = ?, b_contractvolumn = ?, b_receivevolumn = ?, b_generatevolumn = ?, b_sunlightvolumn = ?, b_volttype = ?, b_weight = ?, b_checkcount = ?, b_receivevolt = ?, b_generatevolt = ?, b_periodic = ?, b_usage = ?, b_district = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
+	_, err := p.Exec(query , item.Name, item.Conpanyno, item.Ceo, item.Address, item.Addressetc, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Usage, item.District, item.Score, item.Status, item.Company, item.Date, item.Id)
     
         
     return err
@@ -304,6 +316,138 @@ func (p *BuildingManager) UpdateAddressetc(value string, id int64) error {
     return err
 }
 
+func (p *BuildingManager) UpdateContractvolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_contractvolumn = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateReceivevolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_receivevolumn = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateGeneratevolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_generatevolumn = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateSunlightvolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_sunlightvolumn = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateVolttype(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_volttype = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateWeight(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_weight = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCheckcount(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_checkcount = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateReceivevolt(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_receivevolt = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateGeneratevolt(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_generatevolt = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdatePeriodic(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_periodic = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateUsage(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_usage = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateDistrict(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_district = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BuildingManager) UpdateScore(value Double, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -338,6 +482,116 @@ func (p *BuildingManager) UpdateCompany(value int64, id int64) error {
 }
 
 
+
+func (p *BuildingManager) IncreaseContractvolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_contractvolumn = b_contractvolumn + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseReceivevolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_receivevolumn = b_receivevolumn + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseGeneratevolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_generatevolumn = b_generatevolumn + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseSunlightvolumn(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_sunlightvolumn = b_sunlightvolumn + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseVolttype(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_volttype = b_volttype + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseWeight(value Double, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_weight = b_weight + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseCheckcount(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_checkcount = b_checkcount + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseReceivevolt(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_receivevolt = b_receivevolt + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreaseGeneratevolt(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_generatevolt = b_generatevolt + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) IncreasePeriodic(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_periodic = b_periodic + ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
 
 func (p *BuildingManager) IncreaseScore(value Double, id int64) error {
     if p.Conn == nil && p.Tx == nil {
@@ -400,7 +654,31 @@ func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Usage, &item.District, &item.Score, &item.Status, &item.Company, &item.Date)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -445,12 +723,24 @@ func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
         var item Building
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Score, &item.Status, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Conpanyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Usage, &item.District, &item.Score, &item.Status, &item.Company, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -672,6 +962,23 @@ func (p *BuildingManager) Find(args []interface{}) []Building {
     return p.ReadRows(rows)
 }
 
+
+func (p *BuildingManager) GetByCompanyName(company int64, name string, args ...interface{}) *Building {
+    if company != 0 {
+        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+    }
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
 
 
 func (p *BuildingManager) Sum(args []interface{}) *Building {
