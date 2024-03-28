@@ -36,7 +36,7 @@ linux:
 dockerbuild:
 	rm -rf web
 	cd ../app && make release-web version=$(version) && cp -rf build/web ../back/ && cd ../back
-	scp -r ./web root@dev.zkeep.space:/home/zkeep/back/web
+	scp -r ./web root@dev.zkeep.space:/home/zkeep/back
 
 docker: dockerbuild
 	docker build --no-cache -t netb.co.kr:5000/zkeep:$(tag) .
@@ -63,7 +63,7 @@ admindockerbuild:
 	rm -rf dist
 	GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/main.linux main.go
 	cd ../front && npm run release && cp -rf dist ../back/ && cd ../back
-	scp -r ./dist root@dev.zkeep.space:/home/zkeep/back/dist
+	scp -r ./dist root@dev.zkeep.space:/home/zkeep/back
 
 admindocker: admindockerbuild
 	docker build -f Dockerfile_admin --no-cache -t netb.co.kr:5000/zkeep_admin:$(tag) .

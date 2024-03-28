@@ -19,11 +19,12 @@ type Status int
 const (
     _ Status  = iota
 
+    StatusWait
     StatusUse
     StatusNotuse
 )
 
-var Statuss = []string{ "", "사용", "사용안함" }
+var Statuss = []string{ "", "미승인", "사용", "사용안함" }
 
 
 

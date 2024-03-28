@@ -16,7 +16,7 @@
         },
         {
           "name": "status",
-          "data": ["", "use:사용", "notuse:사용안함"]
+          "data": ["", "wait:미승인", "use:사용", "notuse:사용안함"]
         }
       ],  
       "method": [
