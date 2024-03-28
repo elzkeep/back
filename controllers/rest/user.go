@@ -93,6 +93,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _score != 0 {
         args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
     }
+    _approval := c.Geti("approval")
+    if _approval != 0 {
+        args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -222,6 +226,10 @@ func (c *UserController) Count() {
     _score := c.Geti("score")
     if _score != 0 {
         args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
+    _approval := c.Geti("approval")
+    if _approval != 0 {
+        args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -528,6 +536,16 @@ func (c *UserController) UpdateScore(score models.Double, id int64) {
 }
 
 // @Put()
+func (c *UserController) UpdateApproval(approval int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateApproval(approval, id)
+}
+
+// @Put()
 func (c *UserController) UpdateStatus(status int, id int64) {
     
     
@@ -627,6 +645,10 @@ func (c *UserController) Sum() {
     _score := c.Geti("score")
     if _score != 0 {
         args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
+    _approval := c.Geti("approval")
+    if _approval != 0 {
+        args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {

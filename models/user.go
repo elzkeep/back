@@ -32,6 +32,7 @@ type User struct {
     Careermonth                int `json:"careermonth"`         
     Level                user.Level `json:"level"`         
     Score                Double `json:"score"`         
+    Approval                int `json:"approval"`         
     Status                user.Status `json:"status"`         
     Company                int64 `json:"company"`         
     Department                int64 `json:"department"`         
@@ -101,7 +102,7 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *UserManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date from user_tb "
+    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_status, u_company, u_department, u_date from user_tb "
 
     if p.Index == "" {
         ret = str
@@ -170,11 +171,11 @@ func (p *UserManager) Insert(item *User) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into user_tb (u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Status, item.Company, item.Department, item.Date)
+        query = "insert into user_tb (u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Status, item.Company, item.Department, item.Date)
     } else {
-        query = "insert into user_tb (u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Status, item.Company, item.Department, item.Date)
+        query = "insert into user_tb (u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Status, item.Company, item.Department, item.Date)
     }
     
     if err == nil {
@@ -256,8 +257,8 @@ func (p *UserManager) Update(item *User) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update user_tb set u_loginid = ?, u_passwd = ?, u_name = ?, u_email = ?, u_tel = ?, u_address = ?, u_addressetc = ?, u_joindate = ?, u_careeryear = ?, u_careermonth = ?, u_level = ?, u_score = ?, u_status = ?, u_company = ?, u_department = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Status, item.Company, item.Department, item.Date, item.Id)
+	query := "update user_tb set u_loginid = ?, u_passwd = ?, u_name = ?, u_email = ?, u_tel = ?, u_address = ?, u_addressetc = ?, u_joindate = ?, u_careeryear = ?, u_careermonth = ?, u_level = ?, u_score = ?, u_approval = ?, u_status = ?, u_company = ?, u_department = ?, u_date = ? where u_id = ?"
+	_, err := p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Status, item.Company, item.Department, item.Date, item.Id)
     
         
     return err
@@ -396,6 +397,17 @@ func (p *UserManager) UpdateScore(value Double, id int64) error {
     return err
 }
 
+func (p *UserManager) UpdateApproval(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_approval = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *UserManager) UpdateStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -464,6 +476,17 @@ func (p *UserManager) IncreaseScore(value Double, id int64) error {
     return err
 }
 
+func (p *UserManager) IncreaseApproval(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_approval = u_approval + ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *UserManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -516,7 +539,7 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date)
+        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Status, &item.Company, &item.Department, &item.Date)
         
         
         
@@ -537,6 +560,8 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
         if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
             item.Joindate = ""
         }
+        
+        
         
         
         
@@ -577,7 +602,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         var item User
         
     
-        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date)
+        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Status, &item.Company, &item.Department, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -595,6 +620,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
             item.Joindate = ""
         }
+        
         
         
         
