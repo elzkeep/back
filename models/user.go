@@ -32,7 +32,7 @@ type User struct {
     Careermonth                int `json:"careermonth"`         
     Level                user.Level `json:"level"`         
     Score                Double `json:"score"`         
-    Approval                int `json:"approval"`         
+    Approval                user.Approval `json:"approval"`         
     Status                user.Status `json:"status"`         
     Company                int64 `json:"company"`         
     Department                int64 `json:"department"`         
@@ -476,17 +476,6 @@ func (p *UserManager) IncreaseScore(value Double, id int64) error {
     return err
 }
 
-func (p *UserManager) IncreaseApproval(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update user_tb set u_approval = u_approval + ? where u_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
 func (p *UserManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -528,6 +517,7 @@ func (p *User) InitExtra() {
     p.Extra = map[string]interface{}{
             "level":     user.GetLevel(p.Level),
             "status":     user.GetStatus(p.Status),
+            "approval":     user.GetApproval(p.Approval),
 
     }
 }

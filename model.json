@@ -17,6 +17,10 @@
         {
           "name": "status",
           "data": ["", "use:사용", "notuse:사용안함"]
+        },
+        {
+          "name": "approval",
+          "data": ["", "wait:미승인", "complete:승인"]
         }
       ],  
       "method": [
