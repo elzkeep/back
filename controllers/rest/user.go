@@ -97,6 +97,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
     }
+    _rejectreason := c.Get("rejectreason")
+    if _rejectreason != "" {
+        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -230,6 +234,10 @@ func (c *UserController) Count() {
     _approval := c.Geti("approval")
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
+    }
+    _rejectreason := c.Get("rejectreason")
+    if _rejectreason != "" {
+        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -546,6 +554,16 @@ func (c *UserController) UpdateApproval(approval int, id int64) {
 }
 
 // @Put()
+func (c *UserController) UpdateRejectreason(rejectreason string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateRejectreason(rejectreason, id)
+}
+
+// @Put()
 func (c *UserController) UpdateStatus(status int, id int64) {
     
     
@@ -649,6 +667,10 @@ func (c *UserController) Sum() {
     _approval := c.Geti("approval")
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
+    }
+    _rejectreason := c.Get("rejectreason")
+    if _rejectreason != "" {
+        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
     }
     _status := c.Geti("status")
     if _status != 0 {

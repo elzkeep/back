@@ -5619,6 +5619,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/user/rejectreason", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var rejectreason_ string
+			if v, flag := results["rejectreason"]; flag {
+				rejectreason_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateRejectreason(rejectreason_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/user/status", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
