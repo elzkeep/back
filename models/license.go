@@ -87,7 +87,7 @@ func (p *LicenseManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *LicenseManager) GetQuery() string {
     ret := ""
 
-    str := "select l_id, l_user, l_licensecategory, l_licenselevel, l_date from license_tb "
+    str := "select l_id, l_user, l_licensecategory, l_licenselevel, l_date, lc_id, lc_name, lc_order, lc_date, ll_id, ll_name, ll_order, ll_date from license_tb, licensecategory_tb, licenselevel_tb "
 
     if p.Index == "" {
         ret = str
@@ -96,6 +96,10 @@ func (p *LicenseManager) GetQuery() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and l_licensecategory = lc_id "
+    
+    ret += "and l_licenselevel = ll_id "
     
 
     return ret;
@@ -104,7 +108,7 @@ func (p *LicenseManager) GetQuery() string {
 func (p *LicenseManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from license_tb "
+    str := "select count(*) from license_tb, licensecategory_tb, licenselevel_tb "
 
     if p.Index == "" {
         ret = str
@@ -113,6 +117,10 @@ func (p *LicenseManager) GetQuerySelect() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and l_licensecategory = lc_id "    
+    
+    ret += "and l_licenselevel = ll_id "    
     
 
     return ret;
@@ -337,10 +345,12 @@ func (p *LicenseManager) ReadRow(rows *sql.Rows) *License {
     var item License
     var err error
 
+    var _licensecategory Licensecategory
+    var _licenselevel Licenselevel
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
         
         
         
@@ -363,7 +373,11 @@ func (p *LicenseManager) ReadRow(rows *sql.Rows) *License {
     } else {
 
         item.InitExtra()
-        
+        _licensecategory.InitExtra()
+        item.AddExtra("licensecategory",  _licensecategory)
+_licenselevel.InitExtra()
+        item.AddExtra("licenselevel",  _licenselevel)
+
         return &item
     }
 }
@@ -373,9 +387,11 @@ func (p *LicenseManager) ReadRows(rows *sql.Rows) []License {
 
     for rows.Next() {
         var item License
-        
+        var _licensecategory Licensecategory
+            var _licenselevel Licenselevel
+            
     
-        err := rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -391,7 +407,11 @@ func (p *LicenseManager) ReadRows(rows *sql.Rows) []License {
         }
         
         item.InitExtra()        
-        
+        _licensecategory.InitExtra()
+        item.AddExtra("licensecategory",  _licensecategory)
+_licenselevel.InitExtra()
+        item.AddExtra("licenselevel",  _licenselevel)
+
         items = append(items, item)
     }
 
@@ -406,6 +426,10 @@ func (p *LicenseManager) Get(id int64) *License {
 
     query := p.GetQuery() + " and l_id = ?"
 
+    
+    query += " and l_licensecategory = lc_id "    
+    
+    query += " and l_licenselevel = ll_id "    
     
     
     rows, err := p.Query(query, id)

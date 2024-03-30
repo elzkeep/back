@@ -198,6 +198,32 @@
           "type": "like"
         }
       ]
+    },
+    {
+      "name": "license",
+      "join": [
+        {
+          "name": "licensecategory",
+          "column": "licensecategory"
+        },
+        {
+          "name": "licenselevel",
+          "column": "licenselevel"
+        }
+      ]
+    },
+    {
+      "name": "companylicense",
+      "join": [
+        {
+          "name": "licensecategory",
+          "column": "licensecategory"
+        },
+        {
+          "name": "licenselevel",
+          "column": "licenselevel"
+        }
+      ]
     }
   ]   
 }
