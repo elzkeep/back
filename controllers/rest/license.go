@@ -38,6 +38,54 @@ func (c *LicenseController) Index(page int, pagesize int) {
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
+    _number := c.Get("number")
+    if _number != "" {
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
+    }
+    _starttakingdate := c.Get("starttakingdate")
+    _endtakingdate := c.Get("endtakingdate")
+    if _starttakingdate != "" && _endtakingdate != "" {        
+        var v [2]string
+        v[0] = _starttakingdate
+        v[1] = _endtakingdate  
+        args = append(args, models.Where{Column:"takingdate", Value:v, Compare:"between"})    
+    } else if  _starttakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_starttakingdate, Compare:">="})
+    } else if  _endtakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_endtakingdate, Compare:"<="})            
+    }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+    }
     _licensecategory := c.Geti64("licensecategory")
     if _licensecategory != 0 {
         args = append(args, models.Where{Column:"licensecategory", Value:_licensecategory, Compare:"="})    
@@ -110,6 +158,54 @@ func (c *LicenseController) Count() {
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _number := c.Get("number")
+    if _number != "" {
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
+    }
+    _starttakingdate := c.Get("starttakingdate")
+    _endtakingdate := c.Get("endtakingdate")
+    if _starttakingdate != "" && _endtakingdate != "" {        
+        var v [2]string
+        v[0] = _starttakingdate
+        v[1] = _endtakingdate  
+        args = append(args, models.Where{Column:"takingdate", Value:v, Compare:"between"})    
+    } else if  _starttakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_starttakingdate, Compare:">="})
+    } else if  _endtakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_endtakingdate, Compare:"<="})            
+    }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
     }
     _licensecategory := c.Geti64("licensecategory")
     if _licensecategory != 0 {
@@ -214,6 +310,66 @@ func (c *LicenseController) UpdateUser(user int64, id int64) {
 
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateUser(user, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateNumber(number string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateNumber(number, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateTakingdate(takingdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateTakingdate(takingdate, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateEducationdate(educationdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateEducationdate(educationdate, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateEducationinstitution(educationinstitution string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateEducationinstitution(educationinstitution, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateSpecialeducationdate(specialeducationdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateSpecialeducationdate(specialeducationdate, id)
+}
+
+// @Put()
+func (c *LicenseController) UpdateSpecialeducationinstitution(specialeducationinstitution string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+	_manager.UpdateSpecialeducationinstitution(specialeducationinstitution, id)
 }
 
 // @Put()

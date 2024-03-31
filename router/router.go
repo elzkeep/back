@@ -1887,6 +1887,120 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/companylicense/number", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var number_ string
+			if v, flag := results["number"]; flag {
+				number_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateNumber(number_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicense/takingdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var takingdate_ string
+			if v, flag := results["takingdate"]; flag {
+				takingdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateTakingdate(takingdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicense/educationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationdate_ string
+			if v, flag := results["educationdate"]; flag {
+				educationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateEducationdate(educationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicense/educationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationinstitution_ string
+			if v, flag := results["educationinstitution"]; flag {
+				educationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateEducationinstitution(educationinstitution_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicense/specialeducationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationdate_ string
+			if v, flag := results["specialeducationdate"]; flag {
+				specialeducationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateSpecialeducationdate(specialeducationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicense/specialeducationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationinstitution_ string
+			if v, flag := results["specialeducationinstitution"]; flag {
+				specialeducationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.UpdateSpecialeducationinstitution(specialeducationinstitution_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/companylicense/company", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -4346,6 +4460,120 @@ func SetRouter(r *fiber.App) {
 			var controller rest.LicenseController
 			controller.Init(c)
 			controller.UpdateUser(user_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/number", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var number_ string
+			if v, flag := results["number"]; flag {
+				number_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateNumber(number_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/takingdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var takingdate_ string
+			if v, flag := results["takingdate"]; flag {
+				takingdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateTakingdate(takingdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/educationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationdate_ string
+			if v, flag := results["educationdate"]; flag {
+				educationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateEducationdate(educationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/educationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationinstitution_ string
+			if v, flag := results["educationinstitution"]; flag {
+				educationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateEducationinstitution(educationinstitution_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/specialeducationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationdate_ string
+			if v, flag := results["specialeducationdate"]; flag {
+				specialeducationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateSpecialeducationdate(specialeducationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/license/specialeducationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationinstitution_ string
+			if v, flag := results["specialeducationinstitution"]; flag {
+				specialeducationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.UpdateSpecialeducationinstitution(specialeducationinstitution_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

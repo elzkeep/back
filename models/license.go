@@ -19,6 +19,12 @@ type License struct {
             
     Id                int64 `json:"id"`         
     User                int64 `json:"user"`         
+    Number                string `json:"number"`         
+    Takingdate                string `json:"takingdate"`         
+    Educationdate                string `json:"educationdate"`         
+    Educationinstitution                string `json:"educationinstitution"`         
+    Specialeducationdate                string `json:"specialeducationdate"`         
+    Specialeducationinstitution                string `json:"specialeducationinstitution"`         
     Licensecategory                int64 `json:"licensecategory"`         
     Licenselevel                int64 `json:"licenselevel"`         
     Date                string `json:"date"` 
@@ -87,7 +93,7 @@ func (p *LicenseManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *LicenseManager) GetQuery() string {
     ret := ""
 
-    str := "select l_id, l_user, l_licensecategory, l_licenselevel, l_date, lc_id, lc_name, lc_order, lc_date, ll_id, ll_name, ll_order, ll_date from license_tb, licensecategory_tb, licenselevel_tb "
+    str := "select l_id, l_user, l_number, l_takingdate, l_educationdate, l_educationinstitution, l_specialeducationdate, l_specialeducationinstitution, l_licensecategory, l_licenselevel, l_date, lc_id, lc_name, lc_order, lc_date, ll_id, ll_name, ll_order, ll_date from license_tb, licensecategory_tb, licenselevel_tb "
 
     if p.Index == "" {
         ret = str
@@ -153,6 +159,15 @@ func (p *LicenseManager) Insert(item *License) error {
     }
 
     
+    if item.Takingdate == "" {
+       item.Takingdate = "1000-01-01"
+    }
+    if item.Educationdate == "" {
+       item.Educationdate = "1000-01-01"
+    }
+    if item.Specialeducationdate == "" {
+       item.Specialeducationdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -161,11 +176,11 @@ func (p *LicenseManager) Insert(item *License) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into license_tb (l_id, l_user, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.User, item.Licensecategory, item.Licenselevel, item.Date)
+        query = "insert into license_tb (l_id, l_user, l_number, l_takingdate, l_educationdate, l_educationinstitution, l_specialeducationdate, l_specialeducationinstitution, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.User, item.Number, item.Takingdate, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Licensecategory, item.Licenselevel, item.Date)
     } else {
-        query = "insert into license_tb (l_user, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query , item.User, item.Licensecategory, item.Licenselevel, item.Date)
+        query = "insert into license_tb (l_user, l_number, l_takingdate, l_educationdate, l_educationinstitution, l_specialeducationdate, l_specialeducationinstitution, l_licensecategory, l_licenselevel, l_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.User, item.Number, item.Takingdate, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Licensecategory, item.Licenselevel, item.Date)
     }
     
     if err == nil {
@@ -240,12 +255,21 @@ func (p *LicenseManager) Update(item *License) error {
     }
     
     
+    if item.Takingdate == "" {
+       item.Takingdate = "1000-01-01"
+    }
+    if item.Educationdate == "" {
+       item.Educationdate = "1000-01-01"
+    }
+    if item.Specialeducationdate == "" {
+       item.Specialeducationdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update license_tb set l_user = ?, l_licensecategory = ?, l_licenselevel = ?, l_date = ? where l_id = ?"
-	_, err := p.Exec(query , item.User, item.Licensecategory, item.Licenselevel, item.Date, item.Id)
+	query := "update license_tb set l_user = ?, l_number = ?, l_takingdate = ?, l_educationdate = ?, l_educationinstitution = ?, l_specialeducationdate = ?, l_specialeducationinstitution = ?, l_licensecategory = ?, l_licenselevel = ?, l_date = ? where l_id = ?"
+	_, err := p.Exec(query , item.User, item.Number, item.Takingdate, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Licensecategory, item.Licenselevel, item.Date, item.Id)
     
         
     return err
@@ -258,6 +282,72 @@ func (p *LicenseManager) UpdateUser(value int64, id int64) error {
     }
 
 	query := "update license_tb set l_user = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateNumber(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_number = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateTakingdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_takingdate = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateEducationdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_educationdate = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateEducationinstitution(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_educationinstitution = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateSpecialeducationdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_specialeducationdate = ? where l_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *LicenseManager) UpdateSpecialeducationinstitution(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update license_tb set l_specialeducationinstitution = ? where l_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -350,8 +440,26 @@ func (p *LicenseManager) ReadRow(rows *sql.Rows) *License {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Number, &item.Takingdate, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
         
+        
+        
+        
+        
+        
+        if item.Takingdate == "0000-00-00" || item.Takingdate == "1000-01-01" {
+            item.Takingdate = ""
+        }
+        
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
@@ -391,13 +499,25 @@ func (p *LicenseManager) ReadRows(rows *sql.Rows) []License {
             var _licenselevel Licenselevel
             
     
-        err := rows.Scan(&item.Id, &item.User, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Number, &item.Takingdate, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Licensecategory, &item.Licenselevel, &item.Date, &_licensecategory.Id, &_licensecategory.Name, &_licensecategory.Order, &_licensecategory.Date, &_licenselevel.Id, &_licenselevel.Name, &_licenselevel.Order, &_licenselevel.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
         
+        
+        
+        if item.Takingdate == "0000-00-00" || item.Takingdate == "1000-01-01" {
+            item.Takingdate = ""
+        }
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
