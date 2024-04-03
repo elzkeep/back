@@ -127,3 +127,40 @@ func (c *DownloadController) Giro(ids []int64) {
 	c.Download(fullFilename, "hello.pdf")
 	os.Remove(fullFilename)
 }
+
+func (c *DownloadController) Company() {
+	conn := c.NewConnection()
+
+	user := c.Session
+	companylistManager := models.NewCompanylistManager(conn)
+	items := companylistManager.Find([]interface{}{
+		models.Where{Column: "company", Value: user.Company, Compare: "="},
+		models.Ordering("c_name"),
+	})
+
+	header := []string{"번호", "사업자명", "대표자", "사업자번호", "주소", "보유 건물수", "계약총액", "등록일"}
+	width := []int{100, 100, 100, 100, 100, 100, 100, 100}
+	align := []string{"C", "L", "L", "L", "L", "R", "R", "C"}
+	excel := global.NewExcel("고객 현황", header, width, align)
+
+	for _, v := range items {
+		excel.CellInt64(v.Id)
+		excel.Cell(v.Name)
+		excel.Cell(v.Ceo)
+		excel.Cell(v.Companyno)
+		excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
+		excel.CellInt64(v.Buildingcount)
+		excel.CellInt(v.Contractprice)
+		excel.Cell(v.Date)
+	}
+
+	fullFilename := excel.Save("")
+	log.Println("filename", fullFilename)
+
+	c.Download(fullFilename, "company.xlsx")
+	//os.Remove(fullFilename)
+}
+
+func (c *DownloadController) CompanyExample() {
+	c.Download("./doc/company.xlsx", "company.xlsx")
+}

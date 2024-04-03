@@ -30,7 +30,9 @@ type _Mode struct {
 }
 
 type _Mail struct {
-	Sender string `yaml:"sender"`
+	Sender   string `yaml:"sender"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 }
 
 type _Sms struct {

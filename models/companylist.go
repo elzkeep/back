@@ -7,38 +7,45 @@ import (
     "errors"
     "fmt"
     "strings"
-    "time"
-
+    
     log "github.com/sirupsen/logrus"    
     _ "github.com/go-sql-driver/mysql"
 
     
 )
 
-type Customercompany struct {
+type Companylist struct {
             
     Id                int64 `json:"id"`         
+    Name                string `json:"name"`         
+    Companyno                string `json:"companyno"`         
+    Ceo                string `json:"ceo"`         
+    Address                string `json:"address"`         
+    Addressetc                string `json:"addressetc"`         
+    Tel                string `json:"tel"`         
+    Email                string `json:"email"`         
+    Date                string `json:"date"`         
     Company                int64 `json:"company"`         
-    Customer                int64 `json:"customer"`         
-    Date                string `json:"date"` 
+    Buildingcount                int64 `json:"buildingcount"`         
+    Contractprice                int `json:"contractprice"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type CustomercompanyManager struct {
+type CompanylistManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Customercompany) AddExtra(key string, value interface{}) {    
+func (c *Companylist) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewCustomercompanyManager(conn interface{}) *CustomercompanyManager {
-    var item CustomercompanyManager
+func NewCompanylistManager(conn interface{}) *CompanylistManager {
+    var item CompanylistManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -57,17 +64,17 @@ func NewCustomercompanyManager(conn interface{}) *CustomercompanyManager {
     return &item
 }
 
-func (p *CustomercompanyManager) Close() {
+func (p *CompanylistManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *CustomercompanyManager) SetIndex(index string) {
+func (p *CompanylistManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *CustomercompanyManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *CompanylistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -75,7 +82,7 @@ func (p *CustomercompanyManager) Exec(query string, params ...interface{}) (sql.
     }
 }
 
-func (p *CustomercompanyManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *CompanylistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -83,10 +90,10 @@ func (p *CustomercompanyManager) Query(query string, params ...interface{}) (*sq
     }
 }
 
-func (p *CustomercompanyManager) GetQuery() string {
+func (p *CompanylistManager) GetQuery() string {
     ret := ""
 
-    str := "select cc_id, cc_company, cc_customer, cc_date from customercompany_tb "
+    str := "select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, c_company, c_buildingcount, c_contractprice from companylist_vw "
 
     if p.Index == "" {
         ret = str
@@ -100,10 +107,10 @@ func (p *CustomercompanyManager) GetQuery() string {
     return ret;
 }
 
-func (p *CustomercompanyManager) GetQuerySelect() string {
+func (p *CompanylistManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from customercompany_tb "
+    str := "select count(*) from companylist_vw "
 
     if p.Index == "" {
         ret = str
@@ -117,12 +124,12 @@ func (p *CustomercompanyManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *CustomercompanyManager) Truncate() error {
+func (p *CompanylistManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate customercompany_tb "
+    query := "truncate companylist_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -132,57 +139,21 @@ func (p *CustomercompanyManager) Truncate() error {
     return nil
 }
 
-func (p *CustomercompanyManager) Insert(item *Customercompany) error {
+
+
+func (p *CompanylistManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    if item.Date == "" {
-        t := time.Now().UTC().Add(time.Hour * 9)
-        //t := time.Now()
-        item.Date = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
-    }
-
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-    query := ""
-    var res sql.Result
-    var err error
-    if item.Id > 0 {
-        query = "insert into customercompany_tb (cc_id, cc_company, cc_customer, cc_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Company, item.Customer, item.Date)
-    } else {
-        query = "insert into customercompany_tb (cc_company, cc_customer, cc_date) values (?, ?, ?)"
-        res, err = p.Exec(query , item.Company, item.Customer, item.Date)
-    }
-    
-    if err == nil {
-        p.Result = &res
-        
-    } else {
-        log.Println(err)
-        p.Result = nil
-    }
-
-    return err
-}
-
-func (p *CustomercompanyManager) Delete(id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-    query := "delete from customercompany_tb where cc_id = ?"
+    query := "delete from companylist_vw where c_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *CustomercompanyManager) DeleteWhere(args []interface{}) error {
+func (p *CompanylistManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -196,15 +167,15 @@ func (p *CustomercompanyManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and cc_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and c_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and cc_" + item.Column + " between ? and ?"
+                query += " and c_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and cc_" + item.Column + " " + item.Compare + " ?"
+                query += " and c_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -218,79 +189,50 @@ func (p *CustomercompanyManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from customercompany_tb where " + query[5:]
+    query = "delete from companylist_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *CustomercompanyManager) Update(item *Customercompany) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-    
-    
-    if item.Date == "" {
-       item.Date = "1000-01-01 00:00:00"
-    }
-
-	query := "update customercompany_tb set cc_company = ?, cc_customer = ?, cc_date = ? where cc_id = ?"
-	_, err := p.Exec(query , item.Company, item.Customer, item.Date, item.Id)
-    
-        
-    return err
-}
 
 
-func (p *CustomercompanyManager) UpdateCompany(value int64, id int64) error {
+func (p *CompanylistManager) IncreaseCompany(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update customercompany_tb set cc_company = ? where cc_id = ?"
+	query := "update companylist_vw set c_company = c_company + ? where c_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *CustomercompanyManager) UpdateCustomer(value int64, id int64) error {
+func (p *CompanylistManager) IncreaseBuildingcount(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update customercompany_tb set cc_customer = ? where cc_id = ?"
+	query := "update companylist_vw set c_buildingcount = c_buildingcount + ? where c_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-
-
-func (p *CustomercompanyManager) IncreaseCompany(value int64, id int64) error {
+func (p *CompanylistManager) IncreaseContractprice(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update customercompany_tb set cc_company = cc_company + ? where cc_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *CustomercompanyManager) IncreaseCustomer(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update customercompany_tb set cc_customer = cc_customer + ? where cc_id = ?"
+	query := "update companylist_vw set c_contractprice = c_contractprice + ? where c_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *CustomercompanyManager) GetIdentity() int64 {
+func (p *CompanylistManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -304,20 +246,30 @@ func (p *CustomercompanyManager) GetIdentity() int64 {
     }
 }
 
-func (p *Customercompany) InitExtra() {
+func (p *Companylist) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *CustomercompanyManager) ReadRow(rows *sql.Rows) *Customercompany {
-    var item Customercompany
+func (p *CompanylistManager) ReadRow(rows *sql.Rows) *Companylist {
+    var item Companylist
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Tel, &item.Email, &item.Date, &item.Company, &item.Buildingcount, &item.Contractprice)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -328,6 +280,12 @@ func (p *CustomercompanyManager) ReadRow(rows *sql.Rows) *Customercompany {
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
+        
+        
+        
+        
         
     } else {
         return nil
@@ -343,14 +301,14 @@ func (p *CustomercompanyManager) ReadRow(rows *sql.Rows) *Customercompany {
     }
 }
 
-func (p *CustomercompanyManager) ReadRows(rows *sql.Rows) []Customercompany {
-    var items []Customercompany
+func (p *CompanylistManager) ReadRows(rows *sql.Rows) []Companylist {
+    var items []Companylist
 
     for rows.Next() {
-        var item Customercompany
+        var item Companylist
         
     
-        err := rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Address, &item.Addressetc, &item.Tel, &item.Email, &item.Date, &item.Company, &item.Buildingcount, &item.Contractprice)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -360,9 +318,17 @@ func (p *CustomercompanyManager) ReadRows(rows *sql.Rows) []Customercompany {
         
         
         
+        
+        
+        
+        
+        
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
+        
         
         item.InitExtra()        
         
@@ -373,12 +339,12 @@ func (p *CustomercompanyManager) ReadRows(rows *sql.Rows) []Customercompany {
      return items
 }
 
-func (p *CustomercompanyManager) Get(id int64) *Customercompany {
+func (p *CompanylistManager) Get(id int64) *Companylist {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and cc_id = ?"
+    query := p.GetQuery() + " and c_id = ?"
 
     
     
@@ -394,7 +360,7 @@ func (p *CustomercompanyManager) Get(id int64) *Customercompany {
     return p.ReadRow(rows)
 }
 
-func (p *CustomercompanyManager) Count(args []interface{}) int {
+func (p *CompanylistManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -408,15 +374,15 @@ func (p *CustomercompanyManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and cc_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and c_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and cc_" + item.Column + " between ? and ?"
+                query += " and c_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and cc_" + item.Column + " " + item.Compare + " ?"
+                query += " and c_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -453,13 +419,13 @@ func (p *CustomercompanyManager) Count(args []interface{}) int {
     }
 }
 
-func (p *CustomercompanyManager) FindAll() []Customercompany {
+func (p *CompanylistManager) FindAll() []Companylist {
     return p.Find(nil)
 }
 
-func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
+func (p *CompanylistManager) Find(args []interface{}) []Companylist {
     if p.Conn == nil && p.Tx == nil {
-        var items []Customercompany
+        var items []Companylist
         return items
     }
 
@@ -498,15 +464,15 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
             item := v
 
             if item.Compare == "in" {
-                query += " and cc_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and c_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and cc_" + item.Column + " between ? and ?"
+                query += " and c_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and cc_" + item.Column + " " + item.Compare + " ?"
+                query += " and c_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -528,10 +494,10 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "cc_id desc"
+            orderby = "c_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "cc_" + orderby
+                orderby = "c_" + orderby
             }
             
         }
@@ -549,10 +515,10 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
         */
     } else {
         if orderby == "" {
-            orderby = "cc_id"
+            orderby = "c_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "cc_" + orderby
+                orderby = "c_" + orderby
             }
         }
         query += " order by " + orderby
@@ -562,7 +528,7 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Customercompany
+        var items []Companylist
         return items
     }
 
@@ -571,23 +537,6 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
     return p.ReadRows(rows)
 }
 
-
-func (p *CustomercompanyManager) GetByCompanyCustomer(company int64, customer int64, args ...interface{}) *Customercompany {
-    if company != 0 {
-        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
-    }
-    if customer != 0 {
-        args = append(args, Where{Column:"customer", Value:customer, Compare:"="})        
-    }
-    
-    items := p.Find(args)
-
-    if len(items) > 0 {
-        return &items[0]
-    } else {
-        return nil
-    }
-}
 
 
 

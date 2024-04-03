@@ -39,9 +39,9 @@ func (c *BuildingController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
-    _conpanyno := c.Get("conpanyno")
-    if _conpanyno != "" {
-        args = append(args, models.Where{Column:"conpanyno", Value:_conpanyno, Compare:"like"})
+    _companyno := c.Get("companyno")
+    if _companyno != "" {
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
@@ -181,9 +181,9 @@ func (c *BuildingController) Count() {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
-    _conpanyno := c.Get("conpanyno")
-    if _conpanyno != "" {
-        args = append(args, models.Where{Column:"conpanyno", Value:_conpanyno, Compare:"like"})
+    _companyno := c.Get("companyno")
+    if _companyno != "" {
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
@@ -372,13 +372,13 @@ func (c *BuildingController) UpdateName(name string, id int64) {
 }
 
 // @Put()
-func (c *BuildingController) UpdateConpanyno(conpanyno string, id int64) {
+func (c *BuildingController) UpdateCompanyno(companyno string, id int64) {
     
     
 	conn := c.NewConnection()
 
 	_manager := models.NewBuildingManager(conn)
-	_manager.UpdateConpanyno(conpanyno, id)
+	_manager.UpdateCompanyno(companyno, id)
 }
 
 // @Put()
@@ -580,9 +580,9 @@ func (c *BuildingController) Sum() {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
-    _conpanyno := c.Get("conpanyno")
-    if _conpanyno != "" {
-        args = append(args, models.Where{Column:"conpanyno", Value:_conpanyno, Compare:"like"})
+    _companyno := c.Get("companyno")
+    if _companyno != "" {
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {

@@ -191,12 +191,9 @@
       ]      
     },
     {
-      "name": "customercompany",      
-      "compare": [
-        {
-          "name": "name",
-          "type": "like"
-        }
+      "name": "customercompany",
+      "method": [
+        "GetByCompanyCustomer"        
       ]
     },
     {
@@ -213,17 +210,13 @@
       ]
     },
     {
-      "name": "companylicense",
-      "join": [
+      "name": "user",
+      "compare": [
         {
-          "name": "licensecategory",
-          "column": "licensecategory"
-        },
-        {
-          "name": "licenselevel",
-          "column": "licenselevel"
+          "name": "name",
+          "type": "like"
         }
       ]
-    }
+    }    
   ]   
 }

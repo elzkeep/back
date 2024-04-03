@@ -9,6 +9,8 @@ import (
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
+	"zkeep/models/company"
+	"zkeep/models/customer"
 	"zkeep/models/user"
 )
 
@@ -22,6 +24,8 @@ func (c *ExternalController) Index(filenames string, typeid int) {
 
 	user := c.Session
 
+	log.Println(user)
+
 	files := strings.Split(filenames, ",")
 
 	for _, v := range files {
@@ -29,7 +33,7 @@ func (c *ExternalController) Index(filenames string, typeid int) {
 	}
 }
 
-func ExcelProcess(filename string, typeid int, companyId int64) {
+func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 	db := models.NewConnection()
 	defer db.Close()
 
@@ -37,6 +41,7 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 	defer conn.Rollback()
 
 	companyManager := models.NewCompanyManager(conn)
+	customercompanyManager := models.NewCustomercompanyManager(conn)
 	buildingManager := models.NewBuildingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
@@ -55,7 +60,7 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 	for {
 		item := models.Company{}
 		building := models.Building{}
-		customer := models.Customer{}
+		customerItem := models.Customer{}
 
 		no := f.GetCell("A", pos)
 
@@ -64,23 +69,29 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 		}
 
 		userName := f.GetCell("M", pos)
-
-		userFind := userManager.GetByCompanyName(companyId, userName)
+		if userName == "" {
+			userName = f.GetCell("L", pos)
+		}
 
 		var userId int64 = 0
-		if userFind == nil {
-			userItem := models.User{}
-			userItem.Level = user.LevelNormal
-			userItem.Company = companyId
-			userItem.Name = userName
-			userItem.Loginid = item.Name
-			userItem.Passwd = "0000"
-			userItem.Status = user.StatusUse
 
-			userManager.Insert(&userItem)
-			userId = userManager.GetIdentity()
-		} else {
-			userId = userFind.Id
+		if userName != "" {
+			userFind := userManager.GetByCompanyName(myCompanyId, userName)
+
+			if userFind == nil {
+				userItem := models.User{}
+				userItem.Level = user.LevelNormal
+				userItem.Company = myCompanyId
+				userItem.Name = userName
+				userItem.Loginid = item.Name
+				userItem.Passwd = "0000"
+				userItem.Status = user.StatusUse
+
+				userManager.Insert(&userItem)
+				userId = userManager.GetIdentity()
+			} else {
+				userId = userFind.Id
+			}
 		}
 
 		item.Name = f.GetCell("Y", pos)
@@ -89,6 +100,7 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 		item.Businesscondition = f.GetCell("AB", pos)
 		item.Businessitem = f.GetCell("AC", pos)
 		item.Address = f.GetCell("AD", pos)
+		item.Type = company.TypeBuilding
 
 		var companyId int64 = 0
 
@@ -99,6 +111,13 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 			companyId = companyManager.GetIdentity()
 		} else {
 			companyId = companyFind.Id
+		}
+
+		customercompany := customercompanyManager.GetByCompanyCustomer(myCompanyId, companyId)
+
+		if customercompany == nil {
+			log.Println("my :", myCompanyId, "customer :", companyId)
+			customercompanyManager.Insert(&models.Customercompany{Company: myCompanyId, Customer: companyId})
 		}
 
 		building.Name = f.GetCell("C", pos)
@@ -134,14 +153,17 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 			buildingId = buildingFind.Id
 		}
 
-		customer.Managername = f.GetCell("V", pos)
-		customer.Managertel = f.GetCell("W", pos)
-		customer.Manageremail = f.GetCell("X", pos)
-		customer.Address = f.GetCell("AM", pos)
-		customer.Manager = f.GetCell("AN", pos)
-		customer.Contractprice = global.Atoi(f.GetCell("AQ", pos))
-		customer.Contractvat = global.Atoi(f.GetCell("AR", pos))
-		customer.Status = typeid
+		customerItem.Managername = f.GetCell("V", pos)
+		customerItem.Managertel = f.GetCell("W", pos)
+		customerItem.Manageremail = f.GetCell("X", pos)
+		customerItem.Address = f.GetCell("AM", pos)
+		customerItem.Manager = f.GetCell("AN", pos)
+		customerItem.Contractprice = global.Atoi(f.GetCell("AQ", pos))
+		customerItem.Contractvat = global.Atoi(f.GetCell("AR", pos))
+		customerItem.Status = typeid
+		customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("AE", pos), ".", "-")
+		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("AF", pos), ".", "-")
+		customerItem.Type = customer.TypeOutsourcing
 
 		str := f.GetCell("AU", pos)
 
@@ -149,29 +171,29 @@ func ExcelProcess(filename string, typeid int, companyId int64) {
 		collectday := r.FindString(str)
 
 		if strings.Contains(str, "당월") {
-			customer.Collectmonth = 1
+			customerItem.Collectmonth = 1
 		} else {
-			customer.Collectmonth = 2
+			customerItem.Collectmonth = 2
 		}
 
 		if collectday == "" {
-			customer.Collectday = 0
+			customerItem.Collectday = 0
 		} else {
-			customer.Collectday = global.Atoi(collectday)
+			customerItem.Collectday = global.Atoi(collectday)
 		}
 
 		if f.GetCell("AT", pos) == "지로" {
-			customer.Billingtype = 1
+			customerItem.Billingtype = 1
 		} else {
-			customer.Billingtype = 2
+			customerItem.Billingtype = 2
 		}
 
-		customer.Building = buildingId
-		customer.User = userId
-		customer.Company = companyId
+		customerItem.Building = buildingId
+		customerItem.User = userId
+		customerItem.Company = myCompanyId
 
-		customerManager.DeleteByCompanyBuilding(companyId, buildingId)
-		customerManager.Insert(&customer)
+		customerManager.DeleteByCompanyBuilding(myCompanyId, buildingId)
+		customerManager.Insert(&customerItem)
 
 		pos++
 	}

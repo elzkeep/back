@@ -61,7 +61,7 @@ func (p *Excel) SetSheet(str string) {
 	p.Sheet = str
 }
 
-func NewExcel(title string, header []string, width []int, align []string, headerFont float64, bodyFont float64) *Excel {
+func NewExcel(title string, header []string, width []int, align []string) *Excel {
 	var item Excel
 
 	item.Width = width
@@ -71,6 +71,8 @@ func NewExcel(title string, header []string, width []int, align []string, header
 	item.Rows = 0
 
 	item.File = excelize.NewFile()
+
+	item.File.NewSheet("Sheet1")
 
 	for i, value := range header {
 		t := fmt.Sprintf("%v", rune('A'+i))
@@ -94,7 +96,10 @@ func (p *Excel) Save(filename string) string {
 		p.Filename = fmt.Sprintf("%v/%v", p.Path, filename)
 	}
 
-	p.File.SaveAs(p.Filename)
+	err := p.File.SaveAs(p.Filename)
+	if err != nil {
+		log.Println(err)
+	}
 
 	return p.Filename
 }
@@ -157,6 +162,10 @@ func (p *Excel) Cell(str string) string {
 }
 
 func (p *Excel) CellInt(value int) {
+	p.Cell(fmt.Sprintf("%v", value))
+}
+
+func (p *Excel) CellInt64(value int64) {
 	p.Cell(fmt.Sprintf("%v", value))
 }
 

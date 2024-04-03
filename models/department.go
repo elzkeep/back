@@ -22,6 +22,7 @@ type Department struct {
     Order                int `json:"order"`         
     Parent                int64 `json:"parent"`         
     Company                int64 `json:"company"`         
+    Master                int64 `json:"master"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -88,7 +89,7 @@ func (p *DepartmentManager) Query(query string, params ...interface{}) (*sql.Row
 func (p *DepartmentManager) GetQuery() string {
     ret := ""
 
-    str := "select de_id, de_name, de_order, de_parent, de_company, de_date from department_tb "
+    str := "select de_id, de_name, de_order, de_parent, de_company, de_master, de_date from department_tb "
 
     if p.Index == "" {
         ret = str
@@ -154,11 +155,11 @@ func (p *DepartmentManager) Insert(item *Department) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into department_tb (de_id, de_name, de_order, de_parent, de_company, de_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Order, item.Parent, item.Company, item.Date)
+        query = "insert into department_tb (de_id, de_name, de_order, de_parent, de_company, de_master, de_date) values (?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Order, item.Parent, item.Company, item.Master, item.Date)
     } else {
-        query = "insert into department_tb (de_name, de_order, de_parent, de_company, de_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Order, item.Parent, item.Company, item.Date)
+        query = "insert into department_tb (de_name, de_order, de_parent, de_company, de_master, de_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Order, item.Parent, item.Company, item.Master, item.Date)
     }
     
     if err == nil {
@@ -237,8 +238,8 @@ func (p *DepartmentManager) Update(item *Department) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update department_tb set de_name = ?, de_order = ?, de_parent = ?, de_company = ?, de_date = ? where de_id = ?"
-	_, err := p.Exec(query , item.Name, item.Order, item.Parent, item.Company, item.Date, item.Id)
+	query := "update department_tb set de_name = ?, de_order = ?, de_parent = ?, de_company = ?, de_master = ?, de_date = ? where de_id = ?"
+	_, err := p.Exec(query , item.Name, item.Order, item.Parent, item.Company, item.Master, item.Date, item.Id)
     
         
     return err
@@ -289,6 +290,17 @@ func (p *DepartmentManager) UpdateCompany(value int64, id int64) error {
     return err
 }
 
+func (p *DepartmentManager) UpdateMaster(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update department_tb set de_master = ? where de_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 
 func (p *DepartmentManager) IncreaseOrder(value int, id int64) error {
@@ -324,6 +336,17 @@ func (p *DepartmentManager) IncreaseCompany(value int64, id int64) error {
     return err
 }
 
+func (p *DepartmentManager) IncreaseMaster(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update department_tb set de_master = de_master + ? where de_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 
 func (p *DepartmentManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
@@ -352,7 +375,9 @@ func (p *DepartmentManager) ReadRow(rows *sql.Rows) *Department {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Order, &item.Parent, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Order, &item.Parent, &item.Company, &item.Master, &item.Date)
+        
+        
         
         
         
@@ -389,12 +414,13 @@ func (p *DepartmentManager) ReadRows(rows *sql.Rows) []Department {
         var item Department
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Order, &item.Parent, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Order, &item.Parent, &item.Company, &item.Master, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         

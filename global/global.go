@@ -290,6 +290,7 @@ func SendSMS(tel string, content string) bool {
 	}()
 
 	str := fmt.Sprintf("user_id=%v&key=%v&sender=%v&receiver=%v&msg=%v", config.Sms.User, config.Sms.Key, config.Sms.Sender, tel, content)
+	log.Println(str)
 
 	rqb := bytes.NewBufferString(str)
 	rq, e := http.NewRequest("POST", "https://apis.aligo.in/send/", rqb)
@@ -308,8 +309,8 @@ func SendSMS(tel string, content string) bool {
 
 	defer rs.Body.Close()
 
-	c, e := ioutil.ReadAll(rs.Body)
-	//	fmt.Printf("SMS:\n  body=%+v\n  err=%+v\n  msg=%+v\n", rs.Body, e, str)
+	c, e := io.ReadAll(rs.Body)
+	log.Printf("SMS:\n  body=%+v\n  err=%+v\n  msg=%+v\n", rs.Body, e, str)
 	if e != nil {
 		log.Println(e)
 		return false
@@ -321,11 +322,11 @@ func SendSMS(tel string, content string) bool {
 }
 
 func WriteFile(filename string, content string) error {
-	return ioutil.WriteFile(filename, []byte(content), 0644)
+	return os.WriteFile(filename, []byte(content), 0644)
 }
 
 func ReadFile(filename string) string {
-	dat, err := ioutil.ReadFile(filename)
+	dat, err := os.ReadFile(filename)
 
 	if err != nil {
 		return ""

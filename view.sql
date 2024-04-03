@@ -47,8 +47,15 @@ create view calendarcompanylist_vw as
 select r_company as r_id, r_company, date_format(r_checkdate, '%Y-%m') as r_month, date_format(r_checkdate, '%Y-%m-%d') as r_day, r_status, count(*) as r_count, now() as r_checkdate from report_tb group by r_company, date_format(r_checkdate, '%Y-%m'), date_format(r_checkdate, '%Y-%m-%d'), r_status;
 
 
+/*
 drop view customercompany_vw;
 create view customercompany_vw as
 select cu_company as c_company, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_status, c_date, 
 count(*) as c_buildingcount, sum(cu_contractprice) as c_contractprice from company_tb, building_tb, customer_tb where c_id = b_company and b_id = cu_building group by
 cu_company, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c_status, c_date;
+*/
+
+drop view companylist_vw;
+create view companylist_vw as 
+select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company, count(*) as c_buildingcount, sum(cu_contractprice + cu_contractvat) as c_contractprice from company_tb, customercompany_tb, building_tb, customer_tb where c_id = cc_customer and c_id = b_company and b_id = cu_building
+group by c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company;

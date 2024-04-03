@@ -51,6 +51,10 @@ func (c *DepartmentController) Index(page int, pagesize int) {
     if _company != 0 {
         args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
     }
+    _master := c.Geti64("master")
+    if _master != 0 {
+        args = append(args, models.Where{Column:"master", Value:_master, Compare:"="})    
+    }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
     if _startdate != "" && _enddate != "" {        
@@ -128,6 +132,10 @@ func (c *DepartmentController) Count() {
     _company := c.Geti64("company")
     if _company != 0 {
         args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _master := c.Geti64("master")
+    if _master != 0 {
+        args = append(args, models.Where{Column:"master", Value:_master, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -254,6 +262,16 @@ func (c *DepartmentController) UpdateCompany(company int64, id int64) {
 
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateCompany(company, id)
+}
+
+// @Put()
+func (c *DepartmentController) UpdateMaster(master int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewDepartmentManager(conn)
+	_manager.UpdateMaster(master, id)
 }
 
 

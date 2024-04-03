@@ -47,6 +47,14 @@ func (c *CompanyController) Index(page int, pagesize int) {
     if _ceo != "" {
         args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
     }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _email := c.Get("email")
+    if _email != "" {
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
@@ -273,6 +281,14 @@ func (c *CompanyController) Count() {
     _ceo := c.Get("ceo")
     if _ceo != "" {
         args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _email := c.Get("email")
+    if _email != "" {
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
     }
     _address := c.Get("address")
     if _address != "" {
@@ -559,6 +575,26 @@ func (c *CompanyController) UpdateCeo(ceo string, id int64) {
 
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateCeo(ceo, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateTel(tel string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateTel(tel, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateEmail(email string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateEmail(email, id)
 }
 
 // @Put()
