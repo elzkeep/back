@@ -6111,6 +6111,82 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/user/educationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationdate_ string
+			if v, flag := results["educationdate"]; flag {
+				educationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateEducationdate(educationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/user/educationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var educationinstitution_ string
+			if v, flag := results["educationinstitution"]; flag {
+				educationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateEducationinstitution(educationinstitution_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/user/specialeducationdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationdate_ string
+			if v, flag := results["specialeducationdate"]; flag {
+				specialeducationdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateSpecialeducationdate(specialeducationdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/user/specialeducationinstitution", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var specialeducationinstitution_ string
+			if v, flag := results["specialeducationinstitution"]; flag {
+				specialeducationinstitution_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.UserController
+			controller.Init(c)
+			controller.UpdateSpecialeducationinstitution(specialeducationinstitution_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/user/rejectreason", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()

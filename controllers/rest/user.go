@@ -97,6 +97,38 @@ func (c *UserController) Index(page int, pagesize int) {
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
     }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+    }
     _rejectreason := c.Get("rejectreason")
     if _rejectreason != "" {
         args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
@@ -234,6 +266,38 @@ func (c *UserController) Count() {
     _approval := c.Geti("approval")
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
+    }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
     }
     _rejectreason := c.Get("rejectreason")
     if _rejectreason != "" {
@@ -554,6 +618,46 @@ func (c *UserController) UpdateApproval(approval int, id int64) {
 }
 
 // @Put()
+func (c *UserController) UpdateEducationdate(educationdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateEducationdate(educationdate, id)
+}
+
+// @Put()
+func (c *UserController) UpdateEducationinstitution(educationinstitution string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateEducationinstitution(educationinstitution, id)
+}
+
+// @Put()
+func (c *UserController) UpdateSpecialeducationdate(specialeducationdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateSpecialeducationdate(specialeducationdate, id)
+}
+
+// @Put()
+func (c *UserController) UpdateSpecialeducationinstitution(specialeducationinstitution string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateSpecialeducationinstitution(specialeducationinstitution, id)
+}
+
+// @Put()
 func (c *UserController) UpdateRejectreason(rejectreason string, id int64) {
     
     
@@ -667,6 +771,38 @@ func (c *UserController) Sum() {
     _approval := c.Geti("approval")
     if _approval != 0 {
         args = append(args, models.Where{Column:"approval", Value:_approval, Compare:"="})    
+    }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
     }
     _rejectreason := c.Get("rejectreason")
     if _rejectreason != "" {

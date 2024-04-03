@@ -31,10 +31,11 @@ const (
     _ Approval  = iota
 
     ApprovalWait
+    ApprovalReject
     ApprovalComplete
 )
 
-var Approvals = []string{ "", "미승인", "승인" }
+var Approvals = []string{ "", "미승인", " 거절", "승인" }
 
 
 

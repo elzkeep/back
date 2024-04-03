@@ -20,7 +20,7 @@
         },
         {
           "name": "approval",
-          "data": ["", "wait:미승인", "complete:승인"]
+          "data": ["", "wait:미승인", "reject: 거절", "complete:승인"]
         }
       ],  
       "method": [

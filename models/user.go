@@ -33,6 +33,10 @@ type User struct {
     Level                user.Level `json:"level"`         
     Score                Double `json:"score"`         
     Approval                user.Approval `json:"approval"`         
+    Educationdate                string `json:"educationdate"`         
+    Educationinstitution                string `json:"educationinstitution"`         
+    Specialeducationdate                string `json:"specialeducationdate"`         
+    Specialeducationinstitution                string `json:"specialeducationinstitution"`         
     Rejectreason                string `json:"rejectreason"`         
     Status                user.Status `json:"status"`         
     Company                int64 `json:"company"`         
@@ -103,7 +107,7 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *UserManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_rejectreason, u_status, u_company, u_department, u_date from user_tb "
+    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date from user_tb "
 
     if p.Index == "" {
         ret = str
@@ -164,6 +168,12 @@ func (p *UserManager) Insert(item *User) error {
     if item.Joindate == "" {
        item.Joindate = "1000-01-01 00:00:00"
     }
+    if item.Educationdate == "" {
+       item.Educationdate = "1000-01-01"
+    }
+    if item.Specialeducationdate == "" {
+       item.Specialeducationdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -172,11 +182,11 @@ func (p *UserManager) Insert(item *User) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into user_tb (u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_rejectreason, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Rejectreason, item.Status, item.Company, item.Department, item.Date)
+        query = "insert into user_tb (u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Rejectreason, item.Status, item.Company, item.Department, item.Date)
     } else {
-        query = "insert into user_tb (u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_rejectreason, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Rejectreason, item.Status, item.Company, item.Department, item.Date)
+        query = "insert into user_tb (u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Rejectreason, item.Status, item.Company, item.Department, item.Date)
     }
     
     if err == nil {
@@ -254,12 +264,18 @@ func (p *UserManager) Update(item *User) error {
     if item.Joindate == "" {
        item.Joindate = "1000-01-01 00:00:00"
     }
+    if item.Educationdate == "" {
+       item.Educationdate = "1000-01-01"
+    }
+    if item.Specialeducationdate == "" {
+       item.Specialeducationdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update user_tb set u_loginid = ?, u_passwd = ?, u_name = ?, u_email = ?, u_tel = ?, u_address = ?, u_addressetc = ?, u_joindate = ?, u_careeryear = ?, u_careermonth = ?, u_level = ?, u_score = ?, u_approval = ?, u_rejectreason = ?, u_status = ?, u_company = ?, u_department = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Rejectreason, item.Status, item.Company, item.Department, item.Date, item.Id)
+	query := "update user_tb set u_loginid = ?, u_passwd = ?, u_name = ?, u_email = ?, u_tel = ?, u_address = ?, u_addressetc = ?, u_joindate = ?, u_careeryear = ?, u_careermonth = ?, u_level = ?, u_score = ?, u_approval = ?, u_educationdate = ?, u_educationinstitution = ?, u_specialeducationdate = ?, u_specialeducationinstitution = ?, u_rejectreason = ?, u_status = ?, u_company = ?, u_department = ?, u_date = ? where u_id = ?"
+	_, err := p.Exec(query , item.Loginid, item.Passwd, item.Name, item.Email, item.Tel, item.Address, item.Addressetc, item.Joindate, item.Careeryear, item.Careermonth, item.Level, item.Score, item.Approval, item.Educationdate, item.Educationinstitution, item.Specialeducationdate, item.Specialeducationinstitution, item.Rejectreason, item.Status, item.Company, item.Department, item.Date, item.Id)
     
         
     return err
@@ -409,6 +425,50 @@ func (p *UserManager) UpdateApproval(value int, id int64) error {
     return err
 }
 
+func (p *UserManager) UpdateEducationdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_educationdate = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *UserManager) UpdateEducationinstitution(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_educationinstitution = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *UserManager) UpdateSpecialeducationdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_specialeducationdate = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *UserManager) UpdateSpecialeducationinstitution(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_specialeducationinstitution = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *UserManager) UpdateRejectreason(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -541,7 +601,7 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date)
+        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date)
         
         
         
@@ -569,6 +629,18 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
         
         
         
+        
+        
+        
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
@@ -606,7 +678,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         var item User
         
     
-        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date)
+        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -627,6 +699,14 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         
         
         
+        
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
