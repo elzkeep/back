@@ -29,6 +29,12 @@ type Userlist struct {
     Careermonth                int `json:"careermonth"`         
     Level                int `json:"level"`         
     Score                Double `json:"score"`         
+    Approval                int `json:"approval"`         
+    Educationdate                string `json:"educationdate"`         
+    Educationinstitution                string `json:"educationinstitution"`         
+    Specialeducationdate                string `json:"specialeducationdate"`         
+    Specialeducationinstitution                string `json:"specialeducationinstitution"`         
+    Rejectreason                string `json:"rejectreason"`         
     Status                int `json:"status"`         
     Company                int64 `json:"company"`         
     Department                int64 `json:"department"`         
@@ -99,7 +105,7 @@ func (p *UserlistManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *UserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_status, u_company, u_department, u_date, u_totalscore from userlist_vw "
+    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date, u_totalscore from userlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -248,6 +254,17 @@ func (p *UserlistManager) IncreaseScore(value Double, id int64) error {
     return err
 }
 
+func (p *UserlistManager) IncreaseApproval(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update userlist_vw set u_approval = u_approval + ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *UserlistManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -320,7 +337,7 @@ func (p *UserlistManager) ReadRow(rows *sql.Rows) *Userlist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
+        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
         
         
         
@@ -344,6 +361,22 @@ func (p *UserlistManager) ReadRow(rows *sql.Rows) *Userlist {
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
@@ -383,7 +416,7 @@ func (p *UserlistManager) ReadRows(rows *sql.Rows) []Userlist {
         var item Userlist
         
     
-        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
+        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -402,6 +435,16 @@ func (p *UserlistManager) ReadRows(rows *sql.Rows) []Userlist {
             item.Joindate = ""
         }
         
+        
+        
+        
+        if item.Educationdate == "0000-00-00" || item.Educationdate == "1000-01-01" {
+            item.Educationdate = ""
+        }
+        
+        if item.Specialeducationdate == "0000-00-00" || item.Specialeducationdate == "1000-01-01" {
+            item.Specialeducationdate = ""
+        }
         
         
         
