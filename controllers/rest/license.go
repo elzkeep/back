@@ -302,6 +302,23 @@ func (c *LicenseController) Deletebatch(item *[]models.License) {
 
 
 
+func (c *LicenseController) GetByUserLicensecategory(user int64 ,licensecategory int64) *models.License {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+    
+    item := _manager.GetByUserLicensecategory(user, licensecategory)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 // @Put()
 func (c *LicenseController) UpdateUser(user int64, id int64) {
     

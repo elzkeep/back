@@ -57,6 +57,10 @@ func (c *UserController) Index(page int, pagesize int) {
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
     }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"like"})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
@@ -226,6 +230,10 @@ func (c *UserController) Count() {
     _tel := c.Get("tel")
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"like"})
     }
     _address := c.Get("address")
     if _address != "" {
@@ -538,6 +546,16 @@ func (c *UserController) UpdateTel(tel string, id int64) {
 }
 
 // @Put()
+func (c *UserController) UpdateZip(zip string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+	_manager.UpdateZip(zip, id)
+}
+
+// @Put()
 func (c *UserController) UpdateAddress(address string, id int64) {
     
     
@@ -731,6 +749,10 @@ func (c *UserController) Sum() {
     _tel := c.Get("tel")
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"like"})
     }
     _address := c.Get("address")
     if _address != "" {

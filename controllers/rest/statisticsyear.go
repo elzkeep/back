@@ -46,17 +46,17 @@ func (c *StatisticsyearController) Index(page int, pagesize int) {
     if _totalprice != 0 {
         args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
     }
-    _startbilldate := c.Get("startbilldate")
-    _endbilldate := c.Get("endbilldate")
-    if _startbilldate != "" && _endbilldate != "" {        
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
         var v [2]string
-        v[0] = _startbilldate
-        v[1] = _endbilldate  
-        args = append(args, models.Where{Column:"billdate", Value:v, Compare:"between"})    
-    } else if  _startbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
-    } else if  _endbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
     }
     
 
@@ -119,17 +119,17 @@ func (c *StatisticsyearController) Count() {
     if _totalprice != 0 {
         args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
     }
-    _startbilldate := c.Get("startbilldate")
-    _endbilldate := c.Get("endbilldate")
-    if _startbilldate != "" && _endbilldate != "" {        
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
         var v [2]string
-        v[0] = _startbilldate
-        v[1] = _endbilldate  
-        args = append(args, models.Where{Column:"billdate", Value:v, Compare:"between"})    
-    } else if  _startbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
-    } else if  _endbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
     }
     
 
@@ -169,17 +169,17 @@ func (c *StatisticsyearController) Sum() {
     if _totalprice != 0 {
         args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
     }
-    _startbilldate := c.Get("startbilldate")
-    _endbilldate := c.Get("endbilldate")
-    if _startbilldate != "" && _endbilldate != "" {        
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
         var v [2]string
-        v[0] = _startbilldate
-        v[1] = _endbilldate  
-        args = append(args, models.Where{Column:"billdate", Value:v, Compare:"between"})    
-    } else if  _startbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
-    } else if  _endbilldate != "" {          
-        args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
     }
     
 

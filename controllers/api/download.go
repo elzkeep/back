@@ -139,9 +139,10 @@ func (c *DownloadController) Company() {
 	})
 
 	header := []string{"번호", "사업자명", "대표자", "사업자번호", "주소", "보유 건물수", "계약총액", "등록일"}
-	width := []int{100, 100, 100, 100, 100, 100, 100, 100}
+	width := []int{25, 70, 25, 40, 100, 20, 30, 40}
 	align := []string{"C", "L", "L", "L", "L", "R", "R", "C"}
 	excel := global.NewExcel("고객 현황", header, width, align)
+	excel.SetHeight(30)
 
 	for _, v := range items {
 		excel.CellInt64(v.Id)

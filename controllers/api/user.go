@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"zkeep/controllers"
 	"zkeep/models"
@@ -11,8 +12,9 @@ type UserController struct {
 	controllers.Controller
 }
 
-func (c *UserController) Search(page int, pagesize int) {
+func (c *UserController) Search() {
 
+	log.Println("search")
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
@@ -29,7 +31,7 @@ func (c *UserController) Search(page int, pagesize int) {
 	}
 	_name := c.Get("name")
 	if _name != "" {
-		query := fmt.Sprintf("(u_loginid like '%%v%' or u_name like '%%v%' or u_email like '%%v%')", _name, _name, _name)
+		query := fmt.Sprintf("(u_loginid like '%%%v%%' or u_name like '%%%v%%' or u_email like '%%%v%%')", _name, _name, _name)
 		args = append(args, models.Custom{Query: query})
 	}
 	_email := c.Get("email")
@@ -68,6 +70,14 @@ func (c *UserController) Search(page int, pagesize int) {
 	if _level != 0 {
 		args = append(args, models.Where{Column: "level", Value: _level, Compare: "="})
 	}
+	_score := c.Geti("score")
+	if _score != 0 {
+		args = append(args, models.Where{Column: "score", Value: _score, Compare: "="})
+	}
+	_approval := c.Geti("approval")
+	if _approval != 0 {
+		args = append(args, models.Where{Column: "approval", Value: _approval, Compare: "="})
+	}
 	_status := c.Geti("status")
 	if _status != 0 {
 		args = append(args, models.Where{Column: "status", Value: _status, Compare: "="})
@@ -89,6 +99,8 @@ func (c *UserController) Search(page int, pagesize int) {
 		args = append(args, models.Where{Column: "date", Value: _enddate, Compare: "<="})
 	}
 
+	page := 0
+	pagesize := 0
 	if page != 0 && pagesize != 0 {
 		args = append(args, models.Paging(page, pagesize))
 	}

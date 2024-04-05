@@ -207,6 +207,9 @@
           "name": "licenselevel",
           "column": "licenselevel"
         }
+      ],
+      "method": [
+        "GetByUserLicensecategory"        
       ]
     },
     {
@@ -217,6 +220,12 @@
           "type": "like"
         }
       ]
-    }    
+    },
+    {
+      "name": "licensecategory",
+      "method": [
+        "GetByName"        
+      ]
+    }
   ]   
 }

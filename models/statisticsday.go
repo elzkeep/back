@@ -21,7 +21,7 @@ type Statisticsday struct {
     Duration                string `json:"duration"`         
     Total                int64 `json:"total"`         
     Totalprice                int64 `json:"totalprice"`         
-    Billdate                string `json:"billdate"` 
+    Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
@@ -87,7 +87,7 @@ func (p *StatisticsdayManager) Query(query string, params ...interface{}) (*sql.
 func (p *StatisticsdayManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_month, bi_duration, bi_total, bi_totalprice, bi_billdate from statisticsday_vw "
+    str := "select bi_id, bi_month, bi_duration, bi_total, bi_totalprice, bi_date from statisticsday_vw "
 
     if p.Index == "" {
         ret = str
@@ -242,7 +242,7 @@ func (p *StatisticsdayManager) ReadRow(rows *sql.Rows) *Statisticsday {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Month, &item.Duration, &item.Total, &item.Totalprice, &item.Billdate)
+        err = rows.Scan(&item.Id, &item.Month, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
         
         
         
@@ -254,8 +254,8 @@ func (p *StatisticsdayManager) ReadRow(rows *sql.Rows) *Statisticsday {
         
         
         
-        if item.Billdate == "0000-00-00 00:00:00" || item.Billdate == "1000-01-01 00:00:00" {
-            item.Billdate = ""
+        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
+            item.Date = ""
         }
         
     } else {
@@ -279,7 +279,7 @@ func (p *StatisticsdayManager) ReadRows(rows *sql.Rows) []Statisticsday {
         var item Statisticsday
         
     
-        err := rows.Scan(&item.Id, &item.Month, &item.Duration, &item.Total, &item.Totalprice, &item.Billdate)
+        err := rows.Scan(&item.Id, &item.Month, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -291,8 +291,8 @@ func (p *StatisticsdayManager) ReadRows(rows *sql.Rows) []Statisticsday {
         
         
         
-        if item.Billdate == "0000-00-00 00:00:00" || item.Billdate == "1000-01-01 00:00:00" {
-            item.Billdate = ""
+        if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
+            item.Date = ""
         }
         
         item.InitExtra()        

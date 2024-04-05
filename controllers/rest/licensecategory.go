@@ -200,6 +200,23 @@ func (c *LicensecategoryController) Deletebatch(item *[]models.Licensecategory) 
 
 
 
+func (c *LicensecategoryController) GetByName(name string) *models.Licensecategory {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicensecategoryManager(conn)
+    
+    item := _manager.GetByName(name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 // @Put()
 func (c *LicensecategoryController) UpdateName(name string, id int64) {
     

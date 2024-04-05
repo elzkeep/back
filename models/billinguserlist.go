@@ -14,31 +14,42 @@ import (
     
 )
 
-type Statisticsyear struct {
+type Billinguserlist struct {
             
     Id                int64 `json:"id"`         
-    Duration                string `json:"duration"`         
-    Total                int64 `json:"total"`         
-    Totalprice                int64 `json:"totalprice"`         
-    Date                string `json:"date"` 
+    Price                int `json:"price"`         
+    Status                int `json:"status"`         
+    Giro                int `json:"giro"`         
+    Billdate                string `json:"billdate"`         
+    Month                string `json:"month"`         
+    Period                int `json:"period"`         
+    Company                int64 `json:"company"`         
+    Building                int64 `json:"building"`         
+    Date                string `json:"date"`         
+    Buildingname                string `json:"buildingname"`         
+    Billingname                string `json:"billingname"`         
+    Billingtel                string `json:"billingtel"`         
+    Billingemail                string `json:"billingemail"`         
+    User                int64 `json:"user"`         
+    Username                string `json:"username"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type StatisticsyearManager struct {
+type BillinguserlistManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Statisticsyear) AddExtra(key string, value interface{}) {    
+func (c *Billinguserlist) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewStatisticsyearManager(conn interface{}) *StatisticsyearManager {
-    var item StatisticsyearManager
+func NewBillinguserlistManager(conn interface{}) *BillinguserlistManager {
+    var item BillinguserlistManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -57,17 +68,17 @@ func NewStatisticsyearManager(conn interface{}) *StatisticsyearManager {
     return &item
 }
 
-func (p *StatisticsyearManager) Close() {
+func (p *BillinguserlistManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *StatisticsyearManager) SetIndex(index string) {
+func (p *BillinguserlistManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *StatisticsyearManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *BillinguserlistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -75,7 +86,7 @@ func (p *StatisticsyearManager) Exec(query string, params ...interface{}) (sql.R
     }
 }
 
-func (p *StatisticsyearManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *BillinguserlistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -83,10 +94,10 @@ func (p *StatisticsyearManager) Query(query string, params ...interface{}) (*sql
     }
 }
 
-func (p *StatisticsyearManager) GetQuery() string {
+func (p *BillinguserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_duration, bi_total, bi_totalprice, bi_date from statisticsyear_vw "
+    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_month, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail, bi_user, bi_username from billinguserlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -100,10 +111,10 @@ func (p *StatisticsyearManager) GetQuery() string {
     return ret;
 }
 
-func (p *StatisticsyearManager) GetQuerySelect() string {
+func (p *BillinguserlistManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from statisticsyear_vw "
+    str := "select count(*) from billinguserlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -117,12 +128,12 @@ func (p *StatisticsyearManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *StatisticsyearManager) Truncate() error {
+func (p *BillinguserlistManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate statisticsyear_vw "
+    query := "truncate billinguserlist_vw "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -134,19 +145,19 @@ func (p *StatisticsyearManager) Truncate() error {
 
 
 
-func (p *StatisticsyearManager) Delete(id int64) error {
+func (p *BillinguserlistManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from statisticsyear_vw where bi_id = ?"
+    query := "delete from billinguserlist_vw where bi_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *StatisticsyearManager) DeleteWhere(args []interface{}) error {
+func (p *BillinguserlistManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -182,7 +193,7 @@ func (p *StatisticsyearManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from statisticsyear_vw where " + query[5:]
+    query = "delete from billinguserlist_vw where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
@@ -191,30 +202,85 @@ func (p *StatisticsyearManager) DeleteWhere(args []interface{}) error {
 
 
 
-func (p *StatisticsyearManager) IncreaseTotal(value int64, id int64) error {
+func (p *BillinguserlistManager) IncreasePrice(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update statisticsyear_vw set bi_total = bi_total + ? where bi_id = ?"
+	query := "update billinguserlist_vw set bi_price = bi_price + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *StatisticsyearManager) IncreaseTotalprice(value int64, id int64) error {
+func (p *BillinguserlistManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update statisticsyear_vw set bi_totalprice = bi_totalprice + ? where bi_id = ?"
+	query := "update billinguserlist_vw set bi_status = bi_status + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreaseGiro(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_giro = bi_giro + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreasePeriod(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_period = bi_period + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreaseCompany(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_company = bi_company + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreaseBuilding(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_building = bi_building + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreaseUser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_user = bi_user + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *StatisticsyearManager) GetIdentity() int64 {
+func (p *BillinguserlistManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -228,20 +294,32 @@ func (p *StatisticsyearManager) GetIdentity() int64 {
     }
 }
 
-func (p *Statisticsyear) InitExtra() {
+func (p *Billinguserlist) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *StatisticsyearManager) ReadRow(rows *sql.Rows) *Statisticsyear {
-    var item Statisticsyear
+func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
+    var item Billinguserlist
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
+        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.User, &item.Username)
+        
+        
+        
+        
+        
+        
+        
+        
+        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
+            item.Billdate = ""
+        }
+        
         
         
         
@@ -254,6 +332,18 @@ func (p *StatisticsyearManager) ReadRow(rows *sql.Rows) *Statisticsyear {
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
     } else {
         return nil
@@ -269,14 +359,14 @@ func (p *StatisticsyearManager) ReadRow(rows *sql.Rows) *Statisticsyear {
     }
 }
 
-func (p *StatisticsyearManager) ReadRows(rows *sql.Rows) []Statisticsyear {
-    var items []Statisticsyear
+func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
+    var items []Billinguserlist
 
     for rows.Next() {
-        var item Statisticsyear
+        var item Billinguserlist
         
     
-        err := rows.Scan(&item.Id, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
+        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.User, &item.Username)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -286,10 +376,23 @@ func (p *StatisticsyearManager) ReadRows(rows *sql.Rows) []Statisticsyear {
         
         
         
+        if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
+            item.Billdate = ""
+        }
+        
+        
+        
+        
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
+        
+        
+        
+        
         
         item.InitExtra()        
         
@@ -300,7 +403,7 @@ func (p *StatisticsyearManager) ReadRows(rows *sql.Rows) []Statisticsyear {
      return items
 }
 
-func (p *StatisticsyearManager) Get(id int64) *Statisticsyear {
+func (p *BillinguserlistManager) Get(id int64) *Billinguserlist {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
@@ -321,7 +424,7 @@ func (p *StatisticsyearManager) Get(id int64) *Statisticsyear {
     return p.ReadRow(rows)
 }
 
-func (p *StatisticsyearManager) Count(args []interface{}) int {
+func (p *BillinguserlistManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -380,13 +483,13 @@ func (p *StatisticsyearManager) Count(args []interface{}) int {
     }
 }
 
-func (p *StatisticsyearManager) FindAll() []Statisticsyear {
+func (p *BillinguserlistManager) FindAll() []Billinguserlist {
     return p.Find(nil)
 }
 
-func (p *StatisticsyearManager) Find(args []interface{}) []Statisticsyear {
+func (p *BillinguserlistManager) Find(args []interface{}) []Billinguserlist {
     if p.Conn == nil && p.Tx == nil {
-        var items []Statisticsyear
+        var items []Billinguserlist
         return items
     }
 
@@ -489,7 +592,7 @@ func (p *StatisticsyearManager) Find(args []interface{}) []Statisticsyear {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Statisticsyear
+        var items []Billinguserlist
         return items
     }
 
@@ -500,16 +603,16 @@ func (p *StatisticsyearManager) Find(args []interface{}) []Statisticsyear {
 
 
 
-func (p *StatisticsyearManager) Sum(args []interface{}) *Statisticsyear {
+func (p *BillinguserlistManager) Sum(args []interface{}) *Billinguserlist {
     if p.Conn == nil && p.Tx == nil {
-        var item Statisticsyear
+        var item Billinguserlist
         return &item
     }
 
     var params []interface{}
 
     
-    query := "select sum(bi_totalprice) from statisticsyear_vw"
+    query := "select sum(bi_price) from billinguserlist_vw"
 
     if p.Index != "" {
         query = query + " use index(" + p.Index + ") "
@@ -606,7 +709,7 @@ func (p *StatisticsyearManager) Sum(args []interface{}) *Statisticsyear {
 
     rows, err := p.Query(query, params...)
 
-    var item Statisticsyear
+    var item Billinguserlist
     
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
@@ -617,7 +720,7 @@ func (p *StatisticsyearManager) Sum(args []interface{}) *Statisticsyear {
 
     if rows.Next() {
         
-        rows.Scan(&item.Totalprice)        
+        rows.Scan(&item.Price)        
     }
 
     return &item        

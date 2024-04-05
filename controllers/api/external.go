@@ -19,12 +19,7 @@ type ExternalController struct {
 }
 
 func (c *ExternalController) Index(filenames string, typeid int) {
-	log.Println("external index")
-	log.Println(filenames)
-
 	user := c.Session
-
-	log.Println(user)
 
 	files := strings.Split(filenames, ",")
 
@@ -86,11 +81,37 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 				userItem.Loginid = item.Name
 				userItem.Passwd = "0000"
 				userItem.Status = user.StatusUse
+				userItem.Approval = user.ApprovalComplete
+				userItem.Score = 60
 
 				userManager.Insert(&userItem)
 				userId = userManager.GetIdentity()
 			} else {
 				userId = userFind.Id
+			}
+		}
+
+		salesuserName := f.GetCell("N", pos)
+		var salesuserId int64 = 0
+
+		if salesuserName != "" {
+			userFind := userManager.GetByCompanyName(myCompanyId, salesuserName)
+
+			if userFind == nil {
+				userItem := models.User{}
+				userItem.Level = user.LevelNormal
+				userItem.Company = myCompanyId
+				userItem.Name = userName
+				userItem.Loginid = item.Name
+				userItem.Passwd = "0000"
+				userItem.Status = user.StatusUse
+				userItem.Approval = user.ApprovalComplete
+				userItem.Score = 60
+
+				userManager.Insert(&userItem)
+				salesuserId = userManager.GetIdentity()
+			} else {
+				salesuserId = userFind.Id
 			}
 		}
 
@@ -116,7 +137,6 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		customercompany := customercompanyManager.GetByCompanyCustomer(myCompanyId, companyId)
 
 		if customercompany == nil {
-			log.Println("my :", myCompanyId, "customer :", companyId)
 			customercompanyManager.Insert(&models.Customercompany{Company: myCompanyId, Customer: companyId})
 		}
 
@@ -190,10 +210,126 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 		customerItem.Building = buildingId
 		customerItem.User = userId
+		customerItem.Salesuser = salesuserId
 		customerItem.Company = myCompanyId
 
 		customerManager.DeleteByCompanyBuilding(myCompanyId, buildingId)
 		customerManager.Insert(&customerItem)
+
+		pos++
+	}
+
+	conn.Commit()
+}
+
+func (c *ExternalController) User(filename string) {
+	session := c.Session
+	company := session.Company
+
+	db := models.NewConnection()
+	defer db.Close()
+
+	conn, _ := db.Begin()
+	defer conn.Rollback()
+
+	userManager := models.NewUserManager(conn)
+	licenseManager := models.NewLicenseManager(conn)
+	licensecategoryManager := models.NewLicensecategoryManager(conn)
+
+	fullFilename := path.Join(config.UploadPath, filename)
+	f := global.NewExcelReader(fullFilename)
+	if f == nil {
+		log.Println("not found file")
+		return
+	}
+
+	sheet := "안전관리자목록"
+	f.SetSheet(sheet)
+
+	pos := 4
+	for {
+		item := models.User{}
+
+		no := f.GetCell("A", pos)
+
+		if no == "" {
+			break
+		}
+
+		name := f.GetCell("C", pos)
+		licenseno := f.GetCell("D", pos)
+		zip := f.GetCell("F", pos)
+		address := f.GetCell("G", pos)
+		tel := f.GetCell("H", pos)
+		email := f.GetCell("I", pos)
+		license := f.GetCell("j", pos)
+
+		educationdate := f.GetCell("M", pos)
+		educationinstitution := f.GetCell("N", pos)
+		specialeducationdate := f.GetCell("O", pos)
+		specialeducationinstitution := f.GetCell("P", pos)
+		joindate := f.GetCell("Q", pos)
+		status := f.GetCell("R", pos)
+
+		licensename := ""
+		temp := strings.Fields(license)
+		if len(temp) >= 2 {
+			licensename = temp[0]
+			licenseno = temp[1]
+		} else {
+			licensename = license
+		}
+
+		userItem := userManager.GetByCompanyName(company, name)
+
+		if userItem != nil {
+			item = *userItem
+		}
+
+		item.Name = name
+		item.Zip = zip
+		item.Address = address
+		item.Tel = tel
+		item.Email = email
+		item.Educationdate = educationdate
+		item.Educationinstitution = educationinstitution
+		item.Specialeducationdate = specialeducationdate
+		item.Specialeducationinstitution = specialeducationinstitution
+		item.Joindate = joindate
+		item.Approval = user.ApprovalComplete
+		item.Level = user.LevelNormal
+
+		if status == "재직" {
+			item.Status = user.StatusUse
+		} else {
+			item.Status = user.StatusNotuse
+		}
+
+		if userItem == nil {
+			item.Company = company
+			item.Loginid = item.Name
+			item.Passwd = "0000"
+			item.Score = 60
+
+			userManager.Insert(&item)
+			item.Id = userManager.GetIdentity()
+		} else {
+			userManager.Update(&item)
+		}
+
+		licensecategoryItem := licensecategoryManager.GetByName(licensename)
+		if licensecategoryItem == nil {
+			licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
+			licensecategory := licensecategoryManager.GetIdentity()
+
+			licenseManager.Insert(&models.License{User: session.Id, Number: licenseno, Licensecategory: licensecategory})
+		} else {
+			licenseItem := licenseManager.GetByUserLicensecategory(session.Id, licensecategoryItem.Id)
+
+			if licenseItem == nil {
+				licenseManager.Insert(&models.License{User: session.Id, Number: licenseno, Licensecategory: licensecategoryItem.Id})
+			}
+		}
 
 		pos++
 	}

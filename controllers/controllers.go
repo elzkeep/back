@@ -118,6 +118,23 @@ func (c *Controller) GetArrayCommai(name string) []int {
 	return items
 }
 
+func (c *Controller) GetArrayCommai64(name string) []int64 {
+	value := c.Get(name)
+
+	var items []int64
+
+	if value == "" {
+		return items
+	}
+
+	values := strings.Split(value, ",")
+	for _, item := range values {
+		items = append(items, global.Atol(item))
+	}
+
+	return items
+}
+
 func (c *Controller) Get(name string) string {
 	return c.Query(name)
 }

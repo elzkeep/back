@@ -8,16 +8,16 @@ import (
     "strings"
 )
 
-type BillinglistController struct {
+type BillinguserlistController struct {
 	controllers.Controller
 }
 
-func (c *BillinglistController) Read(id int64) {
+func (c *BillinguserlistController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewBillinglistManager(conn)
+	manager := models.NewBillinguserlistManager(conn)
 	item := manager.Get(id)
 
     
@@ -25,12 +25,12 @@ func (c *BillinglistController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *BillinglistController) Index(page int, pagesize int) {
+func (c *BillinguserlistController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewBillinglistManager(conn)
+	manager := models.NewBillinguserlistManager(conn)
 
     var args []interface{}
     
@@ -101,6 +101,14 @@ func (c *BillinglistController) Index(page int, pagesize int) {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _username := c.Get("username")
+    if _username != "" {
+        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 
@@ -142,12 +150,12 @@ func (c *BillinglistController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
-func (c *BillinglistController) Count() {
+func (c *BillinguserlistController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewBillinglistManager(conn)
+	manager := models.NewBillinguserlistManager(conn)
 
     var args []interface{}
     
@@ -218,6 +226,14 @@ func (c *BillinglistController) Count() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _username := c.Get("username")
+    if _username != "" {
+        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 
@@ -236,12 +252,12 @@ func (c *BillinglistController) Count() {
 
 
 
-func (c *BillinglistController) Sum() {
+func (c *BillinguserlistController) Sum() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewBillinglistManager(conn)
+	manager := models.NewBillinguserlistManager(conn)
 
     var args []interface{}
     
@@ -312,6 +328,14 @@ func (c *BillinglistController) Sum() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _username := c.Get("username")
+    if _username != "" {
+        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 

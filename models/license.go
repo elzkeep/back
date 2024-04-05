@@ -742,5 +742,22 @@ func (p *LicenseManager) Find(args []interface{}) []License {
 }
 
 
+func (p *LicenseManager) GetByUserLicensecategory(user int64, licensecategory int64, args ...interface{}) *License {
+    if user != 0 {
+        args = append(args, Where{Column:"user", Value:user, Compare:"="})        
+    }
+    if licensecategory != 0 {
+        args = append(args, Where{Column:"licensecategory", Value:licensecategory, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 
 

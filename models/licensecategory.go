@@ -561,5 +561,19 @@ func (p *LicensecategoryManager) Find(args []interface{}) []Licensecategory {
 }
 
 
+func (p *LicensecategoryManager) GetByName(name string, args ...interface{}) *Licensecategory {
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 
 

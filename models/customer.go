@@ -43,6 +43,7 @@ type Customer struct {
     Tel                string `json:"tel"`         
     Fax                string `json:"fax"`         
     Status                int `json:"status"`         
+    Salesuser                int64 `json:"salesuser"`         
     User                int64 `json:"user"`         
     Company                int64 `json:"company"`         
     Building                int64 `json:"building"`         
@@ -112,7 +113,7 @@ func (p *CustomerManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *CustomerManager) GetQuery() string {
     ret := ""
 
-    str := "select cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_user, cu_company, cu_building, cu_date, b_id, b_name, b_companyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_tel, c_email, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from customer_tb, building_tb, company_tb "
+    str := "select cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_salesuser, cu_user, cu_company, cu_building, cu_date, b_id, b_name, b_companyno, b_ceo, b_address, b_addressetc, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_usage, b_district, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_tel, c_email, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from customer_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -192,11 +193,11 @@ func (p *CustomerManager) Insert(item *Customer) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into customer_tb (cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_user, cu_company, cu_building, cu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.User, item.Company, item.Building, item.Date)
+        query = "insert into customer_tb (cu_id, cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_salesuser, cu_user, cu_company, cu_building, cu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.Salesuser, item.User, item.Company, item.Building, item.Date)
     } else {
-        query = "insert into customer_tb (cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_user, cu_company, cu_building, cu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.User, item.Company, item.Building, item.Date)
+        query = "insert into customer_tb (cu_type, cu_checkdate, cu_managername, cu_managertel, cu_manageremail, cu_contractstartdate, cu_contractenddate, cu_contractprice, cu_contractvat, cu_contractday, cu_billingdate, cu_billingtype, cu_billingname, cu_billingtel, cu_billingemail, cu_address, cu_addressetc, cu_collectmonth, cu_collectday, cu_manager, cu_tel, cu_fax, cu_status, cu_salesuser, cu_user, cu_company, cu_building, cu_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.Salesuser, item.User, item.Company, item.Building, item.Date)
     }
     
     if err == nil {
@@ -281,8 +282,8 @@ func (p *CustomerManager) Update(item *Customer) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update customer_tb set cu_type = ?, cu_checkdate = ?, cu_managername = ?, cu_managertel = ?, cu_manageremail = ?, cu_contractstartdate = ?, cu_contractenddate = ?, cu_contractprice = ?, cu_contractvat = ?, cu_contractday = ?, cu_billingdate = ?, cu_billingtype = ?, cu_billingname = ?, cu_billingtel = ?, cu_billingemail = ?, cu_address = ?, cu_addressetc = ?, cu_collectmonth = ?, cu_collectday = ?, cu_manager = ?, cu_tel = ?, cu_fax = ?, cu_status = ?, cu_user = ?, cu_company = ?, cu_building = ?, cu_date = ? where cu_id = ?"
-	_, err := p.Exec(query , item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.User, item.Company, item.Building, item.Date, item.Id)
+	query := "update customer_tb set cu_type = ?, cu_checkdate = ?, cu_managername = ?, cu_managertel = ?, cu_manageremail = ?, cu_contractstartdate = ?, cu_contractenddate = ?, cu_contractprice = ?, cu_contractvat = ?, cu_contractday = ?, cu_billingdate = ?, cu_billingtype = ?, cu_billingname = ?, cu_billingtel = ?, cu_billingemail = ?, cu_address = ?, cu_addressetc = ?, cu_collectmonth = ?, cu_collectday = ?, cu_manager = ?, cu_tel = ?, cu_fax = ?, cu_status = ?, cu_salesuser = ?, cu_user = ?, cu_company = ?, cu_building = ?, cu_date = ? where cu_id = ?"
+	_, err := p.Exec(query , item.Type, item.Checkdate, item.Managername, item.Managertel, item.Manageremail, item.Contractstartdate, item.Contractenddate, item.Contractprice, item.Contractvat, item.Contractday, item.Billingdate, item.Billingtype, item.Billingname, item.Billingtel, item.Billingemail, item.Address, item.Addressetc, item.Collectmonth, item.Collectday, item.Manager, item.Tel, item.Fax, item.Status, item.Salesuser, item.User, item.Company, item.Building, item.Date, item.Id)
     
         
     return err
@@ -542,6 +543,17 @@ func (p *CustomerManager) UpdateStatus(value int, id int64) error {
     return err
 }
 
+func (p *CustomerManager) UpdateSalesuser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update customer_tb set cu_salesuser = ? where cu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *CustomerManager) UpdateUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -676,6 +688,17 @@ func (p *CustomerManager) IncreaseStatus(value int, id int64) error {
     return err
 }
 
+func (p *CustomerManager) IncreaseSalesuser(value int64, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update customer_tb set cu_salesuser = cu_salesuser + ? where cu_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *CustomerManager) IncreaseUser(value int64, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -740,7 +763,7 @@ func (p *CustomerManager) ReadRow(rows *sql.Rows) *Customer {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractvat, &item.Contractday, &item.Billingdate, &item.Billingtype, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Address, &item.Addressetc, &item.Collectmonth, &item.Collectday, &item.Manager, &item.Tel, &item.Fax, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
+        err = rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractvat, &item.Contractday, &item.Billingdate, &item.Billingtype, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Address, &item.Addressetc, &item.Collectmonth, &item.Collectday, &item.Manager, &item.Tel, &item.Fax, &item.Status, &item.Salesuser, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         
         
         
@@ -760,6 +783,8 @@ func (p *CustomerManager) ReadRow(rows *sql.Rows) *Customer {
         if item.Contractenddate == "0000-00-00" || item.Contractenddate == "1000-01-01" {
             item.Contractenddate = ""
         }
+        
+        
         
         
         
@@ -831,7 +856,7 @@ func (p *CustomerManager) ReadRows(rows *sql.Rows) []Customer {
             var _company Company
             
     
-        err := rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractvat, &item.Contractday, &item.Billingdate, &item.Billingtype, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Address, &item.Addressetc, &item.Collectmonth, &item.Collectday, &item.Manager, &item.Tel, &item.Fax, &item.Status, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
+        err := rows.Scan(&item.Id, &item.Type, &item.Checkdate, &item.Managername, &item.Managertel, &item.Manageremail, &item.Contractstartdate, &item.Contractenddate, &item.Contractprice, &item.Contractvat, &item.Contractday, &item.Billingdate, &item.Billingtype, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Address, &item.Addressetc, &item.Collectmonth, &item.Collectday, &item.Manager, &item.Tel, &item.Fax, &item.Status, &item.Salesuser, &item.User, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Address, &_building.Addressetc, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Usage, &_building.District, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -849,6 +874,7 @@ func (p *CustomerManager) ReadRows(rows *sql.Rows) []Customer {
         if item.Contractenddate == "0000-00-00" || item.Contractenddate == "1000-01-01" {
             item.Contractenddate = ""
         }
+        
         
         
         

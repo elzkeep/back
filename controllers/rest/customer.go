@@ -142,6 +142,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
     }
+    _salesuser := c.Geti64("salesuser")
+    if _salesuser != 0 {
+        args = append(args, models.Where{Column:"salesuser", Value:_salesuser, Compare:"="})    
+    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
@@ -322,6 +326,10 @@ func (c *CustomerController) Count() {
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _salesuser := c.Geti64("salesuser")
+    if _salesuser != 0 {
+        args = append(args, models.Where{Column:"salesuser", Value:_salesuser, Compare:"="})    
     }
     _user := c.Geti64("user")
     if _user != 0 {
@@ -695,6 +703,16 @@ func (c *CustomerController) UpdateStatus(status int, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateStatus(status, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateSalesuser(salesuser int64, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateSalesuser(salesuser, id)
 }
 
 // @Put()

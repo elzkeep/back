@@ -58,6 +58,14 @@ func (c *BillingController) Index(page int, pagesize int) {
     } else if  _endbilldate != "" {          
         args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
     }
+    _month := c.Get("month")
+    if _month != "" {
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _period := c.Geti("period")
+    if _period != 0 {
+        args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
     _company := c.Geti64("company")
     if _company != 0 {
         args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
@@ -150,6 +158,14 @@ func (c *BillingController) Count() {
         args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
     } else if  _endbilldate != "" {          
         args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+    }
+    _month := c.Get("month")
+    if _month != "" {
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _period := c.Geti("period")
+    if _period != 0 {
+        args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
     }
     _company := c.Geti64("company")
     if _company != 0 {
@@ -287,6 +303,26 @@ func (c *BillingController) UpdateBilldate(billdate string, id int64) {
 }
 
 // @Put()
+func (c *BillingController) UpdateMonth(month string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdateMonth(month, id)
+}
+
+// @Put()
+func (c *BillingController) UpdatePeriod(period int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdatePeriod(period, id)
+}
+
+// @Put()
 func (c *BillingController) UpdateCompany(company int64, id int64) {
     
     
@@ -343,6 +379,14 @@ func (c *BillingController) Sum() {
         args = append(args, models.Where{Column:"billdate", Value:_startbilldate, Compare:">="})
     } else if  _endbilldate != "" {          
         args = append(args, models.Where{Column:"billdate", Value:_endbilldate, Compare:"<="})            
+    }
+    _month := c.Get("month")
+    if _month != "" {
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _period := c.Geti("period")
+    if _period != 0 {
+        args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
     }
     _company := c.Geti64("company")
     if _company != 0 {
