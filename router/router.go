@@ -1,13 +1,14 @@
 package router
 
 import (
-    "encoding/json"
-    "strconv"
-    "strings"
+	"encoding/json"
+	"strconv"
+	"strings"
 	"zkeep/controllers/api"
 	"zkeep/controllers/rest"
-    "zkeep/models"
-    "zkeep/models/user"
+	"zkeep/models"
+	"zkeep/models/user"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -270,6 +271,16 @@ func SetRouter(r *fiber.App) {
 			var controller api.UserController
 			controller.Init(c)
 			controller.Search()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylist/search", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.CompanylistController
+			controller.Init(c)
+			controller.Search(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
