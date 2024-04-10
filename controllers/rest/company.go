@@ -95,6 +95,10 @@ func (c *CompanyController) Index(page int, pagesize int) {
     if _businessitem != "" {
         args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"like"})
     }
+    _giro := c.Get("giro")
+    if _giro != "" {
+        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"like"})
+    }
     _content := c.Get("content")
     if _content != "" {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
@@ -329,6 +333,10 @@ func (c *CompanyController) Count() {
     _businessitem := c.Get("businessitem")
     if _businessitem != "" {
         args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"like"})
+    }
+    _giro := c.Get("giro")
+    if _giro != "" {
+        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"like"})
     }
     _content := c.Get("content")
     if _content != "" {
@@ -695,6 +703,16 @@ func (c *CompanyController) UpdateBusinessitem(businessitem string, id int64) {
 
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBusinessitem(businessitem, id)
+}
+
+// @Put()
+func (c *CompanyController) UpdateGiro(giro string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateGiro(giro, id)
 }
 
 // @Put()

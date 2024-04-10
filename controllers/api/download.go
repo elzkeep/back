@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 	"zkeep/controllers"
 	"zkeep/global"
@@ -59,6 +60,13 @@ func (c *DownloadController) Giro(ids []int64) {
 		return
 	}
 
+	err = pdf.AddTTFFont("ocr", "./fonts/OCR-B1.ttf")
+	if err != nil {
+		log.Println("error")
+		log.Print(err.Error())
+		return
+	}
+
 	my := companyManager.Get(user.Company)
 	today := global.GetDate(time.Now())
 
@@ -66,7 +74,8 @@ func (c *DownloadController) Giro(ids []int64) {
 		company := v.Extra["company"].(models.Company)
 		pdf.SetFont("noto", "", 14)
 
-		vat := int(v.Price / 10)
+		vat := int(v.Price / 11)
+		onlyPrice := vat * 10
 
 		pdf.AddPage()
 		pdf.SetXY(2.8*90, 2.8*80)
@@ -74,25 +83,25 @@ func (c *DownloadController) Giro(ids []int64) {
 		pdf.SetXY(2.8*90, 2.8*90)
 		pdf.Cell(nil, fmt.Sprintf("%v 귀하", company.Name))
 
-		pdf.SetXY(2.8*70, 2.8*140)
-		pdf.Cell(nil, "입금 계좌")
+		//pdf.SetXY(2.8*70, 2.8*140)
+		//pdf.Cell(nil, "입금 계좌")
 
-		pdf.SetXY(2.8*70, 2.8*150)
-		pdf.Cell(nil, my.Bankname)
+		//pdf.SetXY(2.8*70, 2.8*150)
+		//pdf.Cell(nil, my.Bankname)
 
-		pdf.SetXY(2.8*70, 2.8*158)
-		pdf.Cell(nil, my.Bankno)
+		//pdf.SetXY(2.8*70, 2.8*158)
+		//pdf.Cell(nil, my.Bankno)
 
 		pdf.SetXY(2.8*155, 2.8*223)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price+vat)))
+		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
 		pdf.SetFont("noto", "", 10)
 
 		pdf.SetXY(2.8*14, 2.8*140)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price+vat)))
+		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
 		pdf.SetXY(2.8*12, 2.8*150)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
 
 		pdf.SetXY(2.8*39, 2.8*150)
 		pdf.Cell(nil, humanize.Comma(int64(vat)))
@@ -117,6 +126,91 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetXY(2.8*73, 2.8*272)
 		pdf.Cell(nil, v.Billdate)
+
+		pdf.SetFont("orc", "", 12)
+
+		price := v.Price
+		sum := 0
+
+		muls := []int{7, 3, 1}
+		mulsPos := 0
+		for i := 1; i <= 7; i++ {
+			remain := price % 10
+
+			sum += remain * muls[mulsPos]
+
+			mulsPos++
+			if mulsPos == 3 {
+				mulsPos = 0
+			}
+
+			price -= remain
+			price /= 10
+
+			if price == 0 {
+				break
+			}
+		}
+
+		digit := 0
+		if sum < 10 {
+			digit = 10 - sum
+		} else {
+			sum = sum % 10
+			if sum > 0 {
+				digit = 10 - sum
+			}
+		}
+
+		strPrice := global.Itoa(v.Price)
+		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+
+		companyNo := 1000000000 + company.Id
+
+		sum = 0
+
+		muls = []int{2, 1}
+		mulsPos = 0
+		for i := 1; i <= 7; i++ {
+			remain := price % 10
+
+			temp := remain * muls[mulsPos]
+
+			if temp > 10 {
+				sum += temp%10 + 1
+			} else {
+				sum += temp
+			}
+
+			mulsPos++
+			if mulsPos == 2 {
+				mulsPos = 0
+			}
+
+			price -= remain
+			price /= 10
+
+			if price == 0 {
+				break
+			}
+		}
+
+		digit2 := 0
+		if sum < 10 {
+			digit2 = 10 - sum
+		} else {
+			sum = sum % 10
+			if sum > 0 {
+				digit2 = 10 - sum
+			}
+		}
+
+		strCompanyNo := fmt.Sprintf("%v", companyNo)
+		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+
+		str := fmt.Sprintf("<%v+ %v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
+		pdf.SetXY(2.8*73, 2.8*237)
+		pdf.Cell(nil, str)
 	}
 
 	fullFilename := global.GetTempFilename()

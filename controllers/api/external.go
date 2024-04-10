@@ -78,7 +78,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 				userItem.Level = user.LevelNormal
 				userItem.Company = myCompanyId
 				userItem.Name = userName
-				userItem.Loginid = item.Name
+				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
 				userItem.Status = user.StatusUse
 				userItem.Approval = user.ApprovalComplete
@@ -101,8 +101,8 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 				userItem := models.User{}
 				userItem.Level = user.LevelNormal
 				userItem.Company = myCompanyId
-				userItem.Name = userName
-				userItem.Loginid = item.Name
+				userItem.Name = salesuserName
+				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
 				userItem.Status = user.StatusUse
 				userItem.Approval = user.ApprovalComplete
