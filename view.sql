@@ -63,3 +63,10 @@ drop view companylist_vw;
 create view companylist_vw as 
 select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company, count(*) as c_buildingcount, sum(cu_contractprice + cu_contractvat) as c_contractprice from company_tb, customercompany_tb, building_tb, customer_tb where c_id = cc_customer and c_id = b_company and b_id = cu_building
 group by c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company;
+
+
+drop view customercompanylist_vw;
+create view customercompanylist_vw as 
+select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company,
+(select count(*) from building_tb where b_company = c_id) as c_buildingcount
+from company_tb, customercompany_tb where c_id = cc_customer;

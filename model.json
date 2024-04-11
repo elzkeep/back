@@ -226,6 +226,24 @@
       "method": [
         "GetByName"        
       ]
+    },
+    {
+      "name": "companylist",
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]                 
+    },
+    {
+      "name": "customercompanylist",
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]                 
     }
   ]   
 }

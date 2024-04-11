@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"zkeep/controllers"
 	"zkeep/models"
 
@@ -192,4 +193,41 @@ func (c *CustomerController) Index(page int, pagesize int) {
 
 	total := manager.Count(args)
 	c.Set("total", total)
+}
+
+func (c *CustomerController) Status(id int64) {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	customerManager := models.NewCustomerManager(conn)
+	items := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Where{Column: "status", Value: 1, Compare: "="},
+	})
+
+	user := customerManager.Count([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Where{Column: "status", Value: 2, Compare: "="},
+	})
+
+	var money int64 = 0
+	var score float32 = 0.0
+
+	for _, v := range items {
+		money += int64(v.Contractprice)
+		money += int64(v.Contractvat)
+
+		building := v.Extra["building"].(models.Building)
+
+		score += float32(building.Score)
+	}
+
+	log.Println("customer status", id)
+
+	c.Set("currentuser", len(items))
+	c.Set("user", user)
+	c.Set("money", money)
+	c.Set("score", score)
+
 }

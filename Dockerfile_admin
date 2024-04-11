@@ -5,6 +5,7 @@ RUN  mkdir -p /usr/local/main
 COPY ./bin/main.linux /usr/local/main/main
 COPY ./.env.yml /usr/local/main/.env.yml
 ADD ./dist /usr/local/main/web
+ADD ./doc /usr/local/main/doc
 RUN  mkdir -p /usr/local/main/fonts
 RUN  mkdir -p /usr/local/main/webdata
 RUN  mkdir -p /usr/local/main/webdata/temp

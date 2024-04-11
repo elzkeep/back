@@ -1,14 +1,13 @@
 package router
 
 import (
-	"encoding/json"
-	"strconv"
-	"strings"
+    "encoding/json"
+    "strconv"
+    "strings"
 	"zkeep/controllers/api"
 	"zkeep/controllers/rest"
-	"zkeep/models"
-	"zkeep/models/user"
-
+    "zkeep/models"
+    "zkeep/models/user"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -107,12 +106,31 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/companylist/search/:page", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Params("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller api.CompanylistController
+			controller.Init(c)
+			controller.Search(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/customer", func(c *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(c.Query("page"))
 			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
 			var controller api.CustomerController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customer/status/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller api.CustomerController
+			controller.Init(c)
+			controller.Status(id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -271,16 +289,6 @@ func SetRouter(r *fiber.App) {
 			var controller api.UserController
 			controller.Init(c)
 			controller.Search()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/companylist/search", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller api.CompanylistController
-			controller.Init(c)
-			controller.Search(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1530,6 +1538,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CompanyController
 			controller.Init(c)
 			controller.UpdateBusinessitem(businessitem_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/giro", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var giro_ string
+			if v, flag := results["giro"]; flag {
+				giro_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateGiro(giro_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3106,6 +3133,33 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomercompanyController
 			controller.Init(c)
 			controller.UpdateCustomer(customer_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customercompanylist/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.CustomercompanylistController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customercompanylist", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.CustomercompanylistController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customercompanylist/count", func(c *fiber.Ctx) error {
+			var controller rest.CustomercompanylistController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

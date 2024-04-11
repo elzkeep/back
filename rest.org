@@ -1,0 +1,135 @@
+#+title: Rest
+
+#+BEGIN_SRC restclient
+GET http://localhost:9303/api/jwt?loginid=manager&passwd=0000
+Accept: application/json
+Content-Type: application/json
+
+{
+    "client_id":"wCSD5pGDTd2MMS2J1L-02A",
+    "secret":"d38085c6-141f-41d2-a580-9385754e249f"
+}
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC js
+{
+  "code": "ok",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJsb2dpbmlkIjoibWFuYWdlciIsInBhc3N3ZCI6IjAwMDAiLCJuYW1lIjoi7ZmN6ri464-ZIiwiZW1haWwiOiJteXN0ZXJAbXlzdGVyLmNvbSIsInRlbCI6IjAxMC0xMjM0LTU2NzgiLCJ6aXAiOiIiLCJhZGRyZXNzIjoi7ISc7Jq4IOyiheuhnOq1rCDsgqzsp4HroZwgMTYxIiwiYWRkcmVzc2V0YyI6Iuqyveuzteq2gSIsImpvaW5kYXRlIjoiIiwiY2FyZWVyeWVhciI6MCwiY2FyZWVybW9udGgiOjAsImxldmVsIjozLCJzY29yZSI6NjAuMCwiYXBwcm92YWwiOjMsImVkdWNhdGlvbmRhdGUiOiIiLCJlZHVjYXRpb25pbnN0aXR1dGlvbiI6IiIsInNwZWNpYWxlZHVjYXRpb25kYXRlIjoiIiwic3BlY2lhbGVkdWNhdGlvbmluc3RpdHV0aW9uIjoiIiwicmVqZWN0cmVhc29uIjoiIiwic3RhdHVzIjoxLCJjb21wYW55IjoyLCJkZXBhcnRtZW50IjoyLCJkYXRlIjoiMjAyNC0wMi0wNSAxNTozMTozNCIsImV4dHJhIjp7ImFwcHJvdmFsIjoi7Iq57J24IiwibGV2ZWwiOiLqtIDrpqzsnpAiLCJzdGF0dXMiOiLsgqzsmqkifX0sImV4cCI6MjAyODE0Njc1OS41MzI2Njg4fQ.oKxVcBns0K8j0rF8ZOoWroJaITC93z_RLzVRz9dgXAw",
+  "user": {
+    "id": 7,
+    "loginid": "manager",
+    "passwd": "",
+    "name": "홍길동",
+    "email": "myster@myster.com",
+    "tel": "010-1234-5678",
+    "zip": "",
+    "address": "서울 종로구 사직로 161",
+    "addressetc": "경복궁",
+    "joindate": "",
+    "careeryear": 0,
+    "careermonth": 0,
+    "level": 3,
+    "score": 60.0,
+    "approval": 3,
+    "educationdate": "",
+    "educationinstitution": "",
+    "specialeducationdate": "",
+    "specialeducationinstitution": "",
+    "rejectreason": "",
+    "status": 1,
+    "company": 2,
+    "department": 2,
+    "date": "2024-02-05 15:31:34",
+    "extra": {
+      "approval": "승인",
+      "level": "관리자",
+      "status": "사용"
+    }
+  }
+}
+// GET http://localhost:9303/api/jwt?loginid=manager&passwd=0000
+// HTTP/1.1 200 OK
+// Date: Wed, 10 Apr 2024 22:05:59 GMT
+// Content-Type: application/json
+// Content-Length: 1387
+// Vary: Origin
+// Access-Control-Allow-Origin: 
+// Request duration: 0.078348s
+#+END_SRC
+
+#+BEGIN_SRC restclient
+POST http://localhost:9303/api/mail/index
+{
+    "to": "missbsd@gmail.com",
+    "subject": "test",
+    "body": "Test body"
+}        
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC js
+{
+  "_t": 1712105001350954000,
+  "code": "ok"
+}
+// POST http://localhost:9303/api/mail/index
+// HTTP/1.1 200 OK
+// Date: Wed, 03 Apr 2024 00:43:24 GMT
+// Content-Type: application/json
+// Content-Length: 38
+// Vary: Origin
+// Access-Control-Allow-Origin: 
+// Request duration: 3.529809s
+#+END_SRC
+
+
+#+BEGIN_SRC restclient
+POST http://localhost:9303/api/sms/index
+{
+    "to": "01033096649",
+    "message": "test"
+}        
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC js
+{
+  "_t": 1712105058488841000,
+  "code": "ok"
+}
+// POST http://localhost:9303/api/sms/index
+// HTTP/1.1 200 OK
+// Date: Wed, 03 Apr 2024 00:44:18 GMT
+// Content-Type: application/json
+// Content-Length: 38
+// Vary: Origin
+// Access-Control-Allow-Origin: 
+// Request duration: 0.206044s
+#+END_SRC
+
+#+BEGIN_SRC restclient
+GET http://localhost:9303/api/customer/status/2
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJsb2dpbmlkIjoibWFuYWdlciIsInBhc3N3ZCI6IjAwMDAiLCJuYW1lIjoi7ZmN6ri464-ZIiwiZW1haWwiOiJteXN0ZXJAbXlzdGVyLmNvbSIsInRlbCI6IjAxMC0xMjM0LTU2NzgiLCJ6aXAiOiIiLCJhZGRyZXNzIjoi7ISc7Jq4IOyiheuhnOq1rCDsgqzsp4HroZwgMTYxIiwiYWRkcmVzc2V0YyI6Iuqyveuzteq2gSIsImpvaW5kYXRlIjoiIiwiY2FyZWVyeWVhciI6MCwiY2FyZWVybW9udGgiOjAsImxldmVsIjozLCJzY29yZSI6NjAuMCwiYXBwcm92YWwiOjMsImVkdWNhdGlvbmRhdGUiOiIiLCJlZHVjYXRpb25pbnN0aXR1dGlvbiI6IiIsInNwZWNpYWxlZHVjYXRpb25kYXRlIjoiIiwic3BlY2lhbGVkdWNhdGlvbmluc3RpdHV0aW9uIjoiIiwicmVqZWN0cmVhc29uIjoiIiwic3RhdHVzIjoxLCJjb21wYW55IjoyLCJkZXBhcnRtZW50IjoyLCJkYXRlIjoiMjAyNC0wMi0wNSAxNTozMTozNCIsImV4dHJhIjp7ImFwcHJvdmFsIjoi7Iq57J24IiwibGV2ZWwiOiLqtIDrpqzsnpAiLCJzdGF0dXMiOiLsgqzsmqkifX0sImV4cCI6MjAyODE0Njc1OS41MzI2Njg4fQ.oKxVcBns0K8j0rF8ZOoWroJaITC93z_RLzVRz9dgXAw
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC js
+{
+  "_t": 1712786815602625000,
+  "code": "ok",
+  "currentuser": 153,
+  "money": 31007400,
+  "score": 0,
+  "user": 0
+}
+// GET http://localhost:9303/api/customer/status/2
+// HTTP/1.1 200 OK
+// Date: Wed, 10 Apr 2024 22:06:55 GMT
+// Content-Type: application/json
+// Content-Length: 92
+// Vary: Origin
+// Access-Control-Allow-Origin: 
+// Request duration: 0.069320s
+#+END_SRC

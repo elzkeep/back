@@ -8,16 +8,16 @@ import (
     "strings"
 )
 
-type CompanylistController struct {
+type CustomercompanylistController struct {
 	controllers.Controller
 }
 
-func (c *CompanylistController) Read(id int64) {
+func (c *CustomercompanylistController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewCompanylistManager(conn)
+	manager := models.NewCustomercompanylistManager(conn)
 	item := manager.Get(id)
 
     
@@ -25,12 +25,12 @@ func (c *CompanylistController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *CompanylistController) Index(page int, pagesize int) {
+func (c *CustomercompanylistController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewCompanylistManager(conn)
+	manager := models.NewCustomercompanylistManager(conn)
 
     var args []interface{}
     
@@ -82,10 +82,6 @@ func (c *CompanylistController) Index(page int, pagesize int) {
     _buildingcount := c.Geti64("buildingcount")
     if _buildingcount != 0 {
         args = append(args, models.Where{Column:"buildingcount", Value:_buildingcount, Compare:"="})    
-    }
-    _contractprice := c.Geti("contractprice")
-    if _contractprice != 0 {
-        args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
     }
     
 
@@ -127,12 +123,12 @@ func (c *CompanylistController) Index(page int, pagesize int) {
 	c.Set("total", total)
 }
 
-func (c *CompanylistController) Count() {
+func (c *CustomercompanylistController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewCompanylistManager(conn)
+	manager := models.NewCustomercompanylistManager(conn)
 
     var args []interface{}
     
@@ -184,10 +180,6 @@ func (c *CompanylistController) Count() {
     _buildingcount := c.Geti64("buildingcount")
     if _buildingcount != 0 {
         args = append(args, models.Where{Column:"buildingcount", Value:_buildingcount, Compare:"="})    
-    }
-    _contractprice := c.Geti("contractprice")
-    if _contractprice != 0 {
-        args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
     }
     
 
