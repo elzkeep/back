@@ -66,7 +66,7 @@ func TestExcel(t *testing.T) {
 			userItem.Loginid = item.Name
 			userItem.Passwd = "0000"
 
-			err := userManager.Insert(&userItem)
+			userManager.Insert(&userItem)
 			userId = userManager.GetIdentity()
 		} else {
 			userId = userFind.Id
@@ -143,11 +143,7 @@ func TestExcel(t *testing.T) {
 			customer.Collectmonth = 2
 		}
 
-		if collectday == "" {
-			customer.Collectday = 0
-		} else {
-			customer.Collectday = global.Atoi(collectday)
-		}
+		customer.Collectday = global.Atoi(collectday)
 
 		if f.GetCell("AT", pos) == "지로" {
 			customer.Billingtype = 1

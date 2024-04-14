@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/CloudyKit/jet/v3 v3.0.1
 	github.com/antoniodipinto/ikisocket v0.0.0-20230914204858-ee499ed8c55e
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1

@@ -135,6 +135,15 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/customer/upload/:filename", func(c *fiber.Ctx) error {
+			filename_ := c.Params("filename")
+			var controller api.CustomerController
+			controller.Init(c)
+			controller.Upload(filename_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/dashboard", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Query("company"), 10, 64)
 			var controller api.DashboardController
@@ -188,6 +197,14 @@ func SetRouter(r *fiber.App) {
 			var controller api.DownloadController
 			controller.Init(c)
 			controller.CompanyExample()
+			controller.Close()
+            return nil
+		})
+
+		apiGroup.Get("/download/customerexample", func(c *fiber.Ctx) error {
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.CustomerExample()
 			controller.Close()
             return nil
 		})

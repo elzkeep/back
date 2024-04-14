@@ -121,7 +121,7 @@
         }
       ],
       "method": [
-        "GetByCompanyName"        
+        "GetByCompanyName"
       ]
     },
     {
@@ -219,6 +219,9 @@
           "name": "name",
           "type": "like"
         }
+      ],
+      "method": [
+        "GetByCompanyName"
       ]
     },
     {

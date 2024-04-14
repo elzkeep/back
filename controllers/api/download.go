@@ -259,3 +259,7 @@ func (c *DownloadController) Company() {
 func (c *DownloadController) CompanyExample() {
 	c.Download("./doc/company.xlsx", "company.xlsx")
 }
+
+func (c *DownloadController) CustomerExample() {
+	c.Download("./doc/customer.xlsx", "customer.xlsx")
+}

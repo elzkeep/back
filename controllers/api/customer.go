@@ -3,7 +3,10 @@ package api
 import (
 	"fmt"
 	"log"
+	"path"
+	"zkeep/config"
 	"zkeep/controllers"
+	"zkeep/global"
 	"zkeep/models"
 
 	"strings"
@@ -230,4 +233,129 @@ func (c *CustomerController) Status(id int64) {
 	c.Set("money", money)
 	c.Set("score", score)
 
+}
+
+func (c *CustomerController) Upload(filename string) {
+	conn := c.NewConnection()
+
+	companyManager := models.NewCompanyManager(conn)
+	buildingManager := models.NewBuildingManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+	customercompanyManager := models.NewCustomercompanyManager(conn)
+	userManager := models.NewUserManager(conn)
+
+	user := c.Session
+
+	fullFilename := path.Join(config.UploadPath, filename)
+	f := global.NewExcelReader(fullFilename)
+	if f == nil {
+		log.Println("not found file")
+		return
+	}
+
+	sheet := "Sheet1"
+	f.SetSheet(sheet)
+
+	pos := 2
+	for {
+		name := f.GetCell("A", pos)
+
+		if name == "" {
+			log.Println("brake")
+			break
+		}
+
+		companyno := f.GetCell("B", pos)
+
+		item := companyManager.GetByCompanyno(companyno)
+		if item == nil {
+			item = &models.Company{}
+			item.Companyno = companyno
+			item.Name = name
+			item.Ceo = f.GetCell("C", pos)
+			item.Address = f.GetCell("G", pos)
+			item.Tel = f.GetCell("J", pos)
+			item.Email = f.GetCell("K", pos)
+
+			companyManager.Insert(item)
+
+			item.Id = companyManager.GetIdentity()
+		}
+
+		customercompany := &models.Customercompany{}
+		customercompany.Company = user.Company
+		customercompany.Customer = item.Id
+		customercompanyManager.Insert(customercompany)
+
+		buildingName := f.GetCell("D", pos)
+		building := buildingManager.GetByCompanyName(item.Id, buildingName)
+
+		if building == nil {
+			building = &models.Building{}
+			building.Name = buildingName
+			building.Companyno = f.GetCell("E", pos)
+			building.Ceo = f.GetCell("F", pos)
+			if building.Companyno == "" {
+				building.Companyno = item.Companyno
+			}
+			if building.Ceo == "" {
+				building.Ceo = item.Ceo
+			}
+			building.Address = f.GetCell("G", pos)
+
+			buildingManager.Insert(building)
+
+			building.Id = buildingManager.GetIdentity()
+		}
+
+		customer := customerManager.GetByCompanyBuilding(item.Id, building.Id)
+		if customer == nil {
+			customer = &models.Customer{}
+			customer.Company = item.Id
+			customer.Building = building.Id
+		}
+
+		typeid := f.GetCell("H", pos)
+		if typeid == "1" || typeid == "직영" {
+			customer.Type = 1
+		} else {
+			customer.Type = 2
+		}
+
+		customer.Managername = f.GetCell("I", pos)
+		customer.Managertel = f.GetCell("J", pos)
+		customer.Manageremail = f.GetCell("K", pos)
+		customer.Billingname = f.GetCell("L", pos)
+		customer.Billingtel = f.GetCell("M", pos)
+		customer.Billingemail = f.GetCell("N", pos)
+		customer.Contractprice = global.Atoi(f.GetCell("O", pos))
+		customer.Contractvat = global.Atoi(f.GetCell("P", pos))
+		customer.Collectday = global.Atoi(f.GetCell("Q", pos))
+		if customer.Collectmonth == 0 {
+			customer.Collectmonth = 1
+		}
+
+		billingtype := f.GetCell("H", pos)
+		if billingtype == "1" || billingtype == "계산서" {
+			customer.Billingtype = 1
+		} else {
+			customer.Billingtype = 2
+		}
+
+		userName := f.GetCell("S", pos)
+		if userName != "" {
+			user := userManager.GetByCompanyName(user.Company, userName)
+			if user != nil {
+				customer.User = user.Id
+			}
+		}
+
+		if customer.Id == 0 {
+			customerManager.Insert(customer)
+		} else {
+			customerManager.Update(customer)
+		}
+
+		pos++
+	}
 }

@@ -137,29 +137,34 @@ func (c *CompanyController) Upload(filename string) {
 
 	pos := 1
 	for {
-		item := &models.Company{}
-		item.Name = f.GetCell("A", pos)
+		name := f.GetCell("A", pos)
 
-		if item.Name == "" {
+		if name == "" {
 			log.Println("brake")
 			break
 		}
 
-		item.Companyno = f.GetCell("B", pos)
-		item.Ceo = f.GetCell("C", pos)
-		item.Address = f.GetCell("D", pos)
-		item.Addressetc = f.GetCell("E", pos)
-		item.Tel = f.GetCell("F", pos)
-		item.Email = f.GetCell("G", pos)
+		companyno := f.GetCell("B", pos)
 
-		log.Println(item)
-		companyManager.Insert(item)
+		item := companyManager.GetByCompanyno(companyno)
+		if item == nil {
+			item = &models.Company{}
+			item.Companyno = companyno
+			item.Name = name
+			item.Ceo = f.GetCell("C", pos)
+			item.Address = f.GetCell("D", pos)
+			item.Addressetc = f.GetCell("E", pos)
+			item.Tel = f.GetCell("F", pos)
+			item.Email = f.GetCell("G", pos)
 
-		id := companyManager.GetIdentity()
+			companyManager.Insert(item)
+
+			item.Id = companyManager.GetIdentity()
+		}
 
 		customercompany := &models.Customercompany{}
 		customercompany.Company = user.Company
-		customercompany.Customer = id
+		customercompany.Customer = item.Id
 		customercompanyManager.Insert(customercompany)
 
 		pos++

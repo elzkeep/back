@@ -29,7 +29,6 @@ func Http() {
 		JSONEncoder:   json.Marshal,
 		JSONDecoder:   json.Unmarshal,
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			log.Println("ErrorHandler")
 			code := fiber.StatusInternalServerError
 
 			// Retrieve the custom status code if it's a *fiber.Error
