@@ -39,6 +39,10 @@ func (c *DepartmentController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
         
     }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
     _order := c.Geti("order")
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
@@ -120,6 +124,10 @@ func (c *DepartmentController) Count() {
     if _name != "" {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
         
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
     }
     _order := c.Geti("order")
     if _order != 0 {
@@ -232,6 +240,16 @@ func (c *DepartmentController) UpdateName(name string, id int64) {
 
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateName(name, id)
+}
+
+// @Put()
+func (c *DepartmentController) UpdateStatus(status int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewDepartmentManager(conn)
+	_manager.UpdateStatus(status, id)
 }
 
 // @Put()
