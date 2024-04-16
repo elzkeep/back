@@ -12,6 +12,180 @@ type LicenseController struct {
 	controllers.Controller
 }
 
+
+
+func (c *LicenseController) GetByUserLicensecategory(user int64 ,licensecategory int64) *models.License {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+    
+    item := _manager.GetByUserLicensecategory(user, licensecategory)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
+func (c *LicenseController) Insert(item *models.License) {
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewLicenseManager(conn)
+	manager.Insert(item)
+
+    id := manager.GetIdentity()
+    c.Result["id"] = id
+    item.Id = id
+}
+
+func (c *LicenseController) Insertbatch(item *[]models.License) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
+
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewLicenseManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    manager.Insert(&((*item)[i]))
+    }
+}
+
+func (c *LicenseController) Update(item *models.License) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewLicenseManager(conn)
+	manager.Update(item)
+}
+
+func (c *LicenseController) Delete(item *models.License) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewLicenseManager(conn)
+
+    
+	manager.Delete(item.Id)
+}
+
+func (c *LicenseController) Deletebatch(item *[]models.License) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewLicenseManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    manager.Delete(v.Id)
+    }
+}
+
+func (c *LicenseController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewLicenseManager(conn)
+
+    var args []interface{}
+    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _number := c.Get("number")
+    if _number != "" {
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
+    }
+    _starttakingdate := c.Get("starttakingdate")
+    _endtakingdate := c.Get("endtakingdate")
+    if _starttakingdate != "" && _endtakingdate != "" {        
+        var v [2]string
+        v[0] = _starttakingdate
+        v[1] = _endtakingdate  
+        args = append(args, models.Where{Column:"takingdate", Value:v, Compare:"between"})    
+    } else if  _starttakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_starttakingdate, Compare:">="})
+    } else if  _endtakingdate != "" {          
+        args = append(args, models.Where{Column:"takingdate", Value:_endtakingdate, Compare:"<="})            
+    }
+    _starteducationdate := c.Get("starteducationdate")
+    _endeducationdate := c.Get("endeducationdate")
+    if _starteducationdate != "" && _endeducationdate != "" {        
+        var v [2]string
+        v[0] = _starteducationdate
+        v[1] = _endeducationdate  
+        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
+    } else if  _starteducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
+    } else if  _endeducationdate != "" {          
+        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
+    }
+    _educationinstitution := c.Get("educationinstitution")
+    if _educationinstitution != "" {
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+    }
+    _startspecialeducationdate := c.Get("startspecialeducationdate")
+    _endspecialeducationdate := c.Get("endspecialeducationdate")
+    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
+        var v [2]string
+        v[0] = _startspecialeducationdate
+        v[1] = _endspecialeducationdate  
+        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
+    } else if  _startspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
+    } else if  _endspecialeducationdate != "" {          
+        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
+    }
+    _specialeducationinstitution := c.Get("specialeducationinstitution")
+    if _specialeducationinstitution != "" {
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+    }
+    _licensecategory := c.Geti64("licensecategory")
+    if _licensecategory != 0 {
+        args = append(args, models.Where{Column:"licensecategory", Value:_licensecategory, Compare:"="})    
+    }
+    _licenselevel := c.Geti64("licenselevel")
+    if _licenselevel != 0 {
+        args = append(args, models.Where{Column:"licenselevel", Value:_licenselevel, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *LicenseController) Read(id int64) {
     
     
@@ -145,179 +319,6 @@ func (c *LicenseController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *LicenseController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewLicenseManager(conn)
-
-    var args []interface{}
-    
-    _user := c.Geti64("user")
-    if _user != 0 {
-        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _number := c.Get("number")
-    if _number != "" {
-        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
-    }
-    _starttakingdate := c.Get("starttakingdate")
-    _endtakingdate := c.Get("endtakingdate")
-    if _starttakingdate != "" && _endtakingdate != "" {        
-        var v [2]string
-        v[0] = _starttakingdate
-        v[1] = _endtakingdate  
-        args = append(args, models.Where{Column:"takingdate", Value:v, Compare:"between"})    
-    } else if  _starttakingdate != "" {          
-        args = append(args, models.Where{Column:"takingdate", Value:_starttakingdate, Compare:">="})
-    } else if  _endtakingdate != "" {          
-        args = append(args, models.Where{Column:"takingdate", Value:_endtakingdate, Compare:"<="})            
-    }
-    _starteducationdate := c.Get("starteducationdate")
-    _endeducationdate := c.Get("endeducationdate")
-    if _starteducationdate != "" && _endeducationdate != "" {        
-        var v [2]string
-        v[0] = _starteducationdate
-        v[1] = _endeducationdate  
-        args = append(args, models.Where{Column:"educationdate", Value:v, Compare:"between"})    
-    } else if  _starteducationdate != "" {          
-        args = append(args, models.Where{Column:"educationdate", Value:_starteducationdate, Compare:">="})
-    } else if  _endeducationdate != "" {          
-        args = append(args, models.Where{Column:"educationdate", Value:_endeducationdate, Compare:"<="})            
-    }
-    _educationinstitution := c.Get("educationinstitution")
-    if _educationinstitution != "" {
-        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
-    }
-    _startspecialeducationdate := c.Get("startspecialeducationdate")
-    _endspecialeducationdate := c.Get("endspecialeducationdate")
-    if _startspecialeducationdate != "" && _endspecialeducationdate != "" {        
-        var v [2]string
-        v[0] = _startspecialeducationdate
-        v[1] = _endspecialeducationdate  
-        args = append(args, models.Where{Column:"specialeducationdate", Value:v, Compare:"between"})    
-    } else if  _startspecialeducationdate != "" {          
-        args = append(args, models.Where{Column:"specialeducationdate", Value:_startspecialeducationdate, Compare:">="})
-    } else if  _endspecialeducationdate != "" {          
-        args = append(args, models.Where{Column:"specialeducationdate", Value:_endspecialeducationdate, Compare:"<="})            
-    }
-    _specialeducationinstitution := c.Get("specialeducationinstitution")
-    if _specialeducationinstitution != "" {
-        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
-    }
-    _licensecategory := c.Geti64("licensecategory")
-    if _licensecategory != 0 {
-        args = append(args, models.Where{Column:"licensecategory", Value:_licensecategory, Compare:"="})    
-    }
-    _licenselevel := c.Geti64("licenselevel")
-    if _licenselevel != 0 {
-        args = append(args, models.Where{Column:"licenselevel", Value:_licenselevel, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-func (c *LicenseController) Insert(item *models.License) {
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewLicenseManager(conn)
-	manager.Insert(item)
-
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
-}
-
-func (c *LicenseController) Insertbatch(item *[]models.License) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
-
-    rows := len(*item)
-    
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewLicenseManager(conn)
-
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
-}
-
-func (c *LicenseController) Update(item *models.License) {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewLicenseManager(conn)
-	manager.Update(item)
-}
-
-func (c *LicenseController) Delete(item *models.License) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewLicenseManager(conn)
-
-    
-	manager.Delete(item.Id)
-}
-
-func (c *LicenseController) Deletebatch(item *[]models.License) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewLicenseManager(conn)
-
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
-}
-
-
-
-func (c *LicenseController) GetByUserLicensecategory(user int64 ,licensecategory int64) *models.License {
-    
-    conn := c.NewConnection()
-
-	_manager := models.NewLicenseManager(conn)
-    
-    item := _manager.GetByUserLicensecategory(user, licensecategory)
-    
-    c.Set("item", item)
-    
-    
-    
-    return item
-    
-}
-
 
 // @Put()
 func (c *LicenseController) UpdateUser(user int64, id int64) {

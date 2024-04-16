@@ -314,33 +314,6 @@ func SetRouter(r *fiber.App) {
 
 	{
 
-		apiGroup.Get("/billing/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.BillingController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/billing", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.BillingController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/billing/count", func(c *fiber.Ctx) error {
-			var controller rest.BillingController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Post("/billing", func(c *fiber.Ctx) error {
 			item_ := &models.Billing{}
 			c.BodyParser(item_)
@@ -407,6 +380,33 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billing/count", func(c *fiber.Ctx) error {
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billing/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billing", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -571,6 +571,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/billinglist/count", func(c *fiber.Ctx) error {
+			var controller rest.BillinglistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/billinglist/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.BillinglistController
@@ -590,18 +598,18 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/billinglist/count", func(c *fiber.Ctx) error {
-			var controller rest.BillinglistController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/billinglist/sum", func(c *fiber.Ctx) error {
 			var controller rest.BillinglistController
 			controller.Init(c)
 			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billinguserlist/count", func(c *fiber.Ctx) error {
+			var controller rest.BillinguserlistController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -625,14 +633,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/billinguserlist/count", func(c *fiber.Ctx) error {
-			var controller rest.BillinguserlistController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/billinguserlist/sum", func(c *fiber.Ctx) error {
 			var controller rest.BillinguserlistController
 			controller.Init(c)
@@ -641,29 +641,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/building/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/building/get/companyname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			name_ := c.Query("name")
 			var controller rest.BuildingController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/building", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.BuildingController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/building/count", func(c *fiber.Ctx) error {
-			var controller rest.BuildingController
-			controller.Init(c)
-			controller.Count()
+			controller.GetByCompanyName(company_, name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -738,12 +721,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/building/get/companyname/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			name_ := c.Query("name")
+		apiGroup.Get("/building/count", func(c *fiber.Ctx) error {
 			var controller rest.BuildingController
 			controller.Init(c)
-			controller.GetByCompanyName(company_, name_)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/building/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/building", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1130,6 +1130,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/calendarcompanylist/count", func(c *fiber.Ctx) error {
+			var controller rest.CalendarcompanylistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/calendarcompanylist/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.CalendarcompanylistController
@@ -1149,14 +1157,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/calendarcompanylist/count", func(c *fiber.Ctx) error {
-			var controller rest.CalendarcompanylistController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/calendarcompanylist/sum", func(c *fiber.Ctx) error {
 			var controller rest.CalendarcompanylistController
 			controller.Init(c)
@@ -1165,29 +1165,11 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/company/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/company/get/companyno/:companyno", func(c *fiber.Ctx) error {
+			companyno_ := c.Params("companyno")
 			var controller rest.CompanyController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/company", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.CompanyController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/company/count", func(c *fiber.Ctx) error {
-			var controller rest.CompanyController
-			controller.Init(c)
-			controller.Count()
+			controller.GetByCompanyno(companyno_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1265,11 +1247,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/company/get/companyno/:companyno", func(c *fiber.Ctx) error {
-			companyno_ := c.Params("companyno")
+		apiGroup.Get("/company/count", func(c *fiber.Ctx) error {
 			var controller rest.CompanyController
 			controller.Init(c)
-			controller.GetByCompanyno(companyno_)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/company/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/company", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -2084,33 +2084,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/companylicense/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.CompanylicenseController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/companylicense", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.CompanylicenseController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/companylicense/count", func(c *fiber.Ctx) error {
-			var controller rest.CompanylicenseController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Post("/companylicense", func(c *fiber.Ctx) error {
 			item_ := &models.Companylicense{}
 			c.BodyParser(item_)
@@ -2177,6 +2150,33 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicense/count", func(c *fiber.Ctx) error {
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicense/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicense", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.CompanylicenseController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -2352,6 +2352,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/companylist/count", func(c *fiber.Ctx) error {
+			var controller rest.CompanylistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/companylist/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.CompanylistController
@@ -2371,27 +2379,32 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/companylist/count", func(c *fiber.Ctx) error {
-			var controller rest.CompanylistController
+		apiGroup.Get("/customer/count/companybuilding/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
+			var controller rest.CustomerController
 			controller.Init(c)
-			controller.Count()
+			controller.CountByCompanyBuilding(company_, building_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customer/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/customer/get/companybuilding/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
 			var controller rest.CustomerController
 			controller.Init(c)
-			controller.Read(id_)
+			controller.GetByCompanyBuilding(company_, building_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customer/count", func(c *fiber.Ctx) error {
+		apiGroup.Delete("/customer/bycompanybuilding", func(c *fiber.Ctx) error {
+			item_ := &models.Customer{}
+			c.BodyParser(item_)
 			var controller rest.CustomerController
 			controller.Init(c)
-			controller.Count()
+			controller.DeleteByCompanyBuilding(item_.Company, item_.Building)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -2466,32 +2479,19 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customer/count/companybuilding/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
+		apiGroup.Get("/customer/count", func(c *fiber.Ctx) error {
 			var controller rest.CustomerController
 			controller.Init(c)
-			controller.CountByCompanyBuilding(company_, building_)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customer/get/companybuilding/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			building_, _ := strconv.ParseInt(c.Query("building"), 10, 64)
+		apiGroup.Get("/customer/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.CustomerController
 			controller.Init(c)
-			controller.GetByCompanyBuilding(company_, building_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Delete("/customer/bycompanybuilding", func(c *fiber.Ctx) error {
-			item_ := &models.Customer{}
-			c.BodyParser(item_)
-			var controller rest.CustomerController
-			controller.Init(c)
-			controller.DeleteByCompanyBuilding(item_.Company, item_.Building)
+			controller.Read(id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3009,29 +3009,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customercompany/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/customercompany/get/companycustomer/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			customer_, _ := strconv.ParseInt(c.Query("customer"), 10, 64)
 			var controller rest.CustomercompanyController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/customercompany", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.CustomercompanyController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/customercompany/count", func(c *fiber.Ctx) error {
-			var controller rest.CustomercompanyController
-			controller.Init(c)
-			controller.Count()
+			controller.GetByCompanyCustomer(company_, customer_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3106,12 +3089,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customercompany/get/companycustomer/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			customer_, _ := strconv.ParseInt(c.Query("customer"), 10, 64)
+		apiGroup.Get("/customercompany/count", func(c *fiber.Ctx) error {
 			var controller rest.CustomercompanyController
 			controller.Init(c)
-			controller.GetByCompanyCustomer(company_, customer_)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customercompany/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.CustomercompanyController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/customercompany", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.CustomercompanyController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3154,6 +3154,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/customercompanylist/count", func(c *fiber.Ctx) error {
+			var controller rest.CustomercompanylistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/customercompanylist/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.CustomercompanylistController
@@ -3173,37 +3181,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/customercompanylist/count", func(c *fiber.Ctx) error {
-			var controller rest.CustomercompanylistController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/data/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Delete("/data/byreporttopcategory", func(c *fiber.Ctx) error {
+			item_ := &models.Data{}
+			c.BodyParser(item_)
 			var controller rest.DataController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/data", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.DataController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/data/count", func(c *fiber.Ctx) error {
-			var controller rest.DataController
-			controller.Init(c)
-			controller.Count()
+			controller.DeleteByReportTopcategory(item_.Report, item_.Topcategory)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3278,12 +3261,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Delete("/data/byreporttopcategory", func(c *fiber.Ctx) error {
-			item_ := &models.Data{}
-			c.BodyParser(item_)
+		apiGroup.Get("/data/count", func(c *fiber.Ctx) error {
 			var controller rest.DataController
 			controller.Init(c)
-			controller.DeleteByReportTopcategory(item_.Report, item_.Topcategory)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/data/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.DataController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/data", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.DataController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3421,33 +3421,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/department/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.DepartmentController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/department", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.DepartmentController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/department/count", func(c *fiber.Ctx) error {
-			var controller rest.DepartmentController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Post("/department", func(c *fiber.Ctx) error {
 			item_ := &models.Department{}
 			c.BodyParser(item_)
@@ -3514,6 +3487,33 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/department/count", func(c *fiber.Ctx) error {
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/department/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/department", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3632,29 +3632,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/facility/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Delete("/facility/bybuildingcategory", func(c *fiber.Ctx) error {
+			item_ := &models.Facility{}
+			c.BodyParser(item_)
 			var controller rest.FacilityController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/facility", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.FacilityController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/facility/count", func(c *fiber.Ctx) error {
-			var controller rest.FacilityController
-			controller.Init(c)
-			controller.Count()
+			controller.DeleteByBuildingCategory(item_.Building, item_.Category)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3729,12 +3712,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Delete("/facility/bybuildingcategory", func(c *fiber.Ctx) error {
-			item_ := &models.Facility{}
-			c.BodyParser(item_)
+		apiGroup.Get("/facility/count", func(c *fiber.Ctx) error {
 			var controller rest.FacilityController
 			controller.Init(c)
-			controller.DeleteByBuildingCategory(item_.Building, item_.Category)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/facility/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.FacilityController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/facility", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.FacilityController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4309,29 +4309,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/item/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Delete("/item/byreporttopcategory", func(c *fiber.Ctx) error {
+			item_ := &models.Item{}
+			c.BodyParser(item_)
 			var controller rest.ItemController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/item", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.ItemController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/item/count", func(c *fiber.Ctx) error {
-			var controller rest.ItemController
-			controller.Init(c)
-			controller.Count()
+			controller.DeleteByReportTopcategory(item_.Report, item_.Topcategory)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4406,12 +4389,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Delete("/item/byreporttopcategory", func(c *fiber.Ctx) error {
-			item_ := &models.Item{}
-			c.BodyParser(item_)
+		apiGroup.Get("/item/count", func(c *fiber.Ctx) error {
 			var controller rest.ItemController
 			controller.Init(c)
-			controller.DeleteByReportTopcategory(item_.Report, item_.Topcategory)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/item/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.ItemController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/item", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.ItemController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4853,29 +4853,12 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/license/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/license/get/userlicensecategory/:user", func(c *fiber.Ctx) error {
+			user_, _ := strconv.ParseInt(c.Params("user"), 10, 64)
+			licensecategory_, _ := strconv.ParseInt(c.Query("licensecategory"), 10, 64)
 			var controller rest.LicenseController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/license", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.LicenseController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/license/count", func(c *fiber.Ctx) error {
-			var controller rest.LicenseController
-			controller.Init(c)
-			controller.Count()
+			controller.GetByUserLicensecategory(user_, licensecategory_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -4950,12 +4933,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/license/get/userlicensecategory/:user", func(c *fiber.Ctx) error {
-			user_, _ := strconv.ParseInt(c.Params("user"), 10, 64)
-			licensecategory_, _ := strconv.ParseInt(c.Query("licensecategory"), 10, 64)
+		apiGroup.Get("/license/count", func(c *fiber.Ctx) error {
 			var controller rest.LicenseController
 			controller.Init(c)
-			controller.GetByUserLicensecategory(user_, licensecategory_)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/license/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/license", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5131,29 +5131,11 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/licensecategory/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/licensecategory/get/name/:name", func(c *fiber.Ctx) error {
+			name_ := c.Params("name")
 			var controller rest.LicensecategoryController
 			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/licensecategory", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.LicensecategoryController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/licensecategory/count", func(c *fiber.Ctx) error {
-			var controller rest.LicensecategoryController
-			controller.Init(c)
-			controller.Count()
+			controller.GetByName(name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5228,11 +5210,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/licensecategory/get/name/:name", func(c *fiber.Ctx) error {
-			name_ := c.Params("name")
+		apiGroup.Get("/licensecategory/count", func(c *fiber.Ctx) error {
 			var controller rest.LicensecategoryController
 			controller.Init(c)
-			controller.GetByName(name_)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/licensecategory/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.LicensecategoryController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/licensecategory", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.LicensecategoryController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5271,33 +5271,6 @@ func SetRouter(r *fiber.App) {
 			var controller rest.LicensecategoryController
 			controller.Init(c)
 			controller.UpdateOrder(order_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/licenselevel/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.LicenselevelController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/licenselevel", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.LicenselevelController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/licenselevel/count", func(c *fiber.Ctx) error {
-			var controller rest.LicenselevelController
-			controller.Init(c)
-			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5372,6 +5345,33 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/licenselevel/count", func(c *fiber.Ctx) error {
+			var controller rest.LicenselevelController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/licenselevel/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.LicenselevelController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/licenselevel", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.LicenselevelController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/licenselevel/name", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -5406,33 +5406,6 @@ func SetRouter(r *fiber.App) {
 			var controller rest.LicenselevelController
 			controller.Init(c)
 			controller.UpdateOrder(order_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/notice/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.NoticeController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/notice", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.NoticeController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/notice/count", func(c *fiber.Ctx) error {
-			var controller rest.NoticeController
-			controller.Init(c)
-			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5507,6 +5480,33 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/notice/count", func(c *fiber.Ctx) error {
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/notice/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/notice", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.NoticeController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/notice/title", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -5541,33 +5541,6 @@ func SetRouter(r *fiber.App) {
 			var controller rest.NoticeController
 			controller.Init(c)
 			controller.UpdateContent(content_, id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/report/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-			var controller rest.ReportController
-			controller.Init(c)
-			controller.Read(id_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/report", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-			var controller rest.ReportController
-			controller.Init(c)
-			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/report/count", func(c *fiber.Ctx) error {
-			var controller rest.ReportController
-			controller.Init(c)
-			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5624,6 +5597,33 @@ func SetRouter(r *fiber.App) {
 			} else {
 			    controller.Result["code"] = "error"
 			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/report/count", func(c *fiber.Ctx) error {
+			var controller rest.ReportController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/report/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.ReportController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/report", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.ReportController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5875,6 +5875,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/statisticsday/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsdayController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/statisticsday/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.StatisticsdayController
@@ -5894,18 +5902,18 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/statisticsday/count", func(c *fiber.Ctx) error {
-			var controller rest.StatisticsdayController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/statisticsday/sum", func(c *fiber.Ctx) error {
 			var controller rest.StatisticsdayController
 			controller.Init(c)
 			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsmonth/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsmonthController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5929,18 +5937,18 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/statisticsmonth/count", func(c *fiber.Ctx) error {
-			var controller rest.StatisticsmonthController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/statisticsmonth/sum", func(c *fiber.Ctx) error {
 			var controller rest.StatisticsmonthController
 			controller.Init(c)
 			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/statisticsyear/count", func(c *fiber.Ctx) error {
+			var controller rest.StatisticsyearController
+			controller.Init(c)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -5964,14 +5972,6 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/statisticsyear/count", func(c *fiber.Ctx) error {
-			var controller rest.StatisticsyearController
-			controller.Init(c)
-			controller.Count()
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
 		apiGroup.Get("/statisticsyear/sum", func(c *fiber.Ctx) error {
 			var controller rest.StatisticsyearController
 			controller.Init(c)
@@ -5980,29 +5980,50 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Get("/user/get/loginid/:loginid", func(c *fiber.Ctx) error {
+			loginid_ := c.Params("loginid")
 			var controller rest.UserController
 			controller.Init(c)
-			controller.Read(id_)
+			controller.GetByLoginid(loginid_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		apiGroup.Get("/user/count/loginid/:loginid", func(c *fiber.Ctx) error {
+			loginid_ := c.Params("loginid")
 			var controller rest.UserController
 			controller.Init(c)
-			controller.Index(page_, pagesize_)
+			controller.CountByLoginid(loginid_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user/count", func(c *fiber.Ctx) error {
+		apiGroup.Get("/user/find/level/:level", func(c *fiber.Ctx) error {
+			var level_ user.Level
+			level__, _ := strconv.Atoi(c.Params("level"))
+			level_ = user.Level(level__)
 			var controller rest.UserController
 			controller.Init(c)
-			controller.Count()
+			controller.FindByLevel(level_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/count/company/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			var controller rest.UserController
+			controller.Init(c)
+			controller.CountByCompany(company_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/get/companyname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			name_ := c.Query("name")
+			var controller rest.UserController
+			controller.Init(c)
+			controller.GetByCompanyName(company_, name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -6077,50 +6098,29 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user/get/loginid/:loginid", func(c *fiber.Ctx) error {
-			loginid_ := c.Params("loginid")
+		apiGroup.Get("/user/count", func(c *fiber.Ctx) error {
 			var controller rest.UserController
 			controller.Init(c)
-			controller.GetByLoginid(loginid_)
+			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user/count/loginid/:loginid", func(c *fiber.Ctx) error {
-			loginid_ := c.Params("loginid")
+		apiGroup.Get("/user/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.UserController
 			controller.Init(c)
-			controller.CountByLoginid(loginid_)
+			controller.Read(id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/user/find/level/:level", func(c *fiber.Ctx) error {
-			var level_ user.Level
-			level__, _ := strconv.Atoi(c.Params("level"))
-			level_ = user.Level(level__)
+		apiGroup.Get("/user", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
 			var controller rest.UserController
 			controller.Init(c)
-			controller.FindByLevel(level_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/user/count/company/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			var controller rest.UserController
-			controller.Init(c)
-			controller.CountByCompany(company_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/user/get/companyname/:company", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
-			name_ := c.Query("name")
-			var controller rest.UserController
-			controller.Init(c)
-			controller.GetByCompanyName(company_, name_)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -6550,6 +6550,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/userlist/count", func(c *fiber.Ctx) error {
+			var controller rest.UserlistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/userlist/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 			var controller rest.UserlistController
@@ -6565,14 +6573,6 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserlistController
 			controller.Init(c)
 			controller.Index(page_, pagesize_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/userlist/count", func(c *fiber.Ctx) error {
-			var controller rest.UserlistController
-			controller.Init(c)
-			controller.Count()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

@@ -12,6 +12,128 @@ type DepartmentController struct {
 	controllers.Controller
 }
 
+
+
+func (c *DepartmentController) Insert(item *models.Department) {
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewDepartmentManager(conn)
+	manager.Insert(item)
+
+    id := manager.GetIdentity()
+    c.Result["id"] = id
+    item.Id = id
+}
+
+func (c *DepartmentController) Insertbatch(item *[]models.Department) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
+
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewDepartmentManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    manager.Insert(&((*item)[i]))
+    }
+}
+
+func (c *DepartmentController) Update(item *models.Department) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewDepartmentManager(conn)
+	manager.Update(item)
+}
+
+func (c *DepartmentController) Delete(item *models.Department) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewDepartmentManager(conn)
+
+    
+	manager.Delete(item.Id)
+}
+
+func (c *DepartmentController) Deletebatch(item *[]models.Department) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewDepartmentManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    manager.Delete(v.Id)
+    }
+}
+
+func (c *DepartmentController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewDepartmentManager(conn)
+
+    var args []interface{}
+    
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _order := c.Geti("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
+    }
+    _parent := c.Geti64("parent")
+    if _parent != 0 {
+        args = append(args, models.Where{Column:"parent", Value:_parent, Compare:"="})    
+    }
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _master := c.Geti64("master")
+    if _master != 0 {
+        args = append(args, models.Where{Column:"master", Value:_master, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *DepartmentController) Read(id int64) {
     
     
@@ -110,127 +232,6 @@ func (c *DepartmentController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *DepartmentController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewDepartmentManager(conn)
-
-    var args []interface{}
-    
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
-        
-    }
-    _status := c.Geti("status")
-    if _status != 0 {
-        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _order := c.Geti("order")
-    if _order != 0 {
-        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
-    }
-    _parent := c.Geti64("parent")
-    if _parent != 0 {
-        args = append(args, models.Where{Column:"parent", Value:_parent, Compare:"="})    
-    }
-    _company := c.Geti64("company")
-    if _company != 0 {
-        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
-    }
-    _master := c.Geti64("master")
-    if _master != 0 {
-        args = append(args, models.Where{Column:"master", Value:_master, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-func (c *DepartmentController) Insert(item *models.Department) {
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewDepartmentManager(conn)
-	manager.Insert(item)
-
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
-}
-
-func (c *DepartmentController) Insertbatch(item *[]models.Department) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
-
-    rows := len(*item)
-    
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewDepartmentManager(conn)
-
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
-}
-
-func (c *DepartmentController) Update(item *models.Department) {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewDepartmentManager(conn)
-	manager.Update(item)
-}
-
-func (c *DepartmentController) Delete(item *models.Department) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewDepartmentManager(conn)
-
-    
-	manager.Delete(item.Id)
-}
-
-func (c *DepartmentController) Deletebatch(item *[]models.Department) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewDepartmentManager(conn)
-
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
-}
-
-
 
 // @Put()
 func (c *DepartmentController) UpdateName(name string, id int64) {

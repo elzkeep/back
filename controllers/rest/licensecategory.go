@@ -12,6 +12,129 @@ type LicensecategoryController struct {
 	controllers.Controller
 }
 
+
+
+func (c *LicensecategoryController) GetByName(name string) *models.Licensecategory {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicensecategoryManager(conn)
+    
+    item := _manager.GetByName(name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
+func (c *LicensecategoryController) Insert(item *models.Licensecategory) {
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewLicensecategoryManager(conn)
+	manager.Insert(item)
+
+    id := manager.GetIdentity()
+    c.Result["id"] = id
+    item.Id = id
+}
+
+func (c *LicensecategoryController) Insertbatch(item *[]models.Licensecategory) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
+
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewLicensecategoryManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    manager.Insert(&((*item)[i]))
+    }
+}
+
+func (c *LicensecategoryController) Update(item *models.Licensecategory) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewLicensecategoryManager(conn)
+	manager.Update(item)
+}
+
+func (c *LicensecategoryController) Delete(item *models.Licensecategory) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewLicensecategoryManager(conn)
+
+    
+	manager.Delete(item.Id)
+}
+
+func (c *LicensecategoryController) Deletebatch(item *[]models.Licensecategory) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewLicensecategoryManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    manager.Delete(v.Id)
+    }
+}
+
+func (c *LicensecategoryController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewLicensecategoryManager(conn)
+
+    var args []interface{}
+    
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        
+    }
+    _order := c.Geti("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *LicensecategoryController) Read(id int64) {
     
     
@@ -94,128 +217,6 @@ func (c *LicensecategoryController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *LicensecategoryController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewLicensecategoryManager(conn)
-
-    var args []interface{}
-    
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
-        
-    }
-    _order := c.Geti("order")
-    if _order != 0 {
-        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-func (c *LicensecategoryController) Insert(item *models.Licensecategory) {
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewLicensecategoryManager(conn)
-	manager.Insert(item)
-
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
-}
-
-func (c *LicensecategoryController) Insertbatch(item *[]models.Licensecategory) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
-
-    rows := len(*item)
-    
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewLicensecategoryManager(conn)
-
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
-}
-
-func (c *LicensecategoryController) Update(item *models.Licensecategory) {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewLicensecategoryManager(conn)
-	manager.Update(item)
-}
-
-func (c *LicensecategoryController) Delete(item *models.Licensecategory) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewLicensecategoryManager(conn)
-
-    
-	manager.Delete(item.Id)
-}
-
-func (c *LicensecategoryController) Deletebatch(item *[]models.Licensecategory) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewLicensecategoryManager(conn)
-
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
-}
-
-
-
-func (c *LicensecategoryController) GetByName(name string) *models.Licensecategory {
-    
-    conn := c.NewConnection()
-
-	_manager := models.NewLicensecategoryManager(conn)
-    
-    item := _manager.GetByName(name)
-    
-    c.Set("item", item)
-    
-    
-    
-    return item
-    
-}
-
 
 // @Put()
 func (c *LicensecategoryController) UpdateName(name string, id int64) {

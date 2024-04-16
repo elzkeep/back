@@ -12,6 +12,52 @@ type StatisticsyearController struct {
 	controllers.Controller
 }
 
+
+
+
+
+func (c *StatisticsyearController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewStatisticsyearManager(conn)
+
+    var args []interface{}
+    
+    _duration := c.Get("duration")
+    if _duration != "" {
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+    }
+    _total := c.Geti64("total")
+    if _total != 0 {
+        args = append(args, models.Where{Column:"total", Value:_total, Compare:"="})    
+    }
+    _totalprice := c.Geti64("totalprice")
+    if _totalprice != 0 {
+        args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *StatisticsyearController) Read(id int64) {
     
     
@@ -97,51 +143,6 @@ func (c *StatisticsyearController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *StatisticsyearController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewStatisticsyearManager(conn)
-
-    var args []interface{}
-    
-    _duration := c.Get("duration")
-    if _duration != "" {
-        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
-    }
-    _total := c.Geti64("total")
-    if _total != 0 {
-        args = append(args, models.Where{Column:"total", Value:_total, Compare:"="})    
-    }
-    _totalprice := c.Geti64("totalprice")
-    if _totalprice != 0 {
-        args = append(args, models.Where{Column:"totalprice", Value:_totalprice, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-
-
-
 
 
 

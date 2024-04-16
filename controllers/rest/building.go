@@ -12,6 +12,201 @@ type BuildingController struct {
 	controllers.Controller
 }
 
+
+
+func (c *BuildingController) GetByCompanyName(company int64 ,name string) *models.Building {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+    
+    item := _manager.GetByCompanyName(company, name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
+func (c *BuildingController) Insert(item *models.Building) {
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewBuildingManager(conn)
+	manager.Insert(item)
+
+    id := manager.GetIdentity()
+    c.Result["id"] = id
+    item.Id = id
+}
+
+func (c *BuildingController) Insertbatch(item *[]models.Building) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
+
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewBuildingManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    manager.Insert(&((*item)[i]))
+    }
+}
+
+func (c *BuildingController) Update(item *models.Building) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewBuildingManager(conn)
+	manager.Update(item)
+}
+
+func (c *BuildingController) Delete(item *models.Building) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewBuildingManager(conn)
+
+    
+	manager.Delete(item.Id)
+}
+
+func (c *BuildingController) Deletebatch(item *[]models.Building) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewBuildingManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    manager.Delete(v.Id)
+    }
+}
+
+func (c *BuildingController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewBuildingManager(conn)
+
+    var args []interface{}
+    
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
+        
+    }
+    _companyno := c.Get("companyno")
+    if _companyno != "" {
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
+    }
+    _ceo := c.Get("ceo")
+    if _ceo != "" {
+        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+    }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+    }
+    _addressetc := c.Get("addressetc")
+    if _addressetc != "" {
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+    }
+    _contractvolumn := c.Geti("contractvolumn")
+    if _contractvolumn != 0 {
+        args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
+    }
+    _receivevolumn := c.Geti("receivevolumn")
+    if _receivevolumn != 0 {
+        args = append(args, models.Where{Column:"receivevolumn", Value:_receivevolumn, Compare:"="})    
+    }
+    _generatevolumn := c.Geti("generatevolumn")
+    if _generatevolumn != 0 {
+        args = append(args, models.Where{Column:"generatevolumn", Value:_generatevolumn, Compare:"="})    
+    }
+    _sunlightvolumn := c.Geti("sunlightvolumn")
+    if _sunlightvolumn != 0 {
+        args = append(args, models.Where{Column:"sunlightvolumn", Value:_sunlightvolumn, Compare:"="})    
+    }
+    _volttype := c.Geti("volttype")
+    if _volttype != 0 {
+        args = append(args, models.Where{Column:"volttype", Value:_volttype, Compare:"="})    
+    }
+    _weight := c.Geti("weight")
+    if _weight != 0 {
+        args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _checkcount := c.Geti("checkcount")
+    if _checkcount != 0 {
+        args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
+    }
+    _receivevolt := c.Geti("receivevolt")
+    if _receivevolt != 0 {
+        args = append(args, models.Where{Column:"receivevolt", Value:_receivevolt, Compare:"="})    
+    }
+    _generatevolt := c.Geti("generatevolt")
+    if _generatevolt != 0 {
+        args = append(args, models.Where{Column:"generatevolt", Value:_generatevolt, Compare:"="})    
+    }
+    _periodic := c.Geti("periodic")
+    if _periodic != 0 {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _usage := c.Get("usage")
+    if _usage != "" {
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+    }
+    _district := c.Get("district")
+    if _district != "" {
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
+    }
+    _score := c.Geti("score")
+    if _score != 0 {
+        args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *BuildingController) Read(id int64) {
     
     
@@ -166,200 +361,6 @@ func (c *BuildingController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *BuildingController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewBuildingManager(conn)
-
-    var args []interface{}
-    
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
-        
-    }
-    _companyno := c.Get("companyno")
-    if _companyno != "" {
-        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
-    }
-    _ceo := c.Get("ceo")
-    if _ceo != "" {
-        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
-    }
-    _address := c.Get("address")
-    if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
-    }
-    _addressetc := c.Get("addressetc")
-    if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
-    }
-    _contractvolumn := c.Geti("contractvolumn")
-    if _contractvolumn != 0 {
-        args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
-    }
-    _receivevolumn := c.Geti("receivevolumn")
-    if _receivevolumn != 0 {
-        args = append(args, models.Where{Column:"receivevolumn", Value:_receivevolumn, Compare:"="})    
-    }
-    _generatevolumn := c.Geti("generatevolumn")
-    if _generatevolumn != 0 {
-        args = append(args, models.Where{Column:"generatevolumn", Value:_generatevolumn, Compare:"="})    
-    }
-    _sunlightvolumn := c.Geti("sunlightvolumn")
-    if _sunlightvolumn != 0 {
-        args = append(args, models.Where{Column:"sunlightvolumn", Value:_sunlightvolumn, Compare:"="})    
-    }
-    _volttype := c.Geti("volttype")
-    if _volttype != 0 {
-        args = append(args, models.Where{Column:"volttype", Value:_volttype, Compare:"="})    
-    }
-    _weight := c.Geti("weight")
-    if _weight != 0 {
-        args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
-    }
-    _checkcount := c.Geti("checkcount")
-    if _checkcount != 0 {
-        args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
-    }
-    _receivevolt := c.Geti("receivevolt")
-    if _receivevolt != 0 {
-        args = append(args, models.Where{Column:"receivevolt", Value:_receivevolt, Compare:"="})    
-    }
-    _generatevolt := c.Geti("generatevolt")
-    if _generatevolt != 0 {
-        args = append(args, models.Where{Column:"generatevolt", Value:_generatevolt, Compare:"="})    
-    }
-    _periodic := c.Geti("periodic")
-    if _periodic != 0 {
-        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
-    }
-    _usage := c.Get("usage")
-    if _usage != "" {
-        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
-    }
-    _district := c.Get("district")
-    if _district != "" {
-        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
-    }
-    _score := c.Geti("score")
-    if _score != 0 {
-        args = append(args, models.Where{Column:"score", Value:_score, Compare:"="})    
-    }
-    _status := c.Geti("status")
-    if _status != 0 {
-        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _company := c.Geti64("company")
-    if _company != 0 {
-        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
-    }
-    _startdate := c.Get("startdate")
-    _enddate := c.Get("enddate")
-    if _startdate != "" && _enddate != "" {        
-        var v [2]string
-        v[0] = _startdate
-        v[1] = _enddate  
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
-    } else if  _startdate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
-    } else if  _enddate != "" {          
-        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-func (c *BuildingController) Insert(item *models.Building) {
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewBuildingManager(conn)
-	manager.Insert(item)
-
-    id := manager.GetIdentity()
-    c.Result["id"] = id
-    item.Id = id
-}
-
-func (c *BuildingController) Insertbatch(item *[]models.Building) {  
-    if item == nil || len(*item) == 0 {
-        return
-    }
-
-    rows := len(*item)
-    
-    
-    
-	conn := c.NewConnection()
-    
-	manager := models.NewBuildingManager(conn)
-
-    for i := 0; i < rows; i++ {
-	    manager.Insert(&((*item)[i]))
-    }
-}
-
-func (c *BuildingController) Update(item *models.Building) {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewBuildingManager(conn)
-	manager.Update(item)
-}
-
-func (c *BuildingController) Delete(item *models.Building) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewBuildingManager(conn)
-
-    
-	manager.Delete(item.Id)
-}
-
-func (c *BuildingController) Deletebatch(item *[]models.Building) {
-    
-    
-    conn := c.NewConnection()
-
-	manager := models.NewBuildingManager(conn)
-
-    for _, v := range *item {
-        
-    
-	    manager.Delete(v.Id)
-    }
-}
-
-
-
-func (c *BuildingController) GetByCompanyName(company int64 ,name string) *models.Building {
-    
-    conn := c.NewConnection()
-
-	_manager := models.NewBuildingManager(conn)
-    
-    item := _manager.GetByCompanyName(company, name)
-    
-    c.Set("item", item)
-    
-    
-    
-    return item
-    
-}
-
 
 // @Put()
 func (c *BuildingController) UpdateName(name string, id int64) {

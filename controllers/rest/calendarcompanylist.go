@@ -12,6 +12,60 @@ type CalendarcompanylistController struct {
 	controllers.Controller
 }
 
+
+
+
+
+func (c *CalendarcompanylistController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewCalendarcompanylistManager(conn)
+
+    var args []interface{}
+    
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    _month := c.Get("month")
+    if _month != "" {
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _day := c.Get("day")
+    if _day != "" {
+        args = append(args, models.Where{Column:"day", Value:_day, Compare:"like"})
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _count := c.Geti64("count")
+    if _count != 0 {
+        args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
+    }
+    _startcheckdate := c.Get("startcheckdate")
+    _endcheckdate := c.Get("endcheckdate")
+    if _startcheckdate != "" && _endcheckdate != "" {        
+        var v [2]string
+        v[0] = _startcheckdate
+        v[1] = _endcheckdate  
+        args = append(args, models.Where{Column:"checkdate", Value:v, Compare:"between"})    
+    } else if  _startcheckdate != "" {          
+        args = append(args, models.Where{Column:"checkdate", Value:_startcheckdate, Compare:">="})
+    } else if  _endcheckdate != "" {          
+        args = append(args, models.Where{Column:"checkdate", Value:_endcheckdate, Compare:"<="})            
+    }
+    
+
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+
 func (c *CalendarcompanylistController) Read(id int64) {
     
     
@@ -105,59 +159,6 @@ func (c *CalendarcompanylistController) Index(page int, pagesize int) {
     total := manager.Count(args)
 	c.Set("total", total)
 }
-
-func (c *CalendarcompanylistController) Count() {
-    
-    
-	conn := c.NewConnection()
-
-	manager := models.NewCalendarcompanylistManager(conn)
-
-    var args []interface{}
-    
-    _company := c.Geti64("company")
-    if _company != 0 {
-        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
-    }
-    _month := c.Get("month")
-    if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
-    }
-    _day := c.Get("day")
-    if _day != "" {
-        args = append(args, models.Where{Column:"day", Value:_day, Compare:"like"})
-    }
-    _status := c.Geti("status")
-    if _status != 0 {
-        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
-    }
-    _count := c.Geti64("count")
-    if _count != 0 {
-        args = append(args, models.Where{Column:"count", Value:_count, Compare:"="})    
-    }
-    _startcheckdate := c.Get("startcheckdate")
-    _endcheckdate := c.Get("endcheckdate")
-    if _startcheckdate != "" && _endcheckdate != "" {        
-        var v [2]string
-        v[0] = _startcheckdate
-        v[1] = _endcheckdate  
-        args = append(args, models.Where{Column:"checkdate", Value:v, Compare:"between"})    
-    } else if  _startcheckdate != "" {          
-        args = append(args, models.Where{Column:"checkdate", Value:_startcheckdate, Compare:">="})
-    } else if  _endcheckdate != "" {          
-        args = append(args, models.Where{Column:"checkdate", Value:_endcheckdate, Compare:"<="})            
-    }
-    
-
-    
-    
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
-
-
-
 
 
 
