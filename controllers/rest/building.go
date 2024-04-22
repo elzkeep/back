@@ -150,6 +150,10 @@ func (c *BuildingController) Count() {
     if _weight != 0 {
         args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
     }
+    _totalweight := c.Geti("totalweight")
+    if _totalweight != 0 {
+        args = append(args, models.Where{Column:"totalweight", Value:_totalweight, Compare:"="})    
+    }
     _checkcount := c.Geti("checkcount")
     if _checkcount != 0 {
         args = append(args, models.Where{Column:"checkcount", Value:_checkcount, Compare:"="})    
@@ -273,6 +277,10 @@ func (c *BuildingController) Index(page int, pagesize int) {
     _weight := c.Geti("weight")
     if _weight != 0 {
         args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _totalweight := c.Geti("totalweight")
+    if _totalweight != 0 {
+        args = append(args, models.Where{Column:"totalweight", Value:_totalweight, Compare:"="})    
     }
     _checkcount := c.Geti("checkcount")
     if _checkcount != 0 {
@@ -473,6 +481,16 @@ func (c *BuildingController) UpdateWeight(weight models.Double, id int64) {
 }
 
 // @Put()
+func (c *BuildingController) UpdateTotalweight(totalweight models.Double, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateTotalweight(totalweight, id)
+}
+
+// @Put()
 func (c *BuildingController) UpdateCheckcount(checkcount int, id int64) {
     
     
@@ -620,6 +638,10 @@ func (c *BuildingController) Sum() {
     _weight := c.Geti("weight")
     if _weight != 0 {
         args = append(args, models.Where{Column:"weight", Value:_weight, Compare:"="})    
+    }
+    _totalweight := c.Geti("totalweight")
+    if _totalweight != 0 {
+        args = append(args, models.Where{Column:"totalweight", Value:_totalweight, Compare:"="})    
     }
     _checkcount := c.Geti("checkcount")
     if _checkcount != 0 {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"path"
 	"regexp"
@@ -40,6 +41,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 	buildingManager := models.NewBuildingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
+	facilityManager := models.NewFacilityManager(conn)
 
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
@@ -53,6 +55,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 	pos := 5
 	for {
+		log.Println("POS:", pos)
 		item := models.Company{}
 		building := models.Building{}
 		customerItem := models.Customer{}
@@ -125,13 +128,25 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 		var companyId int64 = 0
 
-		companyFind := companyManager.GetByCompanyno(item.Companyno)
+		if item.Companyno == "" {
+			companyFind := companyManager.GetByName(item.Name)
 
-		if companyFind == nil {
-			companyManager.Insert(&item)
-			companyId = companyManager.GetIdentity()
+			if companyFind == nil {
+				companyManager.Insert(&item)
+				companyId = companyManager.GetIdentity()
+			} else {
+				companyId = companyFind.Id
+			}
+
 		} else {
-			companyId = companyFind.Id
+			companyFind := companyManager.GetByCompanyno(item.Companyno)
+
+			if companyFind == nil {
+				companyManager.Insert(&item)
+				companyId = companyManager.GetIdentity()
+			} else {
+				companyId = companyFind.Id
+			}
 		}
 
 		customercompany := customercompanyManager.GetByCompanyCustomer(myCompanyId, companyId)
@@ -148,6 +163,8 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		building.Sunlightvolumn = models.Double(global.Atol(f.GetCell("H", pos)))
 		building.Ceo = f.GetCell("AN", pos)
 
+		weight := global.Atof(f.GetCell("E", pos))
+		building.Weight = models.Double(weight)
 		volttype := f.GetCell("I", pos)
 
 		if volttype == "고압" {
@@ -163,6 +180,31 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		building.District = f.GetCell("U", pos)
 		building.Company = companyId
 
+		basic := global.Atoi(f.GetCell("F", pos))
+		generator := global.Atoi(f.GetCell("G", pos))
+		sunlight := global.Atoi(f.GetCell("H", pos))
+
+		basicFacility := models.Facility{}
+		generatorFacility := models.Facility{}
+		sunlightFacility := models.Facility{}
+
+		if basic > 0 {
+			basicFacility.Category = 10
+			basicFacility.Value2 = fmt.Sprintf("%v", basic)
+		}
+
+		if generator > 0 {
+			generatorFacility.Category = 20
+			generatorFacility.Value3 = fmt.Sprintf("%v", generator)
+		}
+
+		if sunlight > 0 {
+			sunlightFacility.Category = 30
+			sunlightFacility.Value6 = fmt.Sprintf("%v", sunlight)
+		}
+
+		building.Totalweight = models.Double(basic + generator + sunlight)
+
 		var buildingId int64 = 0
 
 		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
@@ -171,6 +213,24 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 			buildingId = buildingManager.GetIdentity()
 		} else {
 			buildingId = buildingFind.Id
+		}
+
+		if basic > 0 {
+			basicFacility.Building = buildingId
+
+			facilityManager.Insert(&basicFacility)
+		}
+
+		if generator > 0 {
+			generatorFacility.Building = buildingId
+
+			facilityManager.Insert(&generatorFacility)
+		}
+
+		if sunlight > 0 {
+			sunlightFacility.Building = buildingId
+
+			facilityManager.Insert(&sunlightFacility)
 		}
 
 		customerItem.Managername = f.GetCell("V", pos)

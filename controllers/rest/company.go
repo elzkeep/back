@@ -31,6 +31,23 @@ func (c *CompanyController) GetByCompanyno(companyno string) *models.Company {
 }
 
 
+func (c *CompanyController) GetByName(name string) *models.Company {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+    
+    item := _manager.GetByName(name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 func (c *CompanyController) Insert(item *models.Company) {
     
     

@@ -1494,5 +1494,19 @@ func (p *CompanyManager) GetByCompanyno(companyno string, args ...interface{}) *
     }
 }
 
+func (p *CompanyManager) GetByName(name string, args ...interface{}) *Company {
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 
 

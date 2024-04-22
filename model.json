@@ -22,7 +22,13 @@
           "name": "approval",
           "data": ["", "wait:미승인", "reject: 거절", "complete:승인"]
         }
-      ],  
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ],      
       "method": [
         "GetByLoginid",
         "CountByLoginid",
@@ -109,7 +115,8 @@
         }
       ],
       "method": [
-        "GetByCompanyno"        
+        "GetByCompanyno",
+        "GetByName"
       ]
     },
     {

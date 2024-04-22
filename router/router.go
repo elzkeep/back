@@ -952,6 +952,24 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/building/totalweight", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var totalweight_ models.Double
+			totalweight__ref := &totalweight_
+			c.BodyParser(totalweight__ref)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateTotalweight(totalweight_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/building/checkcount", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1170,6 +1188,15 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CompanyController
 			controller.Init(c)
 			controller.GetByCompanyno(companyno_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/company/get/name/:name", func(c *fiber.Ctx) error {
+			name_ := c.Params("name")
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.GetByName(name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -2348,6 +2375,141 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CompanylicenseController
 			controller.Init(c)
 			controller.UpdateLicenselevel(licenselevel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/companylicensecategory", func(c *fiber.Ctx) error {
+			item_ := &models.Companylicensecategory{}
+			c.BodyParser(item_)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/companylicensecategory/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Companylicensecategory{}
+			c.BodyParser(item_)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicensecategory", func(c *fiber.Ctx) error {
+			item_ := &models.Companylicensecategory{}
+			c.BodyParser(item_)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/companylicensecategory", func(c *fiber.Ctx) error {
+			item_ := &models.Companylicensecategory{}
+			c.BodyParser(item_)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/companylicensecategory/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Companylicensecategory{}
+			c.BodyParser(item_)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicensecategory/count", func(c *fiber.Ctx) error {
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicensecategory/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/companylicensecategory", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicensecategory/name", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var name_ string
+			if v, flag := results["name"]; flag {
+				name_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			controller.UpdateName(name_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/companylicensecategory/order", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var order_ int
+			if v, flag := results["order"]; flag {
+				order_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanylicensecategoryController
+			controller.Init(c)
+			controller.UpdateOrder(order_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3645,10 +3807,13 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Post("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
+			var apicontroller api.FacilityController
+            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Insert(item_)
+				apicontroller.Post_Insert(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
@@ -3673,10 +3838,13 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Put("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
+			var apicontroller api.FacilityController
+            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Update(item_)
+				apicontroller.Post_Update(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
@@ -3687,10 +3855,13 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Delete("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
+			var apicontroller api.FacilityController
+            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Delete(item_)
+				apicontroller.Post_Delete(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
