@@ -40,13 +40,13 @@ func CalculateTotalweight(id int64) {
 }
 
 func (c *FacilityController) Post_Insert(item *models.Facility) {
-	CalculateTotalweight(item.Id)
+	CalculateTotalweight(item.Building)
 }
 
 func (c *FacilityController) Post_Update(item *models.Facility) {
-	CalculateTotalweight(item.Id)
+	CalculateTotalweight(item.Building)
 }
 
 func (c *FacilityController) Post_Delete(item *models.Facility) {
-	CalculateTotalweight(item.Id)
+	CalculateTotalweight(item.Building)
 }

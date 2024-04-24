@@ -60,17 +60,32 @@ func SetRouter(r *fiber.App) {
 			var results map[string]interface{}
 			jsonData := c.Body()
 			json.Unmarshal(jsonData, &results)
+			var durationtype_ int
+			if v, flag := results["durationtype"]; flag {
+				durationtype_ = int(v.(float64))
+			}
+			var base_ int
+			if v, flag := results["base"]; flag {
+				base_ = int(v.(float64))
+			}
+			var year_ int
+			if v, flag := results["year"]; flag {
+				year_ = int(v.(float64))
+			}
 			var month_ int
 			if v, flag := results["month"]; flag {
 				month_ = int(v.(float64))
 			}
+			var durationmonth_ []int
+			durationmonth__ref := &durationmonth_
+			c.BodyParser(durationmonth__ref)
 			var ids_ []int64
 			if v, flag := results["ids"]; flag {
 				ids_= getArrayCommal(v.(string))
 			}
 			var controller api.BillingController
 			controller.Init(c)
-			controller.Make(month_, ids_)
+			controller.Make(durationtype_, base_, year_, month_, durationmonth_, ids_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

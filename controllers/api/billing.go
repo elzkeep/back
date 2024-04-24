@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"strings"
 	"zkeep/controllers"
 	"zkeep/global"
@@ -103,7 +102,7 @@ func (c *BillingController) Search(page int, pagesize int) {
 }
 
 // @POST()
-func (c *BillingController) Make(month int, ids []int64) {
+func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64) {
 	session := c.Session
 
 	conn := c.NewConnection()
@@ -116,17 +115,28 @@ func (c *BillingController) Make(month int, ids []int64) {
 		models.Where{Column: "building", Value: ids, Compare: "in"},
 	})
 
-	log.Println("+++++++++++++++++++++++++++++++")
-	log.Println(customers)
-	log.Println("--------------------------------")
+	if durationtype == 2 {
+		if len(durationmonth) == 0 {
+			return
+		}
+
+		current := durationmonth[0]
+		for _, v := range durationmonth[1:] {
+			if v == current+1 {
+				// 연속
+			}
+		}
+	}
 
 	now := global.GetCurrentDatetime()
 	yearmonth := now[0:7]
+
 	for _, v := range customers {
 		cnt := billingManager.Count([]interface{}{
 			models.Where{Column: "company", Value: session.Company, Compare: "="},
 			models.Where{Column: "building", Value: v.Building, Compare: "="},
 			models.Where{Column: "month", Value: yearmonth, Compare: "="},
+			models.Where{Column: "period", Value: month, Compare: "="},
 		})
 
 		if cnt > 0 {

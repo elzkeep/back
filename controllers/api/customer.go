@@ -137,6 +137,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
 	if _status != 0 {
 		args = append(args, models.Where{Column: "status", Value: _status, Compare: "="})
 	}
+	_salesuser := c.Geti64("salesuser")
+	if _salesuser != 0 {
+		args = append(args, models.Where{Column: "salesuser", Value: _salesuser, Compare: "="})
+	}
 	_user := c.Geti64("user")
 	if _user != 0 {
 		args = append(args, models.Where{Column: "user", Value: _user, Compare: "="})
