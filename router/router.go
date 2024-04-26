@@ -77,8 +77,9 @@ func SetRouter(r *fiber.App) {
 				month_ = int(v.(float64))
 			}
 			var durationmonth_ []int
-			durationmonth__ref := &durationmonth_
-			c.BodyParser(durationmonth__ref)
+			if v, flag := results["durationmonth"]; flag {
+				durationmonth_= getArrayCommai(v.(string))
+			}
 			var ids_ []int64
 			if v, flag := results["ids"]; flag {
 				ids_= getArrayCommal(v.(string))
@@ -6767,6 +6768,179 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserlistController
 			controller.Init(c)
 			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webnotice", func(c *fiber.Ctx) error {
+			item_ := &models.Webnotice{}
+			c.BodyParser(item_)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webnotice/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webnotice{}
+			c.BodyParser(item_)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webnotice", func(c *fiber.Ctx) error {
+			item_ := &models.Webnotice{}
+			c.BodyParser(item_)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webnotice", func(c *fiber.Ctx) error {
+			item_ := &models.Webnotice{}
+			c.BodyParser(item_)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webnotice/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webnotice{}
+			c.BodyParser(item_)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webnotice/count", func(c *fiber.Ctx) error {
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webnotice/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webnotice", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webnotice/title", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var title_ string
+			if v, flag := results["title"]; flag {
+				title_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.UpdateTitle(title_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webnotice/content", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var content_ string
+			if v, flag := results["content"]; flag {
+				content_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.UpdateContent(content_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webnotice/image", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var image_ string
+			if v, flag := results["image"]; flag {
+				image_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.UpdateImage(image_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webnotice/category", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var category_ int
+			if v, flag := results["category"]; flag {
+				category_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebnoticeController
+			controller.Init(c)
+			controller.UpdateCategory(category_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

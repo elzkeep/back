@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"zkeep/controllers"
 	"zkeep/models"
 
@@ -13,7 +14,7 @@ type ReportController struct {
 }
 
 func (c *ReportController) Search(page int, pagesize int) {
-
+	log.Println("Search")
 	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
@@ -22,7 +23,7 @@ func (c *ReportController) Search(page int, pagesize int) {
 
 	_search := c.Get("search")
 	if _search != "" {
-		args = append(args, models.Custom{Query: fmt.Sprintf("(r_title like '%%%v%%' or c_buildingname like '%%%v%%' or c_address like '%%%v%%')", _search)})
+		args = append(args, models.Custom{Query: fmt.Sprintf("(r_title like '%%%v%%' or c_buildingname like '%%%v%%' or c_address like '%%%v%%')", _search, _search, _search)})
 	}
 
 	_title := c.Get("title")
@@ -76,6 +77,7 @@ func (c *ReportController) Search(page int, pagesize int) {
 		args = append(args, models.Where{Column: "date", Value: _enddate, Compare: "<="})
 	}
 
+	log.Println(args)
 	if page != 0 && pagesize != 0 {
 		args = append(args, models.Paging(page, pagesize))
 	}
@@ -105,6 +107,7 @@ func (c *ReportController) Search(page int, pagesize int) {
 		args = append(args, models.Ordering(str))
 	}
 
+	log.Println(args)
 	items := manager.Find(args)
 	c.Set("items", items)
 

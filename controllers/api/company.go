@@ -113,8 +113,10 @@ func (c *CompanyController) Post_Insert(item *models.Company) {
 	user := c.Session
 
 	log.Println("user", user)
-	customercompany := models.Customercompany{Company: user.Company, Customer: item.Id}
-	customercompanyManager.Insert(&customercompany)
+	if user != nil {
+		customercompany := models.Customercompany{Company: user.Company, Customer: item.Id}
+		customercompanyManager.Insert(&customercompany)
+	}
 }
 
 func (c *CompanyController) Upload(filename string) {

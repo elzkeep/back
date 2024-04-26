@@ -1,7 +1,10 @@
 package api
 
 import (
+	"fmt"
+	"log"
 	"strings"
+	"time"
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
@@ -101,6 +104,12 @@ func (c *BillingController) Search(page int, pagesize int) {
 	c.Set("total", total)
 }
 
+type Pair struct {
+	Year   int
+	Month  int
+	Period int
+}
+
 // @POST()
 func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64) {
 	session := c.Session
@@ -115,44 +124,77 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		models.Where{Column: "building", Value: ids, Compare: "in"},
 	})
 
+	log.Println("durationtype:", durationtype, durationmonth)
+	now := time.Now()
+
+	months := make([]Pair, 0)
 	if durationtype == 2 {
 		if len(durationmonth) == 0 {
 			return
 		}
 
-		current := durationmonth[0]
+		months = append(months, Pair{Year: year, Month: durationmonth[0], Period: 1})
+
+		inc := 1
 		for _, v := range durationmonth[1:] {
-			if v == current+1 {
-				// 연속
+			current := months[len(months)-1]
+			if v == current.Month+inc {
+				current.Month = v
+				months[len(months)-1].Period++
+				inc++
+			} else {
+				months = append(months, Pair{Year: year, Month: v, Period: 1})
+				inc = 1
 			}
 		}
-	}
+	} else {
+		year = now.Year()
+		currentMonth := int(now.Month())
+		targetMonth := 1
 
-	now := global.GetCurrentDatetime()
-	yearmonth := now[0:7]
-
-	for _, v := range customers {
-		cnt := billingManager.Count([]interface{}{
-			models.Where{Column: "company", Value: session.Company, Compare: "="},
-			models.Where{Column: "building", Value: v.Building, Compare: "="},
-			models.Where{Column: "month", Value: yearmonth, Compare: "="},
-			models.Where{Column: "period", Value: month, Compare: "="},
-		})
-
-		if cnt > 0 {
-			continue
+		if base == 1 {
+			targetMonth = currentMonth
+		} else {
+			if currentMonth == 12 {
+				year++
+				targetMonth = 1
+			} else {
+				targetMonth = currentMonth + 1
+			}
 		}
 
-		item := models.Billing{}
-		item.Price = (v.Contractprice + v.Contractvat) * month
-		item.Status = billing.StatusWait
-		item.Giro = billing.GiroWait
-		item.Billdate = now
-		item.Month = yearmonth
-		item.Company = session.Company
-		item.Building = v.Building
-		item.Period = month
+		months = append(months, Pair{Year: year, Month: targetMonth, Period: month})
+	}
 
-		billingManager.Insert(&item)
+	today := global.GetCurrentDatetime()
+
+	for _, d := range months {
+		yearmonth := fmt.Sprintf("%04d-%02d", d.Year, d.Month)
+
+		for _, v := range customers {
+
+			cnt := billingManager.Count([]interface{}{
+				models.Where{Column: "company", Value: session.Company, Compare: "="},
+				models.Where{Column: "building", Value: v.Building, Compare: "="},
+				models.Where{Column: "month", Value: yearmonth, Compare: "="},
+				models.Where{Column: "period", Value: d.Period, Compare: "="},
+			})
+
+			if cnt > 0 {
+				continue
+			}
+
+			item := models.Billing{}
+			item.Price = (v.Contractprice + v.Contractvat) * d.Period
+			item.Status = billing.StatusWait
+			item.Giro = billing.GiroWait
+			item.Billdate = today
+			item.Month = yearmonth
+			item.Company = session.Company
+			item.Building = v.Building
+			item.Period = d.Period
+
+			billingManager.Insert(&item)
+		}
 	}
 }
