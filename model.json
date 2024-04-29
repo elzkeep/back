@@ -254,6 +254,33 @@
           "type": "like"
         }
       ]                 
+    },
+    {
+      "name": "webnotice",
+      "compare": [
+        {
+          "name": "title",
+          "type": "like"
+        }
+      ]                 
+    },
+    {
+      "name": "webfaq",
+      "compare": [
+        {
+          "name": "title",
+          "type": "like"
+        }
+      ]                 
+    },
+    {
+      "name": "webjoin",
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]                 
     }
   ]   
 }

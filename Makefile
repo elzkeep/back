@@ -75,7 +75,7 @@ admindeploy: adminpush
 	docker-compose --context zkeep -f docker-compose_admin.yml pull
 	docker-compose --context zkeep -f docker-compose_admin.yml up -d
 
-clean:
-	rm -f bin/main
+webdeploy: dummy
+	GLOBIGNORE=".git" scp -r ../web/* root@dev.zkeep.space:/home/zkeep/html
 
 dummy:

@@ -30,6 +30,18 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
+	if c.Method() == "GET" && len(u.Path) >= 14 && u.Path[:14] == "/api/webnotice" {
+		return c.Next()
+	}
+
+	if c.Method() == "GET" && len(u.Path) >= 8 && u.Path[:8] == "/api/web" {
+		return c.Next()
+	}
+
+	if len(u.Path) >= 12 && u.Path[:12] == "/api/webjoin" {
+		return c.Next()
+	}
+
 	if c.Method() == "POST" && u.Path == "/api/user/findid" {
 		return c.Next()
 	}
