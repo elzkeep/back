@@ -15,32 +15,33 @@ import (
     
 )
 
-type Webnotice struct {
+type Webjoin struct {
             
     Id                int64 `json:"id"`         
-    Title                string `json:"title"`         
-    Content                string `json:"content"`         
-    Image                string `json:"image"`         
     Category                int `json:"category"`         
+    Name                string `json:"name"`         
+    Manager                string `json:"manager"`         
+    Tel                string `json:"tel"`         
+    Email                string `json:"email"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type WebnoticeManager struct {
+type WebjoinManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Webnotice) AddExtra(key string, value interface{}) {    
+func (c *Webjoin) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewWebnoticeManager(conn interface{}) *WebnoticeManager {
-    var item WebnoticeManager
+func NewWebjoinManager(conn interface{}) *WebjoinManager {
+    var item WebjoinManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -59,17 +60,17 @@ func NewWebnoticeManager(conn interface{}) *WebnoticeManager {
     return &item
 }
 
-func (p *WebnoticeManager) Close() {
+func (p *WebjoinManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *WebnoticeManager) SetIndex(index string) {
+func (p *WebjoinManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *WebjoinManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -77,7 +78,7 @@ func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result
     }
 }
 
-func (p *WebnoticeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *WebjoinManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -85,10 +86,10 @@ func (p *WebnoticeManager) Query(query string, params ...interface{}) (*sql.Rows
     }
 }
 
-func (p *WebnoticeManager) GetQuery() string {
+func (p *WebjoinManager) GetQuery() string {
     ret := ""
 
-    str := "select wn_id, wn_title, wn_content, wn_image, wn_category, wn_date from webnotice_tb "
+    str := "select wj_id, wj_category, wj_name, wj_manager, wj_tel, wj_email, wj_date from webjoin_tb "
 
     if p.Index == "" {
         ret = str
@@ -102,10 +103,10 @@ func (p *WebnoticeManager) GetQuery() string {
     return ret;
 }
 
-func (p *WebnoticeManager) GetQuerySelect() string {
+func (p *WebjoinManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from webnotice_tb "
+    str := "select count(*) from webjoin_tb "
 
     if p.Index == "" {
         ret = str
@@ -119,12 +120,12 @@ func (p *WebnoticeManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *WebnoticeManager) Truncate() error {
+func (p *WebjoinManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate webnotice_tb "
+    query := "truncate webjoin_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -134,7 +135,7 @@ func (p *WebnoticeManager) Truncate() error {
     return nil
 }
 
-func (p *WebnoticeManager) Insert(item *Webnotice) error {
+func (p *WebjoinManager) Insert(item *Webjoin) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -154,11 +155,11 @@ func (p *WebnoticeManager) Insert(item *Webnotice) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into webnotice_tb (wn_id, wn_title, wn_content, wn_image, wn_category, wn_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Content, item.Image, item.Category, item.Date)
+        query = "insert into webjoin_tb (wj_id, wj_category, wj_name, wj_manager, wj_tel, wj_email, wj_date) values (?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Category, item.Name, item.Manager, item.Tel, item.Email, item.Date)
     } else {
-        query = "insert into webnotice_tb (wn_title, wn_content, wn_image, wn_category, wn_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Content, item.Image, item.Category, item.Date)
+        query = "insert into webjoin_tb (wj_category, wj_name, wj_manager, wj_tel, wj_email, wj_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Category, item.Name, item.Manager, item.Tel, item.Email, item.Date)
     }
     
     if err == nil {
@@ -172,19 +173,19 @@ func (p *WebnoticeManager) Insert(item *Webnotice) error {
     return err
 }
 
-func (p *WebnoticeManager) Delete(id int64) error {
+func (p *WebjoinManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from webnotice_tb where wn_id = ?"
+    query := "delete from webjoin_tb where wj_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
+func (p *WebjoinManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -198,15 +199,15 @@ func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wj_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wj_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wj_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -220,14 +221,14 @@ func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from webnotice_tb where " + query[5:]
+    query = "delete from webjoin_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *WebnoticeManager) Update(item *Webnotice) error {
+func (p *WebjoinManager) Update(item *Webjoin) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -237,53 +238,64 @@ func (p *WebnoticeManager) Update(item *Webnotice) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update webnotice_tb set wn_title = ?, wn_content = ?, wn_image = ?, wn_category = ?, wn_date = ? where wn_id = ?"
-	_, err := p.Exec(query , item.Title, item.Content, item.Image, item.Category, item.Date, item.Id)
+	query := "update webjoin_tb set wj_category = ?, wj_name = ?, wj_manager = ?, wj_tel = ?, wj_email = ?, wj_date = ? where wj_id = ?"
+	_, err := p.Exec(query , item.Category, item.Name, item.Manager, item.Tel, item.Email, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *WebnoticeManager) UpdateTitle(value string, id int64) error {
+func (p *WebjoinManager) UpdateCategory(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_title = ? where wn_id = ?"
+	query := "update webjoin_tb set wj_category = ? where wj_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateContent(value string, id int64) error {
+func (p *WebjoinManager) UpdateName(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_content = ? where wn_id = ?"
+	query := "update webjoin_tb set wj_name = ? where wj_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateImage(value string, id int64) error {
+func (p *WebjoinManager) UpdateManager(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_image = ? where wn_id = ?"
+	query := "update webjoin_tb set wj_manager = ? where wj_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateCategory(value int, id int64) error {
+func (p *WebjoinManager) UpdateTel(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_category = ? where wn_id = ?"
+	query := "update webjoin_tb set wj_tel = ? where wj_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *WebjoinManager) UpdateEmail(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update webjoin_tb set wj_email = ? where wj_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -291,19 +303,19 @@ func (p *WebnoticeManager) UpdateCategory(value int, id int64) error {
 
 
 
-func (p *WebnoticeManager) IncreaseCategory(value int, id int64) error {
+func (p *WebjoinManager) IncreaseCategory(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_category = wn_category + ? where wn_id = ?"
+	query := "update webjoin_tb set wj_category = wj_category + ? where wj_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *WebnoticeManager) GetIdentity() int64 {
+func (p *WebjoinManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -317,20 +329,22 @@ func (p *WebnoticeManager) GetIdentity() int64 {
     }
 }
 
-func (p *Webnotice) InitExtra() {
+func (p *Webjoin) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *WebnoticeManager) ReadRow(rows *sql.Rows) *Webnotice {
-    var item Webnotice
+func (p *WebjoinManager) ReadRow(rows *sql.Rows) *Webjoin {
+    var item Webjoin
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Content, &item.Image, &item.Category, &item.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Name, &item.Manager, &item.Tel, &item.Email, &item.Date)
+        
+        
         
         
         
@@ -360,19 +374,20 @@ func (p *WebnoticeManager) ReadRow(rows *sql.Rows) *Webnotice {
     }
 }
 
-func (p *WebnoticeManager) ReadRows(rows *sql.Rows) []Webnotice {
-    var items []Webnotice
+func (p *WebjoinManager) ReadRows(rows *sql.Rows) []Webjoin {
+    var items []Webjoin
 
     for rows.Next() {
-        var item Webnotice
+        var item Webjoin
         
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Content, &item.Image, &item.Category, &item.Date)
+        err := rows.Scan(&item.Id, &item.Category, &item.Name, &item.Manager, &item.Tel, &item.Email, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         
@@ -392,12 +407,12 @@ func (p *WebnoticeManager) ReadRows(rows *sql.Rows) []Webnotice {
      return items
 }
 
-func (p *WebnoticeManager) Get(id int64) *Webnotice {
+func (p *WebjoinManager) Get(id int64) *Webjoin {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and wn_id = ?"
+    query := p.GetQuery() + " and wj_id = ?"
 
     
     
@@ -413,7 +428,7 @@ func (p *WebnoticeManager) Get(id int64) *Webnotice {
     return p.ReadRow(rows)
 }
 
-func (p *WebnoticeManager) Count(args []interface{}) int {
+func (p *WebjoinManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -427,15 +442,15 @@ func (p *WebnoticeManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wj_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wj_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wj_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -472,13 +487,13 @@ func (p *WebnoticeManager) Count(args []interface{}) int {
     }
 }
 
-func (p *WebnoticeManager) FindAll() []Webnotice {
+func (p *WebjoinManager) FindAll() []Webjoin {
     return p.Find(nil)
 }
 
-func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
+func (p *WebjoinManager) Find(args []interface{}) []Webjoin {
     if p.Conn == nil && p.Tx == nil {
-        var items []Webnotice
+        var items []Webjoin
         return items
     }
 
@@ -517,15 +532,15 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wj_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wj_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wj_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -547,10 +562,10 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "wn_id desc"
+            orderby = "wj_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "wn_" + orderby
+                orderby = "wj_" + orderby
             }
             
         }
@@ -568,10 +583,10 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
         */
     } else {
         if orderby == "" {
-            orderby = "wn_id"
+            orderby = "wj_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "wn_" + orderby
+                orderby = "wj_" + orderby
             }
         }
         query += " order by " + orderby
@@ -581,7 +596,7 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Webnotice
+        var items []Webjoin
         return items
     }
 

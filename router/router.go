@@ -6772,6 +6772,371 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Post("/webfaq", func(c *fiber.Ctx) error {
+			item_ := &models.Webfaq{}
+			c.BodyParser(item_)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webfaq/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webfaq{}
+			c.BodyParser(item_)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webfaq", func(c *fiber.Ctx) error {
+			item_ := &models.Webfaq{}
+			c.BodyParser(item_)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webfaq", func(c *fiber.Ctx) error {
+			item_ := &models.Webfaq{}
+			c.BodyParser(item_)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webfaq/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webfaq{}
+			c.BodyParser(item_)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webfaq/count", func(c *fiber.Ctx) error {
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webfaq/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webfaq", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webfaq/category", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var category_ int
+			if v, flag := results["category"]; flag {
+				category_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.UpdateCategory(category_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webfaq/title", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var title_ string
+			if v, flag := results["title"]; flag {
+				title_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.UpdateTitle(title_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webfaq/content", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var content_ string
+			if v, flag := results["content"]; flag {
+				content_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.UpdateContent(content_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webfaq/order", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var order_ int
+			if v, flag := results["order"]; flag {
+				order_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebfaqController
+			controller.Init(c)
+			controller.UpdateOrder(order_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webjoin", func(c *fiber.Ctx) error {
+			item_ := &models.Webjoin{}
+			c.BodyParser(item_)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webjoin/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webjoin{}
+			c.BodyParser(item_)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin", func(c *fiber.Ctx) error {
+			item_ := &models.Webjoin{}
+			c.BodyParser(item_)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webjoin", func(c *fiber.Ctx) error {
+			item_ := &models.Webjoin{}
+			c.BodyParser(item_)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webjoin/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webjoin{}
+			c.BodyParser(item_)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webjoin/count", func(c *fiber.Ctx) error {
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webjoin/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webjoin", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin/category", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var category_ int
+			if v, flag := results["category"]; flag {
+				category_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.UpdateCategory(category_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin/name", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var name_ string
+			if v, flag := results["name"]; flag {
+				name_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.UpdateName(name_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin/manager", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var manager_ string
+			if v, flag := results["manager"]; flag {
+				manager_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.UpdateManager(manager_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin/tel", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var tel_ string
+			if v, flag := results["tel"]; flag {
+				tel_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.UpdateTel(tel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webjoin/email", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var email_ string
+			if v, flag := results["email"]; flag {
+				email_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebjoinController
+			controller.Init(c)
+			controller.UpdateEmail(email_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/webnotice", func(c *fiber.Ctx) error {
 			item_ := &models.Webnotice{}
 			c.BodyParser(item_)

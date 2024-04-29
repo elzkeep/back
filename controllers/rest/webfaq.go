@@ -8,18 +8,18 @@ import (
     "strings"
 )
 
-type WebnoticeController struct {
+type WebfaqController struct {
 	controllers.Controller
 }
 
 
 
-func (c *WebnoticeController) Insert(item *models.Webnotice) {
+func (c *WebfaqController) Insert(item *models.Webfaq) {
     
     
 	conn := c.NewConnection()
     
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 	manager.Insert(item)
 
     id := manager.GetIdentity()
@@ -27,7 +27,7 @@ func (c *WebnoticeController) Insert(item *models.Webnotice) {
     item.Id = id
 }
 
-func (c *WebnoticeController) Insertbatch(item *[]models.Webnotice) {  
+func (c *WebfaqController) Insertbatch(item *[]models.Webfaq) {  
     if item == nil || len(*item) == 0 {
         return
     }
@@ -38,39 +38,39 @@ func (c *WebnoticeController) Insertbatch(item *[]models.Webnotice) {
     
 	conn := c.NewConnection()
     
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 
     for i := 0; i < rows; i++ {
 	    manager.Insert(&((*item)[i]))
     }
 }
 
-func (c *WebnoticeController) Update(item *models.Webnotice) {
+func (c *WebfaqController) Update(item *models.Webfaq) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 	manager.Update(item)
 }
 
-func (c *WebnoticeController) Delete(item *models.Webnotice) {
+func (c *WebfaqController) Delete(item *models.Webfaq) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 
     
 	manager.Delete(item.Id)
 }
 
-func (c *WebnoticeController) Deletebatch(item *[]models.Webnotice) {
+func (c *WebfaqController) Deletebatch(item *[]models.Webfaq) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 
     for _, v := range *item {
         
@@ -79,15 +79,19 @@ func (c *WebnoticeController) Deletebatch(item *[]models.Webnotice) {
     }
 }
 
-func (c *WebnoticeController) Count() {
+func (c *WebfaqController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 
     var args []interface{}
     
+    _category := c.Geti("category")
+    if _category != 0 {
+        args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    }
     _title := c.Get("title")
     if _title != "" {
         args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
@@ -98,13 +102,9 @@ func (c *WebnoticeController) Count() {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
         
     }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
-    _category := c.Geti("category")
-    if _category != 0 {
-        args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    _order := c.Geti("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -127,12 +127,12 @@ func (c *WebnoticeController) Count() {
 }
 
 
-func (c *WebnoticeController) Read(id int64) {
+func (c *WebfaqController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 	item := manager.Get(id)
 
     
@@ -140,15 +140,19 @@ func (c *WebnoticeController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *WebnoticeController) Index(page int, pagesize int) {
+func (c *WebfaqController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebfaqManager(conn)
 
     var args []interface{}
     
+    _category := c.Geti("category")
+    if _category != 0 {
+        args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    }
     _title := c.Get("title")
     if _title != "" {
         args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
@@ -159,13 +163,9 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
         
     }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
-    _category := c.Geti("category")
-    if _category != 0 {
-        args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    _order := c.Geti("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -204,7 +204,7 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
                 if strings.Contains(v, "_") {                   
                     str += ", " + strings.Trim(v, " ")
                 } else {
-                    str += ", wn_" + strings.Trim(v, " ")                
+                    str += ", wf_" + strings.Trim(v, " ")                
                 }
             }
         }
@@ -220,43 +220,43 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
 }
 
 // @Put()
-func (c *WebnoticeController) UpdateTitle(title string, id int64) {
+func (c *WebfaqController) UpdateCategory(category int, id int64) {
     
     
 	conn := c.NewConnection()
 
-	_manager := models.NewWebnoticeManager(conn)
+	_manager := models.NewWebfaqManager(conn)
+	_manager.UpdateCategory(category, id)
+}
+
+// @Put()
+func (c *WebfaqController) UpdateTitle(title string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateTitle(title, id)
 }
 
 // @Put()
-func (c *WebnoticeController) UpdateContent(content string, id int64) {
+func (c *WebfaqController) UpdateContent(content string, id int64) {
     
     
 	conn := c.NewConnection()
 
-	_manager := models.NewWebnoticeManager(conn)
+	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateContent(content, id)
 }
 
 // @Put()
-func (c *WebnoticeController) UpdateImage(image string, id int64) {
+func (c *WebfaqController) UpdateOrder(order int, id int64) {
     
     
 	conn := c.NewConnection()
 
-	_manager := models.NewWebnoticeManager(conn)
-	_manager.UpdateImage(image, id)
-}
-
-// @Put()
-func (c *WebnoticeController) UpdateCategory(category int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewWebnoticeManager(conn)
-	_manager.UpdateCategory(category, id)
+	_manager := models.NewWebfaqManager(conn)
+	_manager.UpdateOrder(order, id)
 }
 
 

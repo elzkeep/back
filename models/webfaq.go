@@ -15,32 +15,32 @@ import (
     
 )
 
-type Webnotice struct {
+type Webfaq struct {
             
     Id                int64 `json:"id"`         
+    Category                int `json:"category"`         
     Title                string `json:"title"`         
     Content                string `json:"content"`         
-    Image                string `json:"image"`         
-    Category                int `json:"category"`         
+    Order                int `json:"order"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type WebnoticeManager struct {
+type WebfaqManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Webnotice) AddExtra(key string, value interface{}) {    
+func (c *Webfaq) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewWebnoticeManager(conn interface{}) *WebnoticeManager {
-    var item WebnoticeManager
+func NewWebfaqManager(conn interface{}) *WebfaqManager {
+    var item WebfaqManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -59,17 +59,17 @@ func NewWebnoticeManager(conn interface{}) *WebnoticeManager {
     return &item
 }
 
-func (p *WebnoticeManager) Close() {
+func (p *WebfaqManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *WebnoticeManager) SetIndex(index string) {
+func (p *WebfaqManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *WebfaqManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -77,7 +77,7 @@ func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result
     }
 }
 
-func (p *WebnoticeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *WebfaqManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -85,10 +85,10 @@ func (p *WebnoticeManager) Query(query string, params ...interface{}) (*sql.Rows
     }
 }
 
-func (p *WebnoticeManager) GetQuery() string {
+func (p *WebfaqManager) GetQuery() string {
     ret := ""
 
-    str := "select wn_id, wn_title, wn_content, wn_image, wn_category, wn_date from webnotice_tb "
+    str := "select wf_id, wf_category, wf_title, wf_content, wf_order, wf_date from webfaq_tb "
 
     if p.Index == "" {
         ret = str
@@ -102,10 +102,10 @@ func (p *WebnoticeManager) GetQuery() string {
     return ret;
 }
 
-func (p *WebnoticeManager) GetQuerySelect() string {
+func (p *WebfaqManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from webnotice_tb "
+    str := "select count(*) from webfaq_tb "
 
     if p.Index == "" {
         ret = str
@@ -119,12 +119,12 @@ func (p *WebnoticeManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *WebnoticeManager) Truncate() error {
+func (p *WebfaqManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate webnotice_tb "
+    query := "truncate webfaq_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -134,7 +134,7 @@ func (p *WebnoticeManager) Truncate() error {
     return nil
 }
 
-func (p *WebnoticeManager) Insert(item *Webnotice) error {
+func (p *WebfaqManager) Insert(item *Webfaq) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -154,11 +154,11 @@ func (p *WebnoticeManager) Insert(item *Webnotice) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into webnotice_tb (wn_id, wn_title, wn_content, wn_image, wn_category, wn_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Content, item.Image, item.Category, item.Date)
+        query = "insert into webfaq_tb (wf_id, wf_category, wf_title, wf_content, wf_order, wf_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Category, item.Title, item.Content, item.Order, item.Date)
     } else {
-        query = "insert into webnotice_tb (wn_title, wn_content, wn_image, wn_category, wn_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Content, item.Image, item.Category, item.Date)
+        query = "insert into webfaq_tb (wf_category, wf_title, wf_content, wf_order, wf_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Category, item.Title, item.Content, item.Order, item.Date)
     }
     
     if err == nil {
@@ -172,19 +172,19 @@ func (p *WebnoticeManager) Insert(item *Webnotice) error {
     return err
 }
 
-func (p *WebnoticeManager) Delete(id int64) error {
+func (p *WebfaqManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from webnotice_tb where wn_id = ?"
+    query := "delete from webfaq_tb where wf_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
+func (p *WebfaqManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -198,15 +198,15 @@ func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wf_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wf_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wf_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -220,14 +220,14 @@ func (p *WebnoticeManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from webnotice_tb where " + query[5:]
+    query = "delete from webfaq_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *WebnoticeManager) Update(item *Webnotice) error {
+func (p *WebfaqManager) Update(item *Webfaq) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -237,73 +237,84 @@ func (p *WebnoticeManager) Update(item *Webnotice) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update webnotice_tb set wn_title = ?, wn_content = ?, wn_image = ?, wn_category = ?, wn_date = ? where wn_id = ?"
-	_, err := p.Exec(query , item.Title, item.Content, item.Image, item.Category, item.Date, item.Id)
+	query := "update webfaq_tb set wf_category = ?, wf_title = ?, wf_content = ?, wf_order = ?, wf_date = ? where wf_id = ?"
+	_, err := p.Exec(query , item.Category, item.Title, item.Content, item.Order, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *WebnoticeManager) UpdateTitle(value string, id int64) error {
+func (p *WebfaqManager) UpdateCategory(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_title = ? where wn_id = ?"
+	query := "update webfaq_tb set wf_category = ? where wf_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateContent(value string, id int64) error {
+func (p *WebfaqManager) UpdateTitle(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_content = ? where wn_id = ?"
+	query := "update webfaq_tb set wf_title = ? where wf_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateImage(value string, id int64) error {
+func (p *WebfaqManager) UpdateContent(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_image = ? where wn_id = ?"
+	query := "update webfaq_tb set wf_content = ? where wf_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *WebnoticeManager) UpdateCategory(value int, id int64) error {
+func (p *WebfaqManager) UpdateOrder(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update webnotice_tb set wn_category = ? where wn_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-
-
-func (p *WebnoticeManager) IncreaseCategory(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update webnotice_tb set wn_category = wn_category + ? where wn_id = ?"
+	query := "update webfaq_tb set wf_order = ? where wf_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *WebnoticeManager) GetIdentity() int64 {
+
+func (p *WebfaqManager) IncreaseCategory(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update webfaq_tb set wf_category = wf_category + ? where wf_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *WebfaqManager) IncreaseOrder(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update webfaq_tb set wf_order = wf_order + ? where wf_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
+func (p *WebfaqManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -317,20 +328,20 @@ func (p *WebnoticeManager) GetIdentity() int64 {
     }
 }
 
-func (p *Webnotice) InitExtra() {
+func (p *Webfaq) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *WebnoticeManager) ReadRow(rows *sql.Rows) *Webnotice {
-    var item Webnotice
+func (p *WebfaqManager) ReadRow(rows *sql.Rows) *Webfaq {
+    var item Webfaq
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Content, &item.Image, &item.Category, &item.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Title, &item.Content, &item.Order, &item.Date)
         
         
         
@@ -360,14 +371,14 @@ func (p *WebnoticeManager) ReadRow(rows *sql.Rows) *Webnotice {
     }
 }
 
-func (p *WebnoticeManager) ReadRows(rows *sql.Rows) []Webnotice {
-    var items []Webnotice
+func (p *WebfaqManager) ReadRows(rows *sql.Rows) []Webfaq {
+    var items []Webfaq
 
     for rows.Next() {
-        var item Webnotice
+        var item Webfaq
         
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Content, &item.Image, &item.Category, &item.Date)
+        err := rows.Scan(&item.Id, &item.Category, &item.Title, &item.Content, &item.Order, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -392,12 +403,12 @@ func (p *WebnoticeManager) ReadRows(rows *sql.Rows) []Webnotice {
      return items
 }
 
-func (p *WebnoticeManager) Get(id int64) *Webnotice {
+func (p *WebfaqManager) Get(id int64) *Webfaq {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and wn_id = ?"
+    query := p.GetQuery() + " and wf_id = ?"
 
     
     
@@ -413,7 +424,7 @@ func (p *WebnoticeManager) Get(id int64) *Webnotice {
     return p.ReadRow(rows)
 }
 
-func (p *WebnoticeManager) Count(args []interface{}) int {
+func (p *WebfaqManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -427,15 +438,15 @@ func (p *WebnoticeManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wf_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wf_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wf_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -472,13 +483,13 @@ func (p *WebnoticeManager) Count(args []interface{}) int {
     }
 }
 
-func (p *WebnoticeManager) FindAll() []Webnotice {
+func (p *WebfaqManager) FindAll() []Webfaq {
     return p.Find(nil)
 }
 
-func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
+func (p *WebfaqManager) Find(args []interface{}) []Webfaq {
     if p.Conn == nil && p.Tx == nil {
-        var items []Webnotice
+        var items []Webfaq
         return items
     }
 
@@ -517,15 +528,15 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
             item := v
 
             if item.Compare == "in" {
-                query += " and wn_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and wf_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and wn_" + item.Column + " between ? and ?"
+                query += " and wf_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and wn_" + item.Column + " " + item.Compare + " ?"
+                query += " and wf_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -547,10 +558,10 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "wn_id desc"
+            orderby = "wf_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "wn_" + orderby
+                orderby = "wf_" + orderby
             }
             
         }
@@ -568,10 +579,10 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
         */
     } else {
         if orderby == "" {
-            orderby = "wn_id"
+            orderby = "wf_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "wn_" + orderby
+                orderby = "wf_" + orderby
             }
         }
         query += " order by " + orderby
@@ -581,7 +592,7 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Webnotice
+        var items []Webfaq
         return items
     }
 

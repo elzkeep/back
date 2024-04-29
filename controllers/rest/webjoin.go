@@ -8,18 +8,18 @@ import (
     "strings"
 )
 
-type WebnoticeController struct {
+type WebjoinController struct {
 	controllers.Controller
 }
 
 
 
-func (c *WebnoticeController) Insert(item *models.Webnotice) {
+func (c *WebjoinController) Insert(item *models.Webjoin) {
     
     
 	conn := c.NewConnection()
     
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 	manager.Insert(item)
 
     id := manager.GetIdentity()
@@ -27,7 +27,7 @@ func (c *WebnoticeController) Insert(item *models.Webnotice) {
     item.Id = id
 }
 
-func (c *WebnoticeController) Insertbatch(item *[]models.Webnotice) {  
+func (c *WebjoinController) Insertbatch(item *[]models.Webjoin) {  
     if item == nil || len(*item) == 0 {
         return
     }
@@ -38,39 +38,39 @@ func (c *WebnoticeController) Insertbatch(item *[]models.Webnotice) {
     
 	conn := c.NewConnection()
     
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 
     for i := 0; i < rows; i++ {
 	    manager.Insert(&((*item)[i]))
     }
 }
 
-func (c *WebnoticeController) Update(item *models.Webnotice) {
+func (c *WebjoinController) Update(item *models.Webjoin) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 	manager.Update(item)
 }
 
-func (c *WebnoticeController) Delete(item *models.Webnotice) {
+func (c *WebjoinController) Delete(item *models.Webjoin) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 
     
 	manager.Delete(item.Id)
 }
 
-func (c *WebnoticeController) Deletebatch(item *[]models.Webnotice) {
+func (c *WebjoinController) Deletebatch(item *[]models.Webjoin) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 
     for _, v := range *item {
         
@@ -79,32 +79,35 @@ func (c *WebnoticeController) Deletebatch(item *[]models.Webnotice) {
     }
 }
 
-func (c *WebnoticeController) Count() {
+func (c *WebjoinController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 
     var args []interface{}
     
-    _title := c.Get("title")
-    if _title != "" {
-        args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
-        
-    }
-    _content := c.Get("content")
-    if _content != "" {
-        args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
-        
-    }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
     _category := c.Geti("category")
     if _category != 0 {
         args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    }
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
+        
+    }
+    _manager := c.Get("manager")
+    if _manager != "" {
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _email := c.Get("email")
+    if _email != "" {
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -127,12 +130,12 @@ func (c *WebnoticeController) Count() {
 }
 
 
-func (c *WebnoticeController) Read(id int64) {
+func (c *WebjoinController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 	item := manager.Get(id)
 
     
@@ -140,32 +143,35 @@ func (c *WebnoticeController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *WebnoticeController) Index(page int, pagesize int) {
+func (c *WebjoinController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewWebnoticeManager(conn)
+	manager := models.NewWebjoinManager(conn)
 
     var args []interface{}
     
-    _title := c.Get("title")
-    if _title != "" {
-        args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
-        
-    }
-    _content := c.Get("content")
-    if _content != "" {
-        args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
-        
-    }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-    }
     _category := c.Geti("category")
     if _category != 0 {
         args = append(args, models.Where{Column:"category", Value:_category, Compare:"="})    
+    }
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
+        
+    }
+    _manager := c.Get("manager")
+    if _manager != "" {
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _email := c.Get("email")
+    if _email != "" {
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -204,7 +210,7 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
                 if strings.Contains(v, "_") {                   
                     str += ", " + strings.Trim(v, " ")
                 } else {
-                    str += ", wn_" + strings.Trim(v, " ")                
+                    str += ", wj_" + strings.Trim(v, " ")                
                 }
             }
         }
@@ -220,43 +226,53 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
 }
 
 // @Put()
-func (c *WebnoticeController) UpdateTitle(title string, id int64) {
+func (c *WebjoinController) UpdateCategory(category int, id int64) {
     
     
 	conn := c.NewConnection()
 
-	_manager := models.NewWebnoticeManager(conn)
-	_manager.UpdateTitle(title, id)
-}
-
-// @Put()
-func (c *WebnoticeController) UpdateContent(content string, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewWebnoticeManager(conn)
-	_manager.UpdateContent(content, id)
-}
-
-// @Put()
-func (c *WebnoticeController) UpdateImage(image string, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewWebnoticeManager(conn)
-	_manager.UpdateImage(image, id)
-}
-
-// @Put()
-func (c *WebnoticeController) UpdateCategory(category int, id int64) {
-    
-    
-	conn := c.NewConnection()
-
-	_manager := models.NewWebnoticeManager(conn)
+	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateCategory(category, id)
+}
+
+// @Put()
+func (c *WebjoinController) UpdateName(name string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewWebjoinManager(conn)
+	_manager.UpdateName(name, id)
+}
+
+// @Put()
+func (c *WebjoinController) UpdateManager(manager string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewWebjoinManager(conn)
+	_manager.UpdateManager(manager, id)
+}
+
+// @Put()
+func (c *WebjoinController) UpdateTel(tel string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewWebjoinManager(conn)
+	_manager.UpdateTel(tel, id)
+}
+
+// @Put()
+func (c *WebjoinController) UpdateEmail(email string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewWebjoinManager(conn)
+	_manager.UpdateEmail(email, id)
 }
 
 
