@@ -126,3 +126,7 @@ func (c *ReportController) Insert(item *models.Report) {
 	c.Result["id"] = id
 	item.Id = id
 }
+
+func (c *ReportController) Download(id int64) {
+	c.Controller.Download("./doc/report.pdf", "전기설비점검기록표.pdf")
+}

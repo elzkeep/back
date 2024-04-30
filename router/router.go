@@ -291,6 +291,15 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/report/download/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller api.ReportController
+			controller.Init(c)
+			controller.Download(id_)
+			controller.Close()
+            return nil
+		})
+
 		apiGroup.Post("/sms/index", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
