@@ -10,6 +10,7 @@ RUN  mkdir -p /usr/local/main/fonts
 RUN  mkdir -p /usr/local/main/webdata
 RUN  mkdir -p /usr/local/main/webdata/temp
 COPY ./fonts/noto.ttf /usr/local/main/fonts/noto.ttf
+COPY ./fonts/OCR-B1.ttf /usr/local/main/fonts/OCR-B1.ttf
 
 WORKDIR /usr/local/main
 CMD    ./main --mode production
