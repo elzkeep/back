@@ -160,6 +160,15 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/customer/maxnumber/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller api.CustomerController
+			controller.Init(c)
+			controller.MaxNumber(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/dashboard", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Query("company"), 10, 64)
 			var controller api.DashboardController
@@ -2679,6 +2688,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/number", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var number_ int
+			if v, flag := results["number"]; flag {
+				number_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateNumber(number_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -7315,6 +7343,160 @@ func SetRouter(r *fiber.App) {
 			var controller rest.WebnoticeController
 			controller.Init(c)
 			controller.UpdateCategory(category_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webquestion", func(c *fiber.Ctx) error {
+			item_ := &models.Webquestion{}
+			c.BodyParser(item_)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/webquestion/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webquestion{}
+			c.BodyParser(item_)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webquestion", func(c *fiber.Ctx) error {
+			item_ := &models.Webquestion{}
+			c.BodyParser(item_)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webquestion", func(c *fiber.Ctx) error {
+			item_ := &models.Webquestion{}
+			c.BodyParser(item_)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/webquestion/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Webquestion{}
+			c.BodyParser(item_)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webquestion/count", func(c *fiber.Ctx) error {
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webquestion/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/webquestion", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webquestion/email", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var email_ string
+			if v, flag := results["email"]; flag {
+				email_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.UpdateEmail(email_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webquestion/tel", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var tel_ string
+			if v, flag := results["tel"]; flag {
+				tel_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.UpdateTel(tel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/webquestion/content", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var content_ string
+			if v, flag := results["content"]; flag {
+				content_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.WebquestionController
+			controller.Init(c)
+			controller.UpdateContent(content_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

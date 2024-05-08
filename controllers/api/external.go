@@ -195,7 +195,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 		if generator > 0 {
 			generatorFacility.Category = 20
-			generatorFacility.Value3 = fmt.Sprintf("%v", generator)
+			generatorFacility.Value12 = fmt.Sprintf("%v", generator)
 		}
 
 		if sunlight > 0 {

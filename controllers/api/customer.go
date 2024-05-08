@@ -363,3 +363,21 @@ func (c *CustomerController) Upload(filename string) {
 		pos++
 	}
 }
+
+func (c *CustomerController) MaxNumber(id int64) {
+	conn := c.NewConnection()
+
+	customerManager := models.NewCustomerManager(conn)
+	items := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: id, Compare: "="},
+		models.Ordering("cu_number desc"),
+		models.Limit(1),
+	})
+
+	max := 1
+	if len(items) > 0 {
+		max = items[0].Number + 1
+	}
+
+	c.Set("max", max)
+}

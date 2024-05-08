@@ -28,10 +28,30 @@ func CalculateTotalweight(id int64) {
 		}
 
 		if v.Category == 20 {
-			total += float64(global.Atoi(v.Value3))
+			total += float64(global.Atoi(v.Value12))
 		}
 
 		if v.Category == 30 {
+			total += float64(global.Atoi(v.Value6))
+		}
+
+		if v.Category == 40 {
+			total += float64(global.Atoi(v.Value5))
+		}
+
+		if v.Category == 50 {
+			total += float64(global.Atoi(v.Value4))
+		}
+
+		if v.Category == 60 {
+			total += float64(global.Atoi(v.Value12))
+		}
+
+		if v.Category == 70 {
+			total += float64(global.Atoi(v.Value4))
+		}
+
+		if v.Category == 90 {
 			total += float64(global.Atoi(v.Value6))
 		}
 	}

@@ -41,6 +41,8 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	companyManager := models.NewCompanyManager(conn)
 	billingManager := models.NewBillingManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+
 	items := billingManager.Find([]interface{}{
 		models.Where{Column: "id", Value: ids, Compare: "in"},
 	})
@@ -72,6 +74,8 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	for _, v := range items {
 		company := v.Extra["company"].(models.Company)
+		building := v.Extra["building"].(models.Building)
+
 		pdf.SetFont("noto", "", 14)
 
 		vat := int(v.Price / 11)
@@ -165,7 +169,10 @@ func (c *DownloadController) Giro(ids []int64) {
 		strPrice := global.Itoa(v.Price)
 		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
 
-		companyNo := 1000000000 + company.Id
+		customer := customerManager.GetByCompanyBuilding(user.Company, building.Id)
+		log.Println(user.Company, building.Id)
+		log.Println("customer number", customer.Number)
+		companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 
 		sum = 0
 

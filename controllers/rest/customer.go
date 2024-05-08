@@ -133,6 +133,10 @@ func (c *CustomerController) Count() {
 
     var args []interface{}
     
+    _number := c.Geti("number")
+    if _number != 0 {
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
+    }
     _type := c.Geti("type")
     if _type != 0 {
         args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
@@ -300,6 +304,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _number := c.Geti("number")
+    if _number != 0 {
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
+    }
     _type := c.Geti("type")
     if _type != 0 {
         args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
@@ -474,6 +482,16 @@ func (c *CustomerController) Index(page int, pagesize int) {
 
     total := manager.Count(args)
 	c.Set("total", total)
+}
+
+// @Put()
+func (c *CustomerController) UpdateNumber(number int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateNumber(number, id)
 }
 
 // @Put()
