@@ -129,7 +129,16 @@ func (c *DownloadController) Giro(ids []int64) {
 		pdf.Cell(nil, company.Ceo)
 
 		pdf.SetXY(2.8*73, 2.8*272)
-		pdf.Cell(nil, v.Billdate)
+		temp := strings.Split(v.Billdate, "-")
+		month := global.Atoi(temp[1])
+
+		if v.Period == 1 {
+			billdate := fmt.Sprintf("%v", month)
+			pdf.Cell(nil, billdate)
+		} else {
+			billdate := fmt.Sprintf("%v ~ %v", month, month+v.Period-1)
+			pdf.Cell(nil, billdate)
+		}
 
 		pdf.SetFont("orc", "", 12)
 

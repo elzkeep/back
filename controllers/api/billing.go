@@ -198,3 +198,27 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		}
 	}
 }
+
+// @Put()
+func (c *BillingController) Process(item *models.Billing) {
+	user := c.Session
+
+	conn := c.NewConnection()
+
+	manager := models.NewBillingManager(conn)
+	billinghistoryManager := models.NewBillinghistoryManager(conn)
+
+	manager.Update(item)
+
+	billinghistoryManager.DeleteByBilling(item.Id)
+
+	var billinghistory models.Billinghistory
+	billinghistory.Price = item.Price
+	billinghistory.Company = user.Company
+	billinghistory.Building = item.Building
+	billinghistory.Billing = item.Id
+
+	if item.Status == billing.StatusComplete {
+		billinghistoryManager.Insert(&billinghistory)
+	}
+}

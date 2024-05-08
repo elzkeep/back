@@ -91,6 +91,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/billing/process", func(c *fiber.Ctx) error {
+			item_ := &models.Billing{}
+			c.BodyParser(item_)
+			var controller api.BillingController
+			controller.Init(c)
+			controller.Process(item_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/billinguserlist/excel/:company", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
 			startdate_ := c.Query("startdate")
@@ -599,6 +609,197 @@ func SetRouter(r *fiber.App) {
 
 		apiGroup.Get("/billing/sum", func(c *fiber.Ctx) error {
 			var controller rest.BillingController
+			controller.Init(c)
+			controller.Sum()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/billinghistory/bybilling", func(c *fiber.Ctx) error {
+			item_ := &models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.DeleteByBilling(item_.Billing)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/billinghistory", func(c *fiber.Ctx) error {
+			item_ := &models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/billinghistory/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Insertbatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory", func(c *fiber.Ctx) error {
+			item_ := &models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/billinghistory", func(c *fiber.Ctx) error {
+			item_ := &models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/billinghistory/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Billinghistory{}
+			c.BodyParser(item_)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billinghistory/count", func(c *fiber.Ctx) error {
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billinghistory/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billinghistory", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/price", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var price_ int
+			if v, flag := results["price"]; flag {
+				price_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdatePrice(price_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/company", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var company_ int64
+			if v, flag := results["company"]; flag {
+				company_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdateCompany(company_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/building", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var building_ int64
+			if v, flag := results["building"]; flag {
+				building_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdateBuilding(building_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/billing", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var billing_ int64
+			if v, flag := results["billing"]; flag {
+				billing_ = int64(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdateBilling(billing_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/billinghistory/sum", func(c *fiber.Ctx) error {
+			var controller rest.BillinghistoryController
 			controller.Init(c)
 			controller.Sum()
 			controller.Close()
