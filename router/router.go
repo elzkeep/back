@@ -4070,13 +4070,10 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Post("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
-			var apicontroller api.FacilityController
-            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Insert(item_)
-				apicontroller.Post_Insert(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
@@ -4101,13 +4098,10 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Put("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
-			var apicontroller api.FacilityController
-            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Update(item_)
-				apicontroller.Post_Update(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
@@ -4118,13 +4112,10 @@ func SetRouter(r *fiber.App) {
 		apiGroup.Delete("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)
-			var apicontroller api.FacilityController
-            apicontroller.Init(c)
 			var controller rest.FacilityController
 			controller.Init(c)
 			if item_ != nil {
 				controller.Delete(item_)
-				apicontroller.Post_Delete(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}
