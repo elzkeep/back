@@ -23,14 +23,37 @@ var _secretCode string = "WkaQHd100%"
 var JwtAuthRequired = func(c *fiber.Ctx) error {
 	var token string
 
+	auth := true
+	if values := c.Get("Authorization"); len(values) > 0 {
+		str := values
+
+		if len(str) > 7 && str[:7] == "Bearer " {
+			token = str[7:]
+
+			claims := AuthTokenClaims{}
+			key := func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, errors.New("Unexpected Signing Method")
+				}
+				return []byte(_secretCode), nil
+			}
+
+			_, err := jwt.ParseWithClaims(token, &claims, key)
+			if err == nil {
+				c.Locals("user", &(claims.User))
+				auth = true
+			}
+		}
+	}
+
 	path := c.Path()
 	u, _ := url.Parse(path)
 
-	if c.Method() == "GET" && len(u.Path) >= 9 && u.Path[:9] == "/api/user" {
+	if c.Method() == "GET" && u.Path == "/api/user" {
 		return c.Next()
 	}
 
-	if c.Method() == "GET" && len(u.Path) >= 14 && u.Path[:14] == "/api/webnotice" {
+	if c.Method() == "GET" && u.Path == "/api/webnotice" {
 		return c.Next()
 	}
 
@@ -38,11 +61,11 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	if c.Method() == "GET" && len(u.Path) >= 8 && u.Path[:8] == "/api/web" {
+	if c.Method() == "GET" && u.Path == "/api/web" {
 		return c.Next()
 	}
 
-	if len(u.Path) >= 12 && u.Path[:12] == "/api/webjoin" {
+	if u.Path == "/api/webjoin" {
 		return c.Next()
 	}
 
@@ -66,33 +89,15 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	if path == "/api/jwt" {
+	if u.Path == "/api/jwt" {
 		return c.Next()
 	}
 
-	if values := c.Get("Authorization"); len(values) > 0 {
-		str := values
-
-		if len(str) > 7 && str[:7] == "Bearer " {
-			token = str[7:]
-
-			claims := AuthTokenClaims{}
-			key := func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, errors.New("Unexpected Signing Method")
-				}
-				return []byte(_secretCode), nil
-			}
-
-			_, err := jwt.ParseWithClaims(token, &claims, key)
-			if err == nil {
-				c.Locals("user", &(claims.User))
-				return c.Next()
-			}
-		} else {
-			log.Println("Jwt header is broken")
-		}
+	if auth == true {
+		return c.Next()
 	}
+
+	log.Println("Jwt header is broken")
 
 	return nil
 }

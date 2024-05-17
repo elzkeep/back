@@ -170,7 +170,11 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 
 	for _, d := range months {
 		yearmonth := fmt.Sprintf("%04d-%02d", d.Year, d.Month)
-
+		t := time.Date(d.Year, time.Month(d.Month), 1, 0, 0, 0, 0, time.Local)
+		log.Println(t)
+		ed := t.AddDate(0, d.Period-1, 0)
+		log.Println(ed.Year(), ed.Month())
+		endmonth := fmt.Sprintf("%04d-%02d", ed.Year(), ed.Month())
 		for _, v := range customers {
 
 			cnt := billingManager.Count([]interface{}{
@@ -190,6 +194,7 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 			item.Giro = billing.GiroWait
 			item.Billdate = today
 			item.Month = yearmonth
+			item.Endmonth = endmonth
 			item.Company = session.Company
 			item.Building = v.Building
 			item.Period = d.Period

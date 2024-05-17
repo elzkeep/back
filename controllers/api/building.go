@@ -108,5 +108,5 @@ func (c *BuildingController) Score(id int64) {
 		}
 	}
 
-	buildingManager.UpdateTotalweight(models.Double(score), id)
+	buildingManager.UpdateScore(models.Double(score), id)
 }

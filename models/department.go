@@ -665,5 +665,22 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
 }
 
 
+func (p *DepartmentManager) GetByCompanyName(company int64, name string, args ...interface{}) *Department {
+    if company != 0 {
+        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+    }
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
 
 

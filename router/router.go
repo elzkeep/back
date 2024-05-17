@@ -237,6 +237,14 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Get("/download/user", func(c *fiber.Ctx) error {
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.User()
+			controller.Close()
+            return nil
+		})
+
 		apiGroup.Get("/download/companyexample", func(c *fiber.Ctx) error {
 			var controller api.DownloadController
 			controller.Init(c)
@@ -249,6 +257,14 @@ func SetRouter(r *fiber.App) {
 			var controller api.DownloadController
 			controller.Init(c)
 			controller.CustomerExample()
+			controller.Close()
+            return nil
+		})
+
+		apiGroup.Get("/download/userexample", func(c *fiber.Ctx) error {
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.UserExample()
 			controller.Close()
             return nil
 		})
@@ -359,6 +375,15 @@ func SetRouter(r *fiber.App) {
 			var controller api.UserController
 			controller.Init(c)
 			controller.Search()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/upload/:filename", func(c *fiber.Ctx) error {
+			filename_ := c.Params("filename")
+			var controller api.UserController
+			controller.Init(c)
+			controller.Upload(filename_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -555,6 +580,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BillingController
 			controller.Init(c)
 			controller.UpdateMonth(month_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billing/endmonth", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var endmonth_ string
+			if v, flag := results["endmonth"]; flag {
+				endmonth_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateEndmonth(endmonth_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -3846,6 +3890,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/department/get/companyname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			name_ := c.Query("name")
+			var controller rest.DepartmentController
+			controller.Init(c)
+			controller.GetByCompanyName(company_, name_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/department", func(c *fiber.Ctx) error {
 			item_ := &models.Department{}
 			c.BodyParser(item_)
@@ -5284,6 +5338,16 @@ func SetRouter(r *fiber.App) {
 			var controller rest.LicenseController
 			controller.Init(c)
 			controller.GetByUserLicensecategory(user_, licensecategory_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/license/byuser", func(c *fiber.Ctx) error {
+			item_ := &models.License{}
+			c.BodyParser(item_)
+			var controller rest.LicenseController
+			controller.Init(c)
+			controller.DeleteByUser(item_.User)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

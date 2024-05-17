@@ -167,7 +167,7 @@ func (p *UserManager) Insert(item *User) error {
 
     
     if item.Joindate == "" {
-       item.Joindate = "1000-01-01 00:00:00"
+       item.Joindate = "1000-01-01"
     }
     if item.Educationdate == "" {
        item.Educationdate = "1000-01-01"
@@ -263,7 +263,7 @@ func (p *UserManager) Update(item *User) error {
     
     
     if item.Joindate == "" {
-       item.Joindate = "1000-01-01 00:00:00"
+       item.Joindate = "1000-01-01"
     }
     if item.Educationdate == "" {
        item.Educationdate = "1000-01-01"
@@ -632,10 +632,10 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
         
         
         
-        
-        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+        if item.Joindate == "0000-00-00" || item.Joindate == "1000-01-01" {
             item.Joindate = ""
         }
+        
         
         
         
@@ -707,10 +707,10 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
         
         
         
-        
-        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+        if item.Joindate == "0000-00-00" || item.Joindate == "1000-01-01" {
             item.Joindate = ""
         }
+        
         
         
         

@@ -70,3 +70,8 @@ create view customercompanylist_vw as
 select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company,
 (select count(*) from building_tb where b_company = c_id) as c_buildingcount
 from company_tb, customercompany_tb where c_id = cc_customer;
+
+
+drop view reportlist_vw;
+create view reportlist_vw as
+select report_tb.* from report_tb, company_tb, building_tb, user_tb where r_building = b_id and r_user = u_id and r_company = c_id;

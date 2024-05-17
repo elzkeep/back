@@ -354,10 +354,10 @@ func (p *UserlistManager) ReadRow(rows *sql.Rows) *Userlist {
         
         
         
-        
-        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+        if item.Joindate == "0000-00-00" || item.Joindate == "1000-01-01" {
             item.Joindate = ""
         }
+        
         
         
         
@@ -430,10 +430,10 @@ func (p *UserlistManager) ReadRows(rows *sql.Rows) []Userlist {
         
         
         
-        
-        if item.Joindate == "0000-00-00 00:00:00" || item.Joindate == "1000-01-01 00:00:00" {
+        if item.Joindate == "0000-00-00" || item.Joindate == "1000-01-01" {
             item.Joindate = ""
         }
+        
         
         
         

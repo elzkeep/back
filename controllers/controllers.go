@@ -63,6 +63,7 @@ func (c *Controller) Init(g *fiber.Ctx) {
 		c.Session = user.(*models.User)
 		c.Session.Passwd = ""
 	} else {
+		log.Println("user == nil")
 		c.Session = nil
 	}
 

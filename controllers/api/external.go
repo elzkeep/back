@@ -50,7 +50,9 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		return
 	}
 
-	sheet := "수용가현황"
+	list := f.File.GetSheetList()
+
+	sheet := list[0]
 	f.SetSheet(sheet)
 
 	pos := 5
@@ -233,6 +235,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 			facilityManager.Insert(&sunlightFacility)
 		}
 
+		customerItem.Number = global.Atoi(f.GetCell("B", pos))
 		customerItem.Managername = f.GetCell("V", pos)
 		customerItem.Managertel = f.GetCell("W", pos)
 		customerItem.Manageremail = f.GetCell("X", pos)
@@ -293,6 +296,7 @@ func (c *ExternalController) User(filename string) {
 	defer conn.Rollback()
 
 	userManager := models.NewUserManager(conn)
+	departmentManager := models.NewDepartmentManager(conn)
 	licenseManager := models.NewLicenseManager(conn)
 	licensecategoryManager := models.NewLicensecategoryManager(conn)
 
@@ -303,42 +307,45 @@ func (c *ExternalController) User(filename string) {
 		return
 	}
 
-	sheet := "안전관리자목록"
+	list := f.File.GetSheetList()
+
+	sheet := list[0]
 	f.SetSheet(sheet)
 
-	pos := 4
+	start := true
+	pos := 1
 	for {
 		item := models.User{}
 
 		no := f.GetCell("A", pos)
+
+		if start == true {
+			if no == "No." {
+				start = false
+			}
+
+			pos++
+			continue
+		}
 
 		if no == "" {
 			break
 		}
 
 		name := f.GetCell("C", pos)
-		licenseno := f.GetCell("D", pos)
-		zip := f.GetCell("F", pos)
-		address := f.GetCell("G", pos)
-		tel := f.GetCell("H", pos)
-		email := f.GetCell("I", pos)
-		license := f.GetCell("j", pos)
+		licenseno := f.GetCell("L", pos)
+		zip := f.GetCell("G", pos)
+		address := f.GetCell("H", pos)
+		tel := f.GetCell("I", pos)
+		email := f.GetCell("J", pos)
+		licensename := f.GetCell("K", pos)
 
-		educationdate := f.GetCell("M", pos)
-		educationinstitution := f.GetCell("N", pos)
-		specialeducationdate := f.GetCell("O", pos)
-		specialeducationinstitution := f.GetCell("P", pos)
-		joindate := f.GetCell("Q", pos)
-		status := f.GetCell("R", pos)
-
-		licensename := ""
-		temp := strings.Fields(license)
-		if len(temp) >= 2 {
-			licensename = temp[0]
-			licenseno = temp[1]
-		} else {
-			licensename = license
-		}
+		educationdate := f.GetCell("N", pos)
+		educationinstitution := f.GetCell("P", pos)
+		specialeducationdate := ""
+		specialeducationinstitution := ""
+		joindate := f.GetCell("S", pos)
+		status := f.GetCell("T", pos)
 
 		userItem := userManager.GetByCompanyName(company, name)
 
@@ -346,6 +353,21 @@ func (c *ExternalController) User(filename string) {
 			item = *userItem
 		}
 
+		departmentName := f.GetCell("E", pos)
+		department := departmentManager.GetByCompanyName(session.Company, departmentName)
+		if department == nil {
+			department = &models.Department{
+				Name:    departmentName,
+				Status:  1,
+				Company: session.Company,
+			}
+
+			departmentManager.Insert(department)
+
+			department.Id = departmentManager.GetIdentity()
+		}
+
+		item.Department = department.Id
 		item.Name = name
 		item.Zip = zip
 		item.Address = address
@@ -380,15 +402,14 @@ func (c *ExternalController) User(filename string) {
 		licensecategoryItem := licensecategoryManager.GetByName(licensename)
 		if licensecategoryItem == nil {
 			licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
-			licensecategory := licensecategoryManager.GetIdentity()
+			licensecategoryItem.Id = licensecategoryManager.GetIdentity()
+		}
 
-			licenseManager.Insert(&models.License{User: session.Id, Number: licenseno, Licensecategory: licensecategory})
-		} else {
-			licenseItem := licenseManager.GetByUserLicensecategory(session.Id, licensecategoryItem.Id)
+		licenseItem := licenseManager.GetByUserLicensecategory(item.Id, licensecategoryItem.Id)
 
-			if licenseItem == nil {
-				licenseManager.Insert(&models.License{User: session.Id, Number: licenseno, Licensecategory: licensecategoryItem.Id})
-			}
+		if licenseItem == nil {
+			//licenseManager.DeleteByUser(item.Id)
+			licenseManager.Insert(&models.License{User: item.Id, Number: licenseno, Licensecategory: licensecategoryItem.Id})
 		}
 
 		pos++

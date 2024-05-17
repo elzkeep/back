@@ -14,6 +14,23 @@ type DepartmentController struct {
 
 
 
+func (c *DepartmentController) GetByCompanyName(company int64 ,name string) *models.Department {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewDepartmentManager(conn)
+    
+    item := _manager.GetByCompanyName(company, name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 func (c *DepartmentController) Insert(item *models.Department) {
     
     

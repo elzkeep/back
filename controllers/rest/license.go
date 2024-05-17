@@ -30,6 +30,17 @@ func (c *LicenseController) GetByUserLicensecategory(user int64 ,licensecategory
     
 }
 
+// @Delete()
+func (c *LicenseController) DeleteByUser(user int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+    
+    _manager.DeleteByUser(user)
+    
+}
+
 
 func (c *LicenseController) Insert(item *models.License) {
     

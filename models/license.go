@@ -759,5 +759,16 @@ func (p *LicenseManager) GetByUserLicensecategory(user int64, licensecategory in
     }
 }
 
+func (p *LicenseManager) DeleteByUser(user int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from license_tb where l_user = ?"
+    _, err := p.Exec(query, user)
+
+    return err
+}
+
 
 

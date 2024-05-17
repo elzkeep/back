@@ -53,6 +53,10 @@ func (c *BillinguserlistController) Count() {
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
     }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+    }
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
@@ -92,14 +96,6 @@ func (c *BillinguserlistController) Count() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
-    }
-    _user := c.Geti64("user")
-    if _user != 0 {
-        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _username := c.Get("username")
-    if _username != "" {
-        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 
@@ -160,6 +156,10 @@ func (c *BillinguserlistController) Index(page int, pagesize int) {
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
     }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+    }
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
@@ -199,14 +199,6 @@ func (c *BillinguserlistController) Index(page int, pagesize int) {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
-    }
-    _user := c.Geti64("user")
-    if _user != 0 {
-        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _username := c.Get("username")
-    if _username != "" {
-        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 
@@ -290,6 +282,10 @@ func (c *BillinguserlistController) Sum() {
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
     }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+    }
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
@@ -329,14 +325,6 @@ func (c *BillinguserlistController) Sum() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
-    }
-    _user := c.Geti64("user")
-    if _user != 0 {
-        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _username := c.Get("username")
-    if _username != "" {
-        args = append(args, models.Where{Column:"username", Value:_username, Compare:"like"})
     }
     
 

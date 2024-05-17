@@ -3,9 +3,13 @@ package api
 import (
 	"fmt"
 	"log"
+	"path"
 	"strings"
+	"zkeep/config"
 	"zkeep/controllers"
+	"zkeep/global"
 	"zkeep/models"
+	"zkeep/models/user"
 )
 
 type UserController struct {
@@ -135,4 +139,136 @@ func (c *UserController) Search() {
 
 	total := manager.Count(args)
 	c.Set("total", total)
+}
+
+func (c *UserController) Upload(filename string) {
+	conn := c.NewConnection()
+
+	departmentManager := models.NewDepartmentManager(conn)
+	userManager := models.NewUserManager(conn)
+
+	session := c.Session
+
+	fullFilename := path.Join(config.UploadPath, filename)
+	f := global.NewExcelReader(fullFilename)
+	if f == nil {
+		log.Println("not found file")
+		return
+	}
+
+	sheet := "Sheet1"
+	f.SetSheet(sheet)
+
+	pos := 1
+	for {
+		name := f.GetCell("C", pos)
+
+		log.Println(name)
+		if name == "" {
+			log.Println("brake")
+			break
+		}
+
+		departmentName := f.GetCell("A", pos)
+
+		if departmentName == "팀" && name == "이름" {
+			pos++
+			continue
+		}
+		department := departmentManager.GetByCompanyName(session.Company, departmentName)
+		if department == nil {
+			department = &models.Department{
+				Name:    departmentName,
+				Status:  1,
+				Company: session.Company,
+			}
+
+			departmentManager.Insert(department)
+
+			department.Id = departmentManager.GetIdentity()
+		}
+
+		userItem := userManager.GetByCompanyName(session.Company, name)
+
+		loginid := f.GetCell("B", pos)
+		email := f.GetCell("D", pos)
+		tel := f.GetCell("E", pos)
+		address := f.GetCell("F", pos)
+		levelStr := f.GetCell("G", pos)
+		statusStr := f.GetCell("H", pos)
+		scoreStr := f.GetCell("I", pos)
+		date := f.GetCell("J", pos)
+
+		if userItem != nil {
+			if userItem.Loginid == loginid {
+				pos++
+				continue
+			}
+		}
+
+		level := user.LevelNormal
+		if levelStr == "팀장" {
+			level = user.LevelManager
+		} else if levelStr == "관리자" {
+			level = user.LevelAdmin
+		}
+
+		status := user.StatusUse
+		if statusStr == "사용안함" {
+			status = user.StatusNotuse
+		}
+
+		score := 0
+		if strings.Contains(scoreStr, "/") {
+			temp := strings.Split(scoreStr, "/")
+			if len(temp) == 2 {
+				score = global.Atoi(temp[1])
+			}
+		} else {
+			score = global.Atoi(scoreStr)
+		}
+
+		if score == 0 {
+			score = 60
+		}
+
+		if userItem != nil {
+			userItem.Email = email
+			userItem.Tel = tel
+			userItem.Address = address
+			userItem.Level = level
+			userItem.Status = status
+
+			userItem.Score = models.Double(score)
+			userItem.Company = session.Company
+			userItem.Department = department.Id
+			userItem.Approval = user.ApprovalComplete
+
+			userManager.Insert(userItem)
+		} else {
+			user := models.User{
+				Name:       name,
+				Loginid:    loginid,
+				Passwd:     "0000",
+				Email:      email,
+				Tel:        tel,
+				Address:    address,
+				Level:      level,
+				Status:     status,
+				Score:      models.Double(score),
+				Company:    session.Company,
+				Department: department.Id,
+				Approval:   user.ApprovalComplete,
+				Date:       date,
+			}
+
+			log.Println(user)
+			err := userManager.Insert(&user)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
+		pos++
+	}
 }

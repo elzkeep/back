@@ -10,6 +10,7 @@ import (
 	"zkeep/global"
 	"zkeep/models"
 	"zkeep/models/billing"
+	"zkeep/models/user"
 
 	"github.com/dustin/go-humanize"
 	"github.com/signintech/gopdf"
@@ -272,10 +273,70 @@ func (c *DownloadController) Company() {
 	//os.Remove(fullFilename)
 }
 
+func (c *DownloadController) User() {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	departmentManager := models.NewDepartmentManager(conn)
+	departments := departmentManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+	})
+
+	userlistManager := models.NewUserlistManager(conn)
+	items := userlistManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("u_name"),
+	})
+
+	header := []string{"팀", "로그인아이디", "이름", "이메일", "연락처", "주소", "권한", "상태", "점수", "등록일"}
+	width := []int{30, 20, 15, 50, 30, 80, 15, 15, 15, 30}
+	align := []string{"L", "L", "L", "L", "L", "L", "L", "C", "R", "C"}
+	excel := global.NewExcel("소속회원 현황", header, width, align)
+	excel.SetHeight(30)
+
+	for _, v := range items {
+		str := ""
+		for _, v2 := range departments {
+			if v.Department == v2.Id {
+				str = v.Name
+				break
+			}
+		}
+
+		excel.Cell(str)
+		excel.Cell(v.Loginid)
+		excel.Cell(v.Name)
+		excel.Cell(v.Email)
+		excel.Cell(v.Tel)
+		excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
+		excel.Cell(user.GetLevel(user.Level(v.Level)))
+		excel.Cell(user.GetStatus(user.Status(v.Status)))
+
+		if v.Totalscore == 0 {
+			excel.Cell(fmt.Sprintf("%v / %v", 0, v.Score))
+		} else {
+			excel.Cell(fmt.Sprintf("%v / %v", global.ToFixed(float64(v.Totalscore), 1), v.Score))
+		}
+
+		excel.Cell(v.Date)
+	}
+
+	fullFilename := excel.Save("")
+	log.Println("filename", fullFilename)
+
+	c.Download(fullFilename, "user.xlsx")
+	//os.Remove(fullFilename)
+}
+
 func (c *DownloadController) CompanyExample() {
 	c.Download("./doc/company.xlsx", "company.xlsx")
 }
 
 func (c *DownloadController) CustomerExample() {
 	c.Download("./doc/customer.xlsx", "customer.xlsx")
+}
+
+func (c *DownloadController) UserExample() {
+	c.Download("./doc/user.xlsx", "user.xlsx")
 }

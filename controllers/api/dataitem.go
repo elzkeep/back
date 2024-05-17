@@ -12,6 +12,8 @@ type DataitemController struct {
 
 // @Post()
 func (c *DataitemController) Process(datas []models.Dataitem) {
+	log.Println("dataitem/process")
+
 	db := c.NewConnection()
 
 	conn, _ := db.Begin()

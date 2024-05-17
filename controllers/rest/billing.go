@@ -116,6 +116,10 @@ func (c *BillingController) Count() {
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
     }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+    }
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
@@ -198,6 +202,10 @@ func (c *BillingController) Index(page int, pagesize int) {
     _month := c.Get("month")
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
     }
     _period := c.Geti("period")
     if _period != 0 {
@@ -314,6 +322,16 @@ func (c *BillingController) UpdateMonth(month string, id int64) {
 }
 
 // @Put()
+func (c *BillingController) UpdateEndmonth(endmonth string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdateEndmonth(endmonth, id)
+}
+
+// @Put()
 func (c *BillingController) UpdatePeriod(period int, id int64) {
     
     
@@ -384,6 +402,10 @@ func (c *BillingController) Sum() {
     _month := c.Get("month")
     if _month != "" {
         args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+    }
+    _endmonth := c.Get("endmonth")
+    if _endmonth != "" {
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
     }
     _period := c.Geti("period")
     if _period != 0 {

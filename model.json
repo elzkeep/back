@@ -216,7 +216,8 @@
         }
       ],
       "method": [
-        "GetByUserLicensecategory"        
+        "GetByUserLicensecategory",
+        "DeleteByUser"
       ]
     },
     {
@@ -287,6 +288,21 @@
       "method": [
         "DeleteByBilling"        
       ]
-    }
+    },
+    {
+      "name": "department",
+      "method": [
+        "GetByCompanyName"        
+      ]
+    },
+    {
+      "name": "userlist",      
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    }    
   ]   
 }
