@@ -269,6 +269,14 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Get("/download/all", func(c *fiber.Ctx) error {
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.All()
+			controller.Close()
+            return nil
+		})
+
 		apiGroup.Get("/external", func(c *fiber.Ctx) error {
 			filenames_ := c.Query("filenames")
 			type_, _ := strconv.Atoi(c.Query("type"))
@@ -284,6 +292,15 @@ func SetRouter(r *fiber.App) {
 			var controller api.ExternalController
 			controller.Init(c)
 			controller.User(filename_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/external/all/:filename", func(c *fiber.Ctx) error {
+			filename_ := c.Params("filename")
+			var controller api.ExternalController
+			controller.Init(c)
+			controller.All(filename_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -6360,6 +6377,33 @@ func SetRouter(r *fiber.App) {
 			var controller rest.ReportController
 			controller.Init(c)
 			controller.UpdateBuilding(building_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/reportlist/count", func(c *fiber.Ctx) error {
+			var controller rest.ReportlistController
+			controller.Init(c)
+			controller.Count()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/reportlist/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+			var controller rest.ReportlistController
+			controller.Init(c)
+			controller.Read(id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/reportlist", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+			var controller rest.ReportlistController
+			controller.Init(c)
+			controller.Index(page_, pagesize_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

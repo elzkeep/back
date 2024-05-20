@@ -16,11 +16,12 @@ import (
 )
 
 type Excel struct {
-	File  *excelize.File
-	Width []int
-	Align []string
-	Cols  int
-	Rows  int
+	File     *excelize.File
+	Width    []int
+	Align    []string
+	Cols     int
+	Rows     int
+	FontSize float64
 
 	Pos      int
 	Height   float64
@@ -63,7 +64,7 @@ func (p *Excel) SetSheet(str string) {
 	p.Sheet = str
 }
 
-func OpenExcel(filename string, title string, header []string, width []int, align []string) *Excel {
+func OpenExcel(filename string, title string, fontSize float64, header []string, width []int, align []string) *Excel {
 	var item Excel
 
 	item.Width = width
@@ -71,6 +72,7 @@ func OpenExcel(filename string, title string, header []string, width []int, alig
 	item.Cols = len(header)
 	item.Pos = 0
 	item.Rows = 0
+	item.FontSize = fontSize
 
 	f, err := excelize.OpenFile(filename)
 	if err != nil {
@@ -91,7 +93,7 @@ func OpenExcel(filename string, title string, header []string, width []int, alig
 	return &item
 }
 
-func NewExcel(title string, header []string, width []int, align []string) *Excel {
+func NewExcel(title string, sheet string, fontSize float64, header []string, width []int, align []string) *Excel {
 	var item Excel
 
 	item.Width = width
@@ -99,18 +101,46 @@ func NewExcel(title string, header []string, width []int, align []string) *Excel
 	item.Cols = len(header)
 	item.Pos = 0
 	item.Rows = 0
+	item.FontSize = fontSize
 
 	item.File = excelize.NewFile()
 
-	item.Index, _ = item.File.NewSheet("Sheet1")
+	if sheet == "" {
+		sheet = "Sheet1"
+	}
+	item.Sheet = sheet
+
+	item.Index, _ = item.File.NewSheet(sheet)
 
 	for i, value := range header {
 		t := fmt.Sprintf("%c", rune('A'+i))
-		item.File.SetColWidth("Sheet1", t, t, float64(width[i])*0.8)
+		item.File.SetColWidth(item.Sheet, t, t, float64(width[i])*0.8)
 		item.HeaderCell(value)
 	}
 
+	if item.Sheet != "Sheet1" {
+		item.File.DeleteSheet("Sheet1")
+	}
+
 	return &item
+}
+
+func (p *Excel) NewSheet(sheet string, header []string, width []int, align []string) {
+	p.Width = width
+	p.Align = align
+	p.Cols = len(header)
+	p.Pos = 0
+	p.Rows = 0
+
+	p.Sheet = sheet
+
+	p.Index, _ = p.File.NewSheet(sheet)
+
+	for i, value := range header {
+		t := fmt.Sprintf("%c", rune('A'+i))
+		p.File.SetColWidth(p.Sheet, t, t, float64(width[i])*0.8)
+		p.HeaderCell(value)
+	}
 }
 
 func (p *Excel) SetHeight(height float64) {
@@ -147,7 +177,7 @@ func (p *Excel) Remove() {
 
 func (p *Excel) HeaderCell(str string) {
 	if p.Pos == 0 {
-		p.File.SetRowHeight("Sheet1", p.Rows+1, 30)
+		p.File.SetRowHeight(p.Sheet, p.Rows+1, 30)
 	}
 
 	style, _ := p.File.NewStyle(&excelize.Style{
@@ -156,18 +186,16 @@ func (p *Excel) HeaderCell(str string) {
 			{Type: "top", Color: "000000", Style: 1},
 			{Type: "bottom", Color: "000000", Style: 1},
 		},
-		Font:      &excelize.Font{Color: "000000"},
+		Font:      &excelize.Font{Color: "000000", Size: p.FontSize},
 		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
 		Fill:      excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"#CCCCCC"}},
 	})
 
 	//`{"alignment":{"horizontal":"center","vertical":"center"},"border":[{"type":"left","color":"000000","style":1},{"type":"top","color":"000000","style":1},{"type":"bottom","color":"000000","style":1},{"type":"right",   "color":"000000","style":1}],"fill":{"type":"pattern","pattern":1,"color":["#CCCCCC"]},"number_format":0,"lang":"ko-kr"}`)
 
-	t := fmt.Sprintf("%c%v", rune('A'+p.Pos), p.Rows+1)
-	log.Println("header")
-	log.Println(t, str)
-	p.File.SetCellValue("Sheet1", t, str)
-	p.File.SetCellStyle("Sheet1", t, t, style)
+	t := p.GetColName()
+	p.File.SetCellValue(p.Sheet, t, str)
+	p.File.SetCellStyle(p.Sheet, t, t, style)
 
 	p.Pos++
 
@@ -177,10 +205,39 @@ func (p *Excel) HeaderCell(str string) {
 	}
 }
 
+func (p *Excel) SetHeaderStyle(col string, row int, fontSize float64) {
+	t := fmt.Sprintf("%v%v", col, row)
+
+	style, _ := p.File.NewStyle(&excelize.Style{
+		Border: []excelize.Border{{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+		Font:      &excelize.Font{Color: "000000", Size: fontSize},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+		Fill:      excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"#CCCCCC"}},
+	})
+
+	p.File.SetCellStyle(p.Sheet, t, t, style)
+}
+
+func (p *Excel) GetColName() string {
+	t := ""
+
+	if p.Pos > 25 {
+		t = fmt.Sprintf("A%c%v", rune('A'+(p.Pos-26)), p.Rows+1)
+	} else {
+		t = fmt.Sprintf("%c%v", rune('A'+p.Pos), p.Rows+1)
+	}
+
+	log.Println("pos", p.Pos, t)
+	return t
+}
+
 func (p *Excel) Cell(str string) string {
 	if p.Pos == 0 && p.Rows > 0 {
-		log.Println("height", p.Height)
-		p.File.SetRowHeight("Sheet1", p.Rows+1, p.Height)
+		p.File.SetRowHeight(p.Sheet, p.Rows+1, p.Height)
 	}
 
 	align := "center"
@@ -198,14 +255,14 @@ func (p *Excel) Cell(str string) string {
 			{Type: "top", Color: "000000", Style: 1},
 			{Type: "bottom", Color: "000000", Style: 1},
 		},
-		Font:      &excelize.Font{Color: "000000"},
+		Font:      &excelize.Font{Color: "000000", Size: p.FontSize},
 		Alignment: &excelize.Alignment{Horizontal: align, Vertical: "center"},
 		Fill:      excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"#FFFFFF"}},
 	})
 
-	t := fmt.Sprintf("%c%v", rune('A'+p.Pos), p.Rows+1)
-	p.File.SetCellValue("Sheet1", t, str)
-	p.File.SetCellStyle("Sheet1", t, t, style)
+	t := p.GetColName()
+	p.File.SetCellValue(p.Sheet, t, str)
+	p.File.SetCellStyle(p.Sheet, t, t, style)
 
 	p.Pos++
 
@@ -257,8 +314,29 @@ func (p *Excel) CellImage(filename string) {
 			fmt.Println("Impossible to open the file:", err)
 		}
 
-			if err := p.File.AddPicture("Sheet1", t, filename, fmt.Sprintf(`{"x_scale": %v, "y_scale": %v, "x_offset":%v, "y_offset":%v}`, xScale, yScale, xOffset, yOffset)); err != nil {
+			if err := p.File.AddPicture(p.Sheet, t, filename, fmt.Sprintf(`{"x_scale": %v, "y_scale": %v, "x_offset":%v, "y_offset":%v}`, xScale, yScale, xOffset, yOffset)); err != nil {
 				fmt.Println(err)
 			}
 	*/
+}
+
+func (p *Excel) MergeCell(srcCol string, srcRow int, descCol string, descRow int) {
+	src := fmt.Sprintf("%v%v", srcCol, srcRow)
+	desc := fmt.Sprintf("%v%v", descCol, descRow)
+	p.File.MergeCell(p.Sheet, src, desc)
+}
+
+func (p *Excel) InsertRow(row int, n int) {
+	p.File.InsertRows(p.Sheet, row, n)
+}
+
+func (p *Excel) SetCellValue(col string, row int, value interface{}) {
+	cell := fmt.Sprintf("%v%v", col, row)
+
+	log.Println("cell", cell)
+	p.File.SetCellValue(p.Sheet, cell, value)
+}
+
+func (p *Excel) SetRowHeight(row int, height float64) {
+	p.File.SetRowHeight(p.Sheet, row, height)
 }

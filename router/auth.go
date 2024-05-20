@@ -23,7 +23,6 @@ var _secretCode string = "WkaQHd100%"
 var JwtAuthRequired = func(c *fiber.Ctx) error {
 	var token string
 
-	auth := true
 	if values := c.Get("Authorization"); len(values) > 0 {
 		str := values
 
@@ -41,7 +40,7 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 			_, err := jwt.ParseWithClaims(token, &claims, key)
 			if err == nil {
 				c.Locals("user", &(claims.User))
-				auth = true
+				return c.Next()
 			}
 		}
 	}
@@ -90,10 +89,6 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 	}
 
 	if u.Path == "/api/jwt" {
-		return c.Next()
-	}
-
-	if auth == true {
 		return c.Next()
 	}
 

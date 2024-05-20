@@ -252,7 +252,7 @@ func (c *DownloadController) Company() {
 	header := []string{"번호", "사업자명", "대표자", "사업자번호", "주소", "보유 건물수", "계약총액", "등록일"}
 	width := []int{25, 70, 25, 40, 100, 20, 30, 40}
 	align := []string{"C", "L", "L", "L", "L", "R", "R", "C"}
-	excel := global.NewExcel("고객 현황", header, width, align)
+	excel := global.NewExcel("고객 현황", "", 12, header, width, align)
 	excel.SetHeight(30)
 
 	for _, v := range items {
@@ -292,7 +292,7 @@ func (c *DownloadController) User() {
 	header := []string{"팀", "로그인아이디", "이름", "이메일", "연락처", "주소", "권한", "상태", "점수", "등록일"}
 	width := []int{30, 20, 15, 50, 30, 80, 15, 15, 15, 30}
 	align := []string{"L", "L", "L", "L", "L", "L", "L", "C", "R", "C"}
-	excel := global.NewExcel("소속회원 현황", header, width, align)
+	excel := global.NewExcel("소속회원 현황", "", 12, header, width, align)
 	excel.SetHeight(30)
 
 	for _, v := range items {
@@ -326,7 +326,7 @@ func (c *DownloadController) User() {
 	log.Println("filename", fullFilename)
 
 	c.Download(fullFilename, "user.xlsx")
-	//os.Remove(fullFilename)
+	os.Remove(fullFilename)
 }
 
 func (c *DownloadController) CompanyExample() {
@@ -339,4 +339,168 @@ func (c *DownloadController) CustomerExample() {
 
 func (c *DownloadController) UserExample() {
 	c.Download("./doc/user.xlsx", "user.xlsx")
+}
+
+func (c *DownloadController) All() {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	departmentManager := models.NewDepartmentManager(conn)
+	userlistManager := models.NewUserlistManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+
+	departments := departmentManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+	})
+
+	items := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("cu_number,cu_id"),
+	})
+
+	users := userlistManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("u_name"),
+	})
+
+	header := []string{"코드", "수용가명", "사업자번호", "대표자", "수용가 주소", "계약 용량", "수전 용량", "발전 용량", "태양 용량", "전압", "가중치", "점검횟수", "점검자", "영업자", "수전 전압", "발전 전압", "정기검사", "건물용도", "관할구청",
+		"고객명", "사업자번호", "대표자", "업태", "종목", "고객주소", "계약일자", "계약만료일", "해지일자", "해지사유", "담당자", "담당자 연락처", "담당자 Email", "계약담당자", "Tel No.", "Fax No.",
+		"대행수수료", "부가세", "계산서", "수금방법", "수금일"}
+	width := []int{10, 20, 15, 15, 50, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	align := []string{"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L"}
+	excel := global.NewExcel("소속회원 현황", "수용가 현황", 10, header, width, align)
+	excel.SetHeight(24)
+
+	excel.InsertRow(1, 1)
+	excel.SetRowHeight(1, 24)
+	excel.MergeCell("A", 1, "A", 2)
+	excel.MergeCell("B", 1, "S", 1)
+	excel.MergeCell("T", 1, "AP", 1)
+	excel.SetHeaderStyle("A", 1, 10)
+	excel.SetHeaderStyle("B", 1, 10)
+	excel.SetHeaderStyle("T", 1, 10)
+	excel.SetHeaderStyle("AP", 1, 10)
+	excel.SetCellValue("A", 1, "코드")
+	excel.SetCellValue("B", 1, "수용가정보")
+	excel.SetCellValue("V", 1, "고객정보")
+
+	excel.Rows++
+
+	log.Println(len(items))
+
+	for _, v := range items {
+		company := v.Extra["company"].(models.Company)
+		building := v.Extra["building"].(models.Building)
+		excel.CellInt(v.Number)
+		excel.Cell(company.Name)
+		excel.Cell(company.Companyno)
+		excel.Cell(company.Ceo)
+		excel.Cell(fmt.Sprintf("%v %v", company.Address, company.Addressetc))
+		excel.Cell(fmt.Sprintf("%v", building.Totalweight))
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell("")
+
+		username := ""
+		for _, user := range users {
+			if user.Id == v.User {
+				username = user.Name
+				break
+			}
+		}
+		excel.Cell(username)
+
+		saileusername := ""
+		for _, user := range users {
+			if user.Id == v.Salesuser {
+				saileusername = user.Name
+				break
+			}
+		}
+		excel.Cell(saileusername)
+
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell(building.Usage)
+		excel.Cell(building.District)
+
+		// building
+
+		excel.Cell(building.Name)
+		excel.Cell(building.Companyno)
+		excel.Cell(building.Ceo)
+
+		excel.Cell(company.Businesscondition)
+		excel.Cell(company.Businessitem)
+		excel.Cell(fmt.Sprintf("%v %v", building.Address, building.Addressetc))
+		excel.Cell(v.Contractstartdate)
+		excel.Cell(v.Contractenddate)
+		excel.Cell("")
+		excel.Cell("")
+		excel.Cell(v.Managername)
+		excel.Cell(v.Managertel)
+		excel.Cell(v.Manageremail)
+		excel.Cell(v.Billingname)
+		excel.Cell(v.Billingtel)
+		excel.Cell(v.Fax)
+		excel.Cell(fmt.Sprintf("%v", v.Contractprice))
+		excel.Cell(fmt.Sprintf("%v", v.Contractvat))
+
+		excel.Cell("")
+		if v.Billingtype == 1 {
+			excel.Cell("지로")
+		} else {
+			excel.Cell("계산서")
+		}
+
+		month := ""
+		if v.Collectmonth == 1 {
+			month = "매월"
+		} else {
+			month = "익월"
+		}
+
+		excel.Cell(fmt.Sprintf("%v %v일", month, v.Collectday))
+	}
+
+	{
+		header := []string{"팀", "로그인아이디", "이름", "이메일", "연락처", "주소", "권한", "상태", "점수", "입사일"}
+		width := []int{30, 20, 15, 50, 30, 80, 15, 15, 15, 30}
+		align := []string{"L", "L", "L", "L", "L", "L", "L", "C", "R", "C"}
+		excel.NewSheet("소속회원", header, width, align)
+		excel.SetHeight(24)
+	}
+
+	for _, v := range users {
+		departmentName := ""
+
+		for _, department := range departments {
+			if department.Id == v.Department {
+				departmentName = department.Name
+				break
+			}
+		}
+
+		excel.Cell(departmentName)
+		excel.Cell(v.Loginid)
+		excel.Cell(v.Name)
+		excel.Cell(v.Email)
+		excel.Cell(v.Tel)
+		excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
+		excel.Cell(user.GetLevel(user.Level(v.Level)))
+		excel.Cell(user.GetStatus(user.Status(v.Status)))
+		excel.Cell(fmt.Sprintf("%v", v.Score))
+		excel.Cell(v.Joindate)
+	}
+
+	fullFilename := excel.Save("")
+	log.Println("filename", fullFilename)
+
+	c.Download(fullFilename, "user.xlsx")
+	os.Remove(fullFilename)
 }
