@@ -112,6 +112,10 @@ func (c *FacilityController) Count() {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
         
     }
+    _type := c.Geti("type")
+    if _type != 0 {
+        args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
+    }
     _value1 := c.Get("value1")
     if _value1 != "" {
         args = append(args, models.Where{Column:"value1", Value:_value1, Compare:"like"})
@@ -276,6 +280,10 @@ func (c *FacilityController) Index(page int, pagesize int) {
     if _name != "" {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
         
+    }
+    _type := c.Geti("type")
+    if _type != 0 {
+        args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
     }
     _value1 := c.Get("value1")
     if _value1 != "" {
@@ -466,6 +474,16 @@ func (c *FacilityController) UpdateName(name string, id int64) {
 
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateName(name, id)
+}
+
+// @Put()
+func (c *FacilityController) UpdateType(typeid int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+	_manager.UpdateType(typeid, id)
 }
 
 // @Put()

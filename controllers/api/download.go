@@ -423,8 +423,8 @@ func (c *DownloadController) All() {
 		}
 		excel.Cell(saileusername)
 
-		excel.Cell("")
-		excel.Cell("")
+		excel.Cell(fmt.Sprintf("%v", building.Receivevolt))
+		excel.Cell(fmt.Sprintf("%v", building.Generatevolt))
 		excel.Cell("")
 		excel.Cell(building.Usage)
 		excel.Cell(building.District)
