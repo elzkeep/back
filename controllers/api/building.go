@@ -10,6 +10,7 @@ type BuildingController struct {
 	controllers.Controller
 }
 
+// @POST()
 func (c *BuildingController) Score(id int64) {
 	conn := c.NewConnection()
 
@@ -37,7 +38,9 @@ func (c *BuildingController) Score(id int64) {
 		}
 
 		if v.Category == 40 {
-			total += float64(global.Atoi(v.Value5))
+			if global.Atoi(v.Value25) != 1 {
+				total += float64(global.Atoi(v.Value5))
+			}
 		}
 
 		if v.Category == 50 {
@@ -94,7 +97,9 @@ func (c *BuildingController) Score(id int64) {
 			}
 
 			if v.Category == 40 {
-				totals[typeid] += float64(global.Atoi(v.Value5))
+				if global.Atoi(v.Value25) != 1 {
+					totals[typeid] += float64(global.Atoi(v.Value5))
+				}
 			}
 
 			if v.Category == 50 {

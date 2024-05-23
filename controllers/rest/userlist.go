@@ -27,11 +27,11 @@ func (c *UserlistController) Count() {
     
     _loginid := c.Get("loginid")
     if _loginid != "" {
-        args = append(args, models.Where{Column:"loginid", Value:_loginid, Compare:"like"})
+        args = append(args, models.Where{Column:"loginid", Value:_loginid, Compare:"="})
     }
     _passwd := c.Get("passwd")
     if _passwd != "" {
-        args = append(args, models.Where{Column:"passwd", Value:_passwd, Compare:"like"})
+        args = append(args, models.Where{Column:"passwd", Value:_passwd, Compare:"="})
     }
     _name := c.Get("name")
     if _name != "" {
@@ -40,19 +40,19 @@ func (c *UserlistController) Count() {
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _startjoindate := c.Get("startjoindate")
     _endjoindate := c.Get("endjoindate")
@@ -100,7 +100,7 @@ func (c *UserlistController) Count() {
     }
     _educationinstitution := c.Get("educationinstitution")
     if _educationinstitution != "" {
-        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"="})
     }
     _startspecialeducationdate := c.Get("startspecialeducationdate")
     _endspecialeducationdate := c.Get("endspecialeducationdate")
@@ -116,11 +116,11 @@ func (c *UserlistController) Count() {
     }
     _specialeducationinstitution := c.Get("specialeducationinstitution")
     if _specialeducationinstitution != "" {
-        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"="})
     }
     _rejectreason := c.Get("rejectreason")
     if _rejectreason != "" {
-        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
+        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -183,11 +183,11 @@ func (c *UserlistController) Index(page int, pagesize int) {
     
     _loginid := c.Get("loginid")
     if _loginid != "" {
-        args = append(args, models.Where{Column:"loginid", Value:_loginid, Compare:"like"})
+        args = append(args, models.Where{Column:"loginid", Value:_loginid, Compare:"="})
     }
     _passwd := c.Get("passwd")
     if _passwd != "" {
-        args = append(args, models.Where{Column:"passwd", Value:_passwd, Compare:"like"})
+        args = append(args, models.Where{Column:"passwd", Value:_passwd, Compare:"="})
     }
     _name := c.Get("name")
     if _name != "" {
@@ -196,19 +196,19 @@ func (c *UserlistController) Index(page int, pagesize int) {
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _startjoindate := c.Get("startjoindate")
     _endjoindate := c.Get("endjoindate")
@@ -256,7 +256,7 @@ func (c *UserlistController) Index(page int, pagesize int) {
     }
     _educationinstitution := c.Get("educationinstitution")
     if _educationinstitution != "" {
-        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"="})
     }
     _startspecialeducationdate := c.Get("startspecialeducationdate")
     _endspecialeducationdate := c.Get("endspecialeducationdate")
@@ -272,11 +272,11 @@ func (c *UserlistController) Index(page int, pagesize int) {
     }
     _specialeducationinstitution := c.Get("specialeducationinstitution")
     if _specialeducationinstitution != "" {
-        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"="})
     }
     _rejectreason := c.Get("rejectreason")
     if _rejectreason != "" {
-        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"like"})
+        args = append(args, models.Where{Column:"rejectreason", Value:_rejectreason, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {

@@ -90,11 +90,11 @@ func (c *WebquestionController) Count() {
     
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {
@@ -146,11 +146,11 @@ func (c *WebquestionController) Index(page int, pagesize int) {
     
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {

@@ -129,27 +129,27 @@ func (c *CompanyController) Count() {
     }
     _companyno := c.Get("companyno")
     if _companyno != "" {
-        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"="})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
-        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _type := c.Geti("type")
     if _type != 0 {
@@ -157,35 +157,35 @@ func (c *CompanyController) Count() {
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
-        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"like"})
+        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"="})
     }
     _billingtel := c.Get("billingtel")
     if _billingtel != "" {
-        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"like"})
+        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"="})
     }
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
-        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
     }
     _bankname := c.Get("bankname")
     if _bankname != "" {
-        args = append(args, models.Where{Column:"bankname", Value:_bankname, Compare:"like"})
+        args = append(args, models.Where{Column:"bankname", Value:_bankname, Compare:"="})
     }
     _bankno := c.Get("bankno")
     if _bankno != "" {
-        args = append(args, models.Where{Column:"bankno", Value:_bankno, Compare:"like"})
+        args = append(args, models.Where{Column:"bankno", Value:_bankno, Compare:"="})
     }
     _businesscondition := c.Get("businesscondition")
     if _businesscondition != "" {
-        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"like"})
+        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"="})
     }
     _businessitem := c.Get("businessitem")
     if _businessitem != "" {
-        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"like"})
+        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"="})
     }
     _giro := c.Get("giro")
     if _giro != "" {
-        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"like"})
+        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {
@@ -350,27 +350,27 @@ func (c *CompanyController) Index(page int, pagesize int) {
     }
     _companyno := c.Get("companyno")
     if _companyno != "" {
-        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"="})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
-        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _type := c.Geti("type")
     if _type != 0 {
@@ -378,35 +378,35 @@ func (c *CompanyController) Index(page int, pagesize int) {
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
-        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"like"})
+        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"="})
     }
     _billingtel := c.Get("billingtel")
     if _billingtel != "" {
-        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"like"})
+        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"="})
     }
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
-        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
     }
     _bankname := c.Get("bankname")
     if _bankname != "" {
-        args = append(args, models.Where{Column:"bankname", Value:_bankname, Compare:"like"})
+        args = append(args, models.Where{Column:"bankname", Value:_bankname, Compare:"="})
     }
     _bankno := c.Get("bankno")
     if _bankno != "" {
-        args = append(args, models.Where{Column:"bankno", Value:_bankno, Compare:"like"})
+        args = append(args, models.Where{Column:"bankno", Value:_bankno, Compare:"="})
     }
     _businesscondition := c.Get("businesscondition")
     if _businesscondition != "" {
-        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"like"})
+        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"="})
     }
     _businessitem := c.Get("businessitem")
     if _businessitem != "" {
-        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"like"})
+        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"="})
     }
     _giro := c.Get("giro")
     if _giro != "" {
-        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"like"})
+        args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {

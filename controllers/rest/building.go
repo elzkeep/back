@@ -112,19 +112,19 @@ func (c *BuildingController) Count() {
     }
     _companyno := c.Get("companyno")
     if _companyno != "" {
-        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"="})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
-        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
@@ -172,11 +172,11 @@ func (c *BuildingController) Count() {
     }
     _usage := c.Get("usage")
     if _usage != "" {
-        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"="})
     }
     _district := c.Get("district")
     if _district != "" {
-        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"="})
     }
     _score := c.Geti("score")
     if _score != 0 {
@@ -240,19 +240,19 @@ func (c *BuildingController) Index(page int, pagesize int) {
     }
     _companyno := c.Get("companyno")
     if _companyno != "" {
-        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"like"})
+        args = append(args, models.Where{Column:"companyno", Value:_companyno, Compare:"="})
     }
     _ceo := c.Get("ceo")
     if _ceo != "" {
-        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
+        args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
@@ -300,11 +300,11 @@ func (c *BuildingController) Index(page int, pagesize int) {
     }
     _usage := c.Get("usage")
     if _usage != "" {
-        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"like"})
+        args = append(args, models.Where{Column:"usage", Value:_usage, Compare:"="})
     }
     _district := c.Get("district")
     if _district != "" {
-        args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
+        args = append(args, models.Where{Column:"district", Value:_district, Compare:"="})
     }
     _score := c.Geti("score")
     if _score != 0 {

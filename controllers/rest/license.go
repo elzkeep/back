@@ -122,7 +122,7 @@ func (c *LicenseController) Count() {
     }
     _number := c.Get("number")
     if _number != "" {
-        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})
     }
     _starttakingdate := c.Get("starttakingdate")
     _endtakingdate := c.Get("endtakingdate")
@@ -150,7 +150,7 @@ func (c *LicenseController) Count() {
     }
     _educationinstitution := c.Get("educationinstitution")
     if _educationinstitution != "" {
-        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"="})
     }
     _startspecialeducationdate := c.Get("startspecialeducationdate")
     _endspecialeducationdate := c.Get("endspecialeducationdate")
@@ -166,7 +166,7 @@ func (c *LicenseController) Count() {
     }
     _specialeducationinstitution := c.Get("specialeducationinstitution")
     if _specialeducationinstitution != "" {
-        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"="})
     }
     _licensecategory := c.Geti64("licensecategory")
     if _licensecategory != 0 {
@@ -225,7 +225,7 @@ func (c *LicenseController) Index(page int, pagesize int) {
     }
     _number := c.Get("number")
     if _number != "" {
-        args = append(args, models.Where{Column:"number", Value:_number, Compare:"like"})
+        args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})
     }
     _starttakingdate := c.Get("starttakingdate")
     _endtakingdate := c.Get("endtakingdate")
@@ -253,7 +253,7 @@ func (c *LicenseController) Index(page int, pagesize int) {
     }
     _educationinstitution := c.Get("educationinstitution")
     if _educationinstitution != "" {
-        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"educationinstitution", Value:_educationinstitution, Compare:"="})
     }
     _startspecialeducationdate := c.Get("startspecialeducationdate")
     _endspecialeducationdate := c.Get("endspecialeducationdate")
@@ -269,7 +269,7 @@ func (c *LicenseController) Index(page int, pagesize int) {
     }
     _specialeducationinstitution := c.Get("specialeducationinstitution")
     if _specialeducationinstitution != "" {
-        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"like"})
+        args = append(args, models.Where{Column:"specialeducationinstitution", Value:_specialeducationinstitution, Compare:"="})
     }
     _licensecategory := c.Geti64("licensecategory")
     if _licensecategory != 0 {

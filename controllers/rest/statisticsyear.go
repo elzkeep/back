@@ -27,7 +27,7 @@ func (c *StatisticsyearController) Count() {
     
     _duration := c.Get("duration")
     if _duration != "" {
-        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"="})
     }
     _total := c.Geti64("total")
     if _total != 0 {
@@ -82,7 +82,7 @@ func (c *StatisticsyearController) Index(page int, pagesize int) {
     
     _duration := c.Get("duration")
     if _duration != "" {
-        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"="})
     }
     _total := c.Geti64("total")
     if _total != 0 {

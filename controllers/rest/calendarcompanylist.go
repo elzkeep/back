@@ -31,11 +31,11 @@ func (c *CalendarcompanylistController) Count() {
     }
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _day := c.Get("day")
     if _day != "" {
-        args = append(args, models.Where{Column:"day", Value:_day, Compare:"like"})
+        args = append(args, models.Where{Column:"day", Value:_day, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -94,11 +94,11 @@ func (c *CalendarcompanylistController) Index(page int, pagesize int) {
     }
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _day := c.Get("day")
     if _day != "" {
-        args = append(args, models.Where{Column:"day", Value:_day, Compare:"like"})
+        args = append(args, models.Where{Column:"day", Value:_day, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {

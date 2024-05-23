@@ -114,11 +114,11 @@ func (c *BillingController) Count() {
     }
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _endmonth := c.Get("endmonth")
     if _endmonth != "" {
-        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"="})
     }
     _period := c.Geti("period")
     if _period != 0 {
@@ -201,11 +201,11 @@ func (c *BillingController) Index(page int, pagesize int) {
     }
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _endmonth := c.Get("endmonth")
     if _endmonth != "" {
-        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"like"})
+        args = append(args, models.Where{Column:"endmonth", Value:_endmonth, Compare:"="})
     }
     _period := c.Geti("period")
     if _period != 0 {

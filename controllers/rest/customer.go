@@ -137,6 +137,14 @@ func (c *CustomerController) Count() {
     if _number != 0 {
         args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
     }
+    _kepconumber := c.Get("kepconumber")
+    if _kepconumber != "" {
+        args = append(args, models.Where{Column:"kepconumber", Value:_kepconumber, Compare:"="})
+    }
+    _kesconumber := c.Get("kesconumber")
+    if _kesconumber != "" {
+        args = append(args, models.Where{Column:"kesconumber", Value:_kesconumber, Compare:"="})
+    }
     _type := c.Geti("type")
     if _type != 0 {
         args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
@@ -147,15 +155,15 @@ func (c *CustomerController) Count() {
     }
     _managername := c.Get("managername")
     if _managername != "" {
-        args = append(args, models.Where{Column:"managername", Value:_managername, Compare:"like"})
+        args = append(args, models.Where{Column:"managername", Value:_managername, Compare:"="})
     }
     _managertel := c.Get("managertel")
     if _managertel != "" {
-        args = append(args, models.Where{Column:"managertel", Value:_managertel, Compare:"like"})
+        args = append(args, models.Where{Column:"managertel", Value:_managertel, Compare:"="})
     }
     _manageremail := c.Get("manageremail")
     if _manageremail != "" {
-        args = append(args, models.Where{Column:"manageremail", Value:_manageremail, Compare:"like"})
+        args = append(args, models.Where{Column:"manageremail", Value:_manageremail, Compare:"="})
     }
     _startcontractstartdate := c.Get("startcontractstartdate")
     _endcontractstartdate := c.Get("endcontractstartdate")
@@ -193,6 +201,10 @@ func (c *CustomerController) Count() {
     if _contractday != 0 {
         args = append(args, models.Where{Column:"contractday", Value:_contractday, Compare:"="})    
     }
+    _contracttype := c.Geti("contracttype")
+    if _contracttype != 0 {
+        args = append(args, models.Where{Column:"contracttype", Value:_contracttype, Compare:"="})    
+    }
     _billingdate := c.Geti("billingdate")
     if _billingdate != 0 {
         args = append(args, models.Where{Column:"billingdate", Value:_billingdate, Compare:"="})    
@@ -203,23 +215,23 @@ func (c *CustomerController) Count() {
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
-        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"like"})
+        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"="})
     }
     _billingtel := c.Get("billingtel")
     if _billingtel != "" {
-        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"like"})
+        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"="})
     }
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
-        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _collectmonth := c.Geti("collectmonth")
     if _collectmonth != 0 {
@@ -231,15 +243,15 @@ func (c *CustomerController) Count() {
     }
     _manager := c.Get("manager")
     if _manager != "" {
-        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _fax := c.Get("fax")
     if _fax != "" {
-        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"like"})
+        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -308,6 +320,14 @@ func (c *CustomerController) Index(page int, pagesize int) {
     if _number != 0 {
         args = append(args, models.Where{Column:"number", Value:_number, Compare:"="})    
     }
+    _kepconumber := c.Get("kepconumber")
+    if _kepconumber != "" {
+        args = append(args, models.Where{Column:"kepconumber", Value:_kepconumber, Compare:"="})
+    }
+    _kesconumber := c.Get("kesconumber")
+    if _kesconumber != "" {
+        args = append(args, models.Where{Column:"kesconumber", Value:_kesconumber, Compare:"="})
+    }
     _type := c.Geti("type")
     if _type != 0 {
         args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
@@ -318,15 +338,15 @@ func (c *CustomerController) Index(page int, pagesize int) {
     }
     _managername := c.Get("managername")
     if _managername != "" {
-        args = append(args, models.Where{Column:"managername", Value:_managername, Compare:"like"})
+        args = append(args, models.Where{Column:"managername", Value:_managername, Compare:"="})
     }
     _managertel := c.Get("managertel")
     if _managertel != "" {
-        args = append(args, models.Where{Column:"managertel", Value:_managertel, Compare:"like"})
+        args = append(args, models.Where{Column:"managertel", Value:_managertel, Compare:"="})
     }
     _manageremail := c.Get("manageremail")
     if _manageremail != "" {
-        args = append(args, models.Where{Column:"manageremail", Value:_manageremail, Compare:"like"})
+        args = append(args, models.Where{Column:"manageremail", Value:_manageremail, Compare:"="})
     }
     _startcontractstartdate := c.Get("startcontractstartdate")
     _endcontractstartdate := c.Get("endcontractstartdate")
@@ -364,6 +384,10 @@ func (c *CustomerController) Index(page int, pagesize int) {
     if _contractday != 0 {
         args = append(args, models.Where{Column:"contractday", Value:_contractday, Compare:"="})    
     }
+    _contracttype := c.Geti("contracttype")
+    if _contracttype != 0 {
+        args = append(args, models.Where{Column:"contracttype", Value:_contracttype, Compare:"="})    
+    }
     _billingdate := c.Geti("billingdate")
     if _billingdate != 0 {
         args = append(args, models.Where{Column:"billingdate", Value:_billingdate, Compare:"="})    
@@ -374,23 +398,23 @@ func (c *CustomerController) Index(page int, pagesize int) {
     }
     _billingname := c.Get("billingname")
     if _billingname != "" {
-        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"like"})
+        args = append(args, models.Where{Column:"billingname", Value:_billingname, Compare:"="})
     }
     _billingtel := c.Get("billingtel")
     if _billingtel != "" {
-        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"like"})
+        args = append(args, models.Where{Column:"billingtel", Value:_billingtel, Compare:"="})
     }
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
-        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+        args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
     }
     _addressetc := c.Get("addressetc")
     if _addressetc != "" {
-        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
+        args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
     _collectmonth := c.Geti("collectmonth")
     if _collectmonth != 0 {
@@ -402,15 +426,15 @@ func (c *CustomerController) Index(page int, pagesize int) {
     }
     _manager := c.Get("manager")
     if _manager != "" {
-        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _fax := c.Get("fax")
     if _fax != "" {
-        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"like"})
+        args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -492,6 +516,26 @@ func (c *CustomerController) UpdateNumber(number int, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateNumber(number, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateKepconumber(kepconumber string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateKepconumber(kepconumber, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateKesconumber(kesconumber string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateKesconumber(kesconumber, id)
 }
 
 // @Put()
@@ -592,6 +636,16 @@ func (c *CustomerController) UpdateContractday(contractday int, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractday(contractday, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateContracttype(contracttype int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateContracttype(contracttype, id)
 }
 
 // @Put()
