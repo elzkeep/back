@@ -432,7 +432,6 @@ func (c *ExternalController) All(filename string) {
 	buildingManager := models.NewBuildingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
-	facilityManager := models.NewFacilityManager(conn)
 
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
@@ -457,7 +456,7 @@ func (c *ExternalController) All(filename string) {
 			break
 		}
 
-		userName := f.GetCell("M", pos)
+		userName := f.GetCell("G", pos)
 
 		var userId int64 = 0
 
@@ -482,7 +481,7 @@ func (c *ExternalController) All(filename string) {
 			}
 		}
 
-		salesuserName := f.GetCell("N", pos)
+		salesuserName := f.GetCell("H", pos)
 		var salesuserId int64 = 0
 
 		if salesuserName != "" {
@@ -506,12 +505,12 @@ func (c *ExternalController) All(filename string) {
 			}
 		}
 
-		item.Name = f.GetCell("T", pos)
-		item.Companyno = f.GetCell("U", pos)
-		item.Ceo = f.GetCell("V", pos)
-		item.Businesscondition = f.GetCell("W", pos)
-		item.Businessitem = f.GetCell("X", pos)
-		item.Address = f.GetCell("Y", pos)
+		item.Name = f.GetCell("K", pos)
+		item.Companyno = f.GetCell("L", pos)
+		item.Ceo = f.GetCell("M", pos)
+		item.Businesscondition = f.GetCell("N", pos)
+		item.Businessitem = f.GetCell("O", pos)
+		item.Address = f.GetCell("P", pos)
 		item.Type = company.TypeBuilding
 
 		var companyId int64 = 0
@@ -545,13 +544,15 @@ func (c *ExternalController) All(filename string) {
 
 		building.Name = f.GetCell("B", pos)
 		building.Address = f.GetCell("C", pos)
-		building.Contractvolumn = models.Double(global.Atol(f.GetCell("F", pos)))
-		building.Receivevolumn = models.Double(global.Atol(f.GetCell("G", pos)))
-		building.Generatevolumn = models.Double(global.Atol(f.GetCell("H", pos)))
-		building.Sunlightvolumn = models.Double(global.Atol(f.GetCell("I", pos)))
+		/*
+			building.Contractvolumn = models.Double(global.Atol(f.GetCell("F", pos)))
+			building.Receivevolumn = models.Double(global.Atol(f.GetCell("G", pos)))
+			building.Generatevolumn = models.Double(global.Atol(f.GetCell("H", pos)))
+			building.Sunlightvolumn = models.Double(global.Atol(f.GetCell("I", pos)))
+		*/
 		building.Ceo = f.GetCell("D", pos)
 
-		weight := global.Atof(f.GetCell("K", pos))
+		weight := global.Atof(f.GetCell("F", pos))
 		building.Weight = models.Double(weight)
 		/*
 			volttype := f.GetCell("I", pos)
@@ -563,37 +564,39 @@ func (c *ExternalController) All(filename string) {
 			}
 		*/
 
-		building.Checkcount = global.Atoi(f.GetCell("L", pos))
+		//building.Checkcount = global.Atoi(f.GetCell("L", pos))
 
-		building.Receivevolt = global.Atoi(strings.ReplaceAll(f.GetCell("O", pos), "V", ""))
-		building.Usage = f.GetCell("R", pos)
-		building.District = f.GetCell("S", pos)
+		//building.Receivevolt = global.Atoi(strings.ReplaceAll(f.GetCell("O", pos), "V", ""))
+		building.Usage = f.GetCell("I", pos)
+		building.District = f.GetCell("J", pos)
 		building.Company = companyId
 
-		basic := global.Atoi(f.GetCell("G", pos))
-		generator := global.Atoi(f.GetCell("H", pos))
-		sunlight := global.Atoi(f.GetCell("I", pos))
+		/*
+			basic := global.Atoi(f.GetCell("G", pos))
+			generator := global.Atoi(f.GetCell("H", pos))
+			sunlight := global.Atoi(f.GetCell("I", pos))
 
-		basicFacility := models.Facility{}
-		generatorFacility := models.Facility{}
-		sunlightFacility := models.Facility{}
+			basicFacility := models.Facility{}
+			generatorFacility := models.Facility{}
+			sunlightFacility := models.Facility{}
 
-		if basic > 0 {
-			basicFacility.Category = 10
-			basicFacility.Value2 = fmt.Sprintf("%v", basic)
-		}
+			if basic > 0 {
+				basicFacility.Category = 10
+				basicFacility.Value2 = fmt.Sprintf("%v", basic)
+			}
 
-		if generator > 0 {
-			generatorFacility.Category = 20
-			generatorFacility.Value12 = fmt.Sprintf("%v", generator)
-		}
+			if generator > 0 {
+				generatorFacility.Category = 20
+				generatorFacility.Value12 = fmt.Sprintf("%v", generator)
+			}
 
-		if sunlight > 0 {
-			sunlightFacility.Category = 30
-			sunlightFacility.Value6 = fmt.Sprintf("%v", sunlight)
-		}
+			if sunlight > 0 {
+				sunlightFacility.Category = 30
+				sunlightFacility.Value6 = fmt.Sprintf("%v", sunlight)
+			}
 
-		building.Totalweight = models.Double(basic + generator + sunlight)
+			building.Totalweight = models.Double(basic + generator + sunlight)
+		*/
 
 		var buildingId int64 = 0
 
@@ -605,50 +608,58 @@ func (c *ExternalController) All(filename string) {
 			buildingId = buildingFind.Id
 		}
 
-		if basic > 0 {
-			basicFacility.Building = buildingId
+		/*
+			if basic > 0 {
+				basicFacility.Building = buildingId
 
-			facilityManager.Insert(&basicFacility)
-		}
+				facilityManager.Insert(&basicFacility)
+			}
 
-		if generator > 0 {
-			generatorFacility.Building = buildingId
+			if generator > 0 {
+				generatorFacility.Building = buildingId
 
-			facilityManager.Insert(&generatorFacility)
-		}
+				facilityManager.Insert(&generatorFacility)
+			}
 
-		if sunlight > 0 {
-			sunlightFacility.Building = buildingId
+			if sunlight > 0 {
+				sunlightFacility.Building = buildingId
 
-			facilityManager.Insert(&sunlightFacility)
-		}
+				facilityManager.Insert(&sunlightFacility)
+			}
+		*/
 
 		customerItem.Number = global.Atoi(f.GetCell("A", pos))
-		customerItem.Managername = f.GetCell("AD", pos)
-		customerItem.Managertel = f.GetCell("AE", pos)
-		customerItem.Manageremail = f.GetCell("AF", pos)
-		customerItem.Address = f.GetCell("Y", pos)
-		customerItem.Manager = f.GetCell("AD", pos)
-		customerItem.Contractprice = global.Atoi(f.GetCell("AJ", pos))
-		customerItem.Contractvat = global.Atoi(f.GetCell("AK", pos))
+		customerItem.Managername = f.GetCell("V", pos)
+		customerItem.Managertel = f.GetCell("W", pos)
+		customerItem.Manageremail = f.GetCell("X", pos)
 
-		if f.GetCell("AB", pos) != "" || f.GetCell("AC", pos) != "" {
-			customerItem.Status = 2
+		customerItem.Contractprice = global.Atoi(f.GetCell("AB", pos))
+		customerItem.Contractvat = global.Atoi(f.GetCell("AC", pos))
+
+		contracttype := f.GetCell("Q", pos)
+		if contracttype == "안전관리" {
+			customerItem.Contracttype = 1
+		} else if contracttype == "유지보수" {
+			customerItem.Contracttype = 2
+		} else if contracttype == "안전관리+유지보수" {
+			customerItem.Contracttype = 3
 		} else {
-			customerItem.Status = 1
-
+			customerItem.Contracttype = 1
 		}
 
-		customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("AA", pos), ".", "-")
-		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("AB", pos), ".", "-")
+		customerItem.Kepconumber = f.GetCell("T", pos)
+		customerItem.Kesconumber = f.GetCell("U", pos)
+
+		customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("R", pos), ".", "-")
+		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("S", pos), ".", "-")
 		customerItem.Type = customer.TypeOutsourcing
 
-		str := f.GetCell("AN", pos)
+		str := f.GetCell("AF", pos)
 
 		r, _ := regexp.Compile("[0-9]+")
 		collectday := r.FindString(str)
 
-		if strings.Contains(str, "당월") {
+		if strings.Contains(str, "당월") || strings.Contains(str, "매월") {
 			customerItem.Collectmonth = 1
 		} else {
 			customerItem.Collectmonth = 2
@@ -660,7 +671,7 @@ func (c *ExternalController) All(filename string) {
 			customerItem.Collectday = global.Atoi(collectday)
 		}
 
-		if f.GetCell("AM", pos) == "지로" {
+		if f.GetCell("AE", pos) == "지로" {
 			customerItem.Billingtype = 1
 		} else {
 			customerItem.Billingtype = 2

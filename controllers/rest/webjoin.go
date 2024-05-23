@@ -99,15 +99,15 @@ func (c *WebjoinController) Count() {
     }
     _manager := c.Get("manager")
     if _manager != "" {
-        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -163,15 +163,15 @@ func (c *WebjoinController) Index(page int, pagesize int) {
     }
     _manager := c.Get("manager")
     if _manager != "" {
-        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"like"})
+        args = append(args, models.Where{Column:"manager", Value:_manager, Compare:"="})
     }
     _tel := c.Get("tel")
     if _tel != "" {
-        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
     _email := c.Get("email")
     if _email != "" {
-        args = append(args, models.Where{Column:"email", Value:_email, Compare:"like"})
+        args = append(args, models.Where{Column:"email", Value:_email, Compare:"="})
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

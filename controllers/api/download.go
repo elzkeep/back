@@ -364,23 +364,35 @@ func (c *DownloadController) All() {
 		models.Ordering("u_name"),
 	})
 
-	header := []string{"코드", "수용가명", "사업자번호", "대표자", "수용가 주소", "계약 용량", "수전 용량", "발전 용량", "태양 용량", "전압", "가중치", "점검횟수", "점검자", "영업자", "수전 전압", "발전 전압", "정기검사", "건물용도", "관할구청",
-		"고객명", "사업자번호", "대표자", "업태", "종목", "고객주소", "계약일자", "계약만료일", "해지일자", "해지사유", "담당자", "담당자 연락처", "담당자 Email", "계약담당자", "Tel No.", "Fax No.",
+	contracttypes := []string{"", "안전관리", "유지보수", "안전관리+유지보수"}
+
+	header := []string{"코드", "수용가명", "사업자번호", "대표자", "수용가 주소", "계약 용량", "점검자", "영업자", "건물용도", "관할구청",
+		"고객명", "사업자번호", "대표자", "업태", "종목", "고객주소",
+		"계약형태", "계약일자", "계약만료일", "한전 고객번호", "안전공사 고객번호",
+		"담당자", "담당자 연락처", "담당자 Email", "계약담당자", "Tel No.", "Fax No.",
 		"대행수수료", "부가세", "계산서", "수금방법", "수금일"}
-	width := []int{10, 20, 15, 15, 50, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
-	align := []string{"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L"}
+	width := []int{10, 30, 15, 15, 50, 10, 15, 15, 15, 20,
+		30, 15, 15, 15, 20, 50,
+		15, 15, 15, 20, 20,
+		15, 20, 30, 15, 20, 20,
+		15, 15, 15, 15, 15}
+	align := []string{"L", "L", "L", "L", "L", "R", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L",
+		"C", "C", "C", "L", "L",
+		"L", "L", "L", "L", "L", "L",
+		"R", "R", "L", "C", "C"}
 	excel := global.NewExcel("소속회원 현황", "수용가 현황", 10, header, width, align)
 	excel.SetHeight(24)
 
 	excel.InsertRow(1, 1)
 	excel.SetRowHeight(1, 24)
 	excel.MergeCell("A", 1, "A", 2)
-	excel.MergeCell("B", 1, "S", 1)
-	excel.MergeCell("T", 1, "AP", 1)
+	excel.MergeCell("B", 1, "J", 1)
+	excel.MergeCell("K", 1, "AF", 1)
 	excel.SetHeaderStyle("A", 1, 10)
 	excel.SetHeaderStyle("B", 1, 10)
-	excel.SetHeaderStyle("T", 1, 10)
-	excel.SetHeaderStyle("AP", 1, 10)
+	excel.SetHeaderStyle("K", 1, 10)
+	excel.SetHeaderStyle("AF", 1, 10)
 	excel.SetCellValue("A", 1, "코드")
 	excel.SetCellValue("B", 1, "수용가정보")
 	excel.SetCellValue("V", 1, "고객정보")
@@ -398,12 +410,6 @@ func (c *DownloadController) All() {
 		excel.Cell(company.Ceo)
 		excel.Cell(fmt.Sprintf("%v %v", company.Address, company.Addressetc))
 		excel.Cell(fmt.Sprintf("%v", building.Totalweight))
-		excel.Cell("")
-		excel.Cell("")
-		excel.Cell("")
-		excel.Cell("")
-		excel.Cell("")
-		excel.Cell("")
 
 		username := ""
 		for _, user := range users {
@@ -423,9 +429,9 @@ func (c *DownloadController) All() {
 		}
 		excel.Cell(saileusername)
 
-		excel.Cell(fmt.Sprintf("%v", building.Receivevolt))
-		excel.Cell(fmt.Sprintf("%v", building.Generatevolt))
-		excel.Cell("")
+		//excel.Cell(fmt.Sprintf("%v", building.Receivevolt))
+		//excel.Cell(fmt.Sprintf("%v", building.Generatevolt))
+		//excel.Cell("")
 		excel.Cell(building.Usage)
 		excel.Cell(building.District)
 
@@ -438,10 +444,11 @@ func (c *DownloadController) All() {
 		excel.Cell(company.Businesscondition)
 		excel.Cell(company.Businessitem)
 		excel.Cell(fmt.Sprintf("%v %v", building.Address, building.Addressetc))
+		excel.Cell(contracttypes[v.Contracttype])
 		excel.Cell(v.Contractstartdate)
 		excel.Cell(v.Contractenddate)
-		excel.Cell("")
-		excel.Cell("")
+		excel.Cell(v.Kepconumber)
+		excel.Cell(v.Kesconumber)
 		excel.Cell(v.Managername)
 		excel.Cell(v.Managertel)
 		excel.Cell(v.Manageremail)

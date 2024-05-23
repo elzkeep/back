@@ -113,8 +113,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/building/score/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		apiGroup.Post("/building/score", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
 			var controller api.BuildingController
 			controller.Init(c)
 			controller.Score(id_)
@@ -2982,6 +2988,44 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/customer/kepconumber", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var kepconumber_ string
+			if v, flag := results["kepconumber"]; flag {
+				kepconumber_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateKepconumber(kepconumber_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/kesconumber", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var kesconumber_ string
+			if v, flag := results["kesconumber"]; flag {
+				kesconumber_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateKesconumber(kesconumber_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/customer/type", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -3168,6 +3212,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.UpdateContractday(contractday_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/contracttype", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var contracttype_ int
+			if v, flag := results["contracttype"]; flag {
+				contracttype_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateContracttype(contracttype_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

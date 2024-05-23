@@ -53,7 +53,9 @@ func main() {
 			}
 
 			if v.Category == 40 {
-				total += float64(global.Atoi(v.Value5))
+				if global.Atoi(v.Value25) != 1 {
+					total += float64(global.Atoi(v.Value5))
+				}
 			}
 
 			if v.Category == 50 {
@@ -110,7 +112,9 @@ func main() {
 				}
 
 				if v.Category == 40 {
-					totals[typeid] += float64(global.Atoi(v.Value5))
+					if global.Atoi(v.Value25) != 1 {
+						totals[typeid] += float64(global.Atoi(v.Value5))
+					}
 				}
 
 				if v.Category == 50 {

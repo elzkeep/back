@@ -27,11 +27,11 @@ func (c *StatisticsdayController) Count() {
     
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _duration := c.Get("duration")
     if _duration != "" {
-        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"="})
     }
     _total := c.Geti64("total")
     if _total != 0 {
@@ -86,11 +86,11 @@ func (c *StatisticsdayController) Index(page int, pagesize int) {
     
     _month := c.Get("month")
     if _month != "" {
-        args = append(args, models.Where{Column:"month", Value:_month, Compare:"like"})
+        args = append(args, models.Where{Column:"month", Value:_month, Compare:"="})
     }
     _duration := c.Get("duration")
     if _duration != "" {
-        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"like"})
+        args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"="})
     }
     _total := c.Geti64("total")
     if _total != 0 {

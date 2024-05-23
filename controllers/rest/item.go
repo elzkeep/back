@@ -151,7 +151,7 @@ func (c *ItemController) Count() {
     }
     _unit := c.Get("unit")
     if _unit != "" {
-        args = append(args, models.Where{Column:"unit", Value:_unit, Compare:"like"})
+        args = append(args, models.Where{Column:"unit", Value:_unit, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -163,7 +163,7 @@ func (c *ItemController) Count() {
     }
     _reasontext := c.Get("reasontext")
     if _reasontext != "" {
-        args = append(args, models.Where{Column:"reasontext", Value:_reasontext, Compare:"like"})
+        args = append(args, models.Where{Column:"reasontext", Value:_reasontext, Compare:"="})
     }
     _action := c.Geti("action")
     if _action != 0 {
@@ -171,11 +171,11 @@ func (c *ItemController) Count() {
     }
     _actiontext := c.Get("actiontext")
     if _actiontext != "" {
-        args = append(args, models.Where{Column:"actiontext", Value:_actiontext, Compare:"like"})
+        args = append(args, models.Where{Column:"actiontext", Value:_actiontext, Compare:"="})
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _order := c.Geti("order")
     if _order != 0 {
@@ -288,7 +288,7 @@ func (c *ItemController) Index(page int, pagesize int) {
     }
     _unit := c.Get("unit")
     if _unit != "" {
-        args = append(args, models.Where{Column:"unit", Value:_unit, Compare:"like"})
+        args = append(args, models.Where{Column:"unit", Value:_unit, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -300,7 +300,7 @@ func (c *ItemController) Index(page int, pagesize int) {
     }
     _reasontext := c.Get("reasontext")
     if _reasontext != "" {
-        args = append(args, models.Where{Column:"reasontext", Value:_reasontext, Compare:"like"})
+        args = append(args, models.Where{Column:"reasontext", Value:_reasontext, Compare:"="})
     }
     _action := c.Geti("action")
     if _action != 0 {
@@ -308,11 +308,11 @@ func (c *ItemController) Index(page int, pagesize int) {
     }
     _actiontext := c.Get("actiontext")
     if _actiontext != "" {
-        args = append(args, models.Where{Column:"actiontext", Value:_actiontext, Compare:"like"})
+        args = append(args, models.Where{Column:"actiontext", Value:_actiontext, Compare:"="})
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _order := c.Geti("order")
     if _order != 0 {

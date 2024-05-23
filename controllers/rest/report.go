@@ -115,7 +115,7 @@ func (c *ReportController) Count() {
     }
     _checktime := c.Get("checktime")
     if _checktime != "" {
-        args = append(args, models.Where{Column:"checktime", Value:_checktime, Compare:"like"})
+        args = append(args, models.Where{Column:"checktime", Value:_checktime, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {
@@ -124,15 +124,15 @@ func (c *ReportController) Count() {
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _sign1 := c.Get("sign1")
     if _sign1 != "" {
-        args = append(args, models.Where{Column:"sign1", Value:_sign1, Compare:"like"})
+        args = append(args, models.Where{Column:"sign1", Value:_sign1, Compare:"="})
     }
     _sign2 := c.Get("sign2")
     if _sign2 != "" {
-        args = append(args, models.Where{Column:"sign2", Value:_sign2, Compare:"like"})
+        args = append(args, models.Where{Column:"sign2", Value:_sign2, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -220,7 +220,7 @@ func (c *ReportController) Index(page int, pagesize int) {
     }
     _checktime := c.Get("checktime")
     if _checktime != "" {
-        args = append(args, models.Where{Column:"checktime", Value:_checktime, Compare:"like"})
+        args = append(args, models.Where{Column:"checktime", Value:_checktime, Compare:"="})
     }
     _content := c.Get("content")
     if _content != "" {
@@ -229,15 +229,15 @@ func (c *ReportController) Index(page int, pagesize int) {
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _sign1 := c.Get("sign1")
     if _sign1 != "" {
-        args = append(args, models.Where{Column:"sign1", Value:_sign1, Compare:"like"})
+        args = append(args, models.Where{Column:"sign1", Value:_sign1, Compare:"="})
     }
     _sign2 := c.Get("sign2")
     if _sign2 != "" {
-        args = append(args, models.Where{Column:"sign2", Value:_sign2, Compare:"like"})
+        args = append(args, models.Where{Column:"sign2", Value:_sign2, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {

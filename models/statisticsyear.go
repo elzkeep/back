@@ -357,6 +357,8 @@ func (p *StatisticsyearManager) Count(args []interface{}) int {
         }
     }
 
+    log.Println(query)
+    log.Println(params)
     rows, err := p.Query(query, params...)
 
     if err != nil {
@@ -485,6 +487,8 @@ func (p *StatisticsyearManager) Find(args []interface{}) []Statisticsyear {
         query += " order by " + orderby
     }
 
+    log.Println(baseQuery + query)
+    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {

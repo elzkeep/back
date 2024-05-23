@@ -100,7 +100,7 @@ func (c *WebnoticeController) Count() {
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _category := c.Geti("category")
     if _category != 0 {
@@ -161,7 +161,7 @@ func (c *WebnoticeController) Index(page int, pagesize int) {
     }
     _image := c.Get("image")
     if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+        args = append(args, models.Where{Column:"image", Value:_image, Compare:"="})
     }
     _category := c.Geti("category")
     if _category != 0 {
