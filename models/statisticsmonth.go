@@ -69,6 +69,8 @@ func (p *StatisticsmonthManager) SetIndex(index string) {
 }
 
 func (p *StatisticsmonthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -77,6 +79,8 @@ func (p *StatisticsmonthManager) Exec(query string, params ...interface{}) (sql.
 }
 
 func (p *StatisticsmonthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -361,8 +365,6 @@ func (p *StatisticsmonthManager) Count(args []interface{}) int {
         }
     }
 
-    log.Println(query)
-    log.Println(params)
     rows, err := p.Query(query, params...)
 
     if err != nil {

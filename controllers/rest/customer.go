@@ -253,6 +253,26 @@ func (c *CustomerController) Count() {
     if _fax != "" {
         args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"="})
     }
+    _periodic := c.Get("periodic")
+    if _periodic != "" {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})
+    }
+    _startlastdate := c.Get("startlastdate")
+    _endlastdate := c.Get("endlastdate")
+    if _startlastdate != "" && _endlastdate != "" {        
+        var v [2]string
+        v[0] = _startlastdate
+        v[1] = _endlastdate  
+        args = append(args, models.Where{Column:"lastdate", Value:v, Compare:"between"})    
+    } else if  _startlastdate != "" {          
+        args = append(args, models.Where{Column:"lastdate", Value:_startlastdate, Compare:">="})
+    } else if  _endlastdate != "" {          
+        args = append(args, models.Where{Column:"lastdate", Value:_endlastdate, Compare:"<="})            
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -435,6 +455,26 @@ func (c *CustomerController) Index(page int, pagesize int) {
     _fax := c.Get("fax")
     if _fax != "" {
         args = append(args, models.Where{Column:"fax", Value:_fax, Compare:"="})
+    }
+    _periodic := c.Get("periodic")
+    if _periodic != "" {
+        args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})
+    }
+    _startlastdate := c.Get("startlastdate")
+    _endlastdate := c.Get("endlastdate")
+    if _startlastdate != "" && _endlastdate != "" {        
+        var v [2]string
+        v[0] = _startlastdate
+        v[1] = _endlastdate  
+        args = append(args, models.Where{Column:"lastdate", Value:v, Compare:"between"})    
+    } else if  _startlastdate != "" {          
+        args = append(args, models.Where{Column:"lastdate", Value:_startlastdate, Compare:">="})
+    } else if  _endlastdate != "" {          
+        args = append(args, models.Where{Column:"lastdate", Value:_endlastdate, Compare:"<="})            
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -766,6 +806,36 @@ func (c *CustomerController) UpdateFax(fax string, id int64) {
 
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateFax(fax, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdatePeriodic(periodic string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdatePeriodic(periodic, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateLastdate(lastdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateLastdate(lastdate, id)
+}
+
+// @Put()
+func (c *CustomerController) UpdateRemark(remark string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateRemark(remark, id)
 }
 
 // @Put()

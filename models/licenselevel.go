@@ -68,6 +68,8 @@ func (p *LicenselevelManager) SetIndex(index string) {
 }
 
 func (p *LicenselevelManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -76,6 +78,8 @@ func (p *LicenselevelManager) Exec(query string, params ...interface{}) (sql.Res
 }
 
 func (p *LicenselevelManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -419,8 +423,6 @@ func (p *LicenselevelManager) Count(args []interface{}) int {
         }
     }
 
-    log.Println(query)
-    log.Println(params)
     rows, err := p.Query(query, params...)
 
     if err != nil {
@@ -564,6 +566,20 @@ func (p *LicenselevelManager) Find(args []interface{}) []Licenselevel {
     return p.ReadRows(rows)
 }
 
+
+func (p *LicenselevelManager) GetByName(name string, args ...interface{}) *Licenselevel {
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
 
 
 

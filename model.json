@@ -217,7 +217,8 @@
       ],
       "method": [
         "GetByUserLicensecategory",
-        "DeleteByUser"
+        "DeleteByUser",
+        "FindByUser"
       ]
     },
     {
@@ -234,6 +235,12 @@
     },
     {
       "name": "licensecategory",
+      "method": [
+        "GetByName"        
+      ]
+    },
+    {
+      "name": "licenselevel",
       "method": [
         "GetByName"        
       ]

@@ -112,6 +112,8 @@ func (p *CompanyManager) SetIndex(index string) {
 }
 
 func (p *CompanyManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -120,6 +122,8 @@ func (p *CompanyManager) Exec(query string, params ...interface{}) (sql.Result, 
 }
 
 func (p *CompanyManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -1338,8 +1342,6 @@ func (p *CompanyManager) Count(args []interface{}) int {
         }
     }
 
-    log.Println(query)
-    log.Println(params)
     rows, err := p.Query(query, params...)
 
     if err != nil {

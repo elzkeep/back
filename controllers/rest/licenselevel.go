@@ -14,6 +14,23 @@ type LicenselevelController struct {
 
 
 
+func (c *LicenselevelController) GetByName(name string) *models.Licenselevel {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicenselevelManager(conn)
+    
+    item := _manager.GetByName(name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 func (c *LicenselevelController) Insert(item *models.Licenselevel) {
     
     

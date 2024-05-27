@@ -15,34 +15,35 @@ import (
     
 )
 
-type Department struct {
+type Giro struct {
             
     Id                int64 `json:"id"`         
-    Name                string `json:"name"`         
-    Status                int `json:"status"`         
-    Order                int `json:"order"`         
-    Parent                int64 `json:"parent"`         
-    Company                int64 `json:"company"`         
-    Master                int64 `json:"master"`         
+    Insertdate                string `json:"insertdate"`         
+    Number                string `json:"number"`         
+    Price                int `json:"price"`         
+    Acceptdate                string `json:"acceptdate"`         
+    Charge                int `json:"charge"`         
+    Type                string `json:"type"`         
+    Content                string `json:"content"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
 
-type DepartmentManager struct {
+type GiroManager struct {
     Conn    *sql.DB
     Tx    *sql.Tx    
     Result  *sql.Result
     Index   string
 }
 
-func (c *Department) AddExtra(key string, value interface{}) {    
+func (c *Giro) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewDepartmentManager(conn interface{}) *DepartmentManager {
-    var item DepartmentManager
+func NewGiroManager(conn interface{}) *GiroManager {
+    var item GiroManager
 
     if conn == nil {
         item.Conn = NewConnection()
@@ -61,17 +62,17 @@ func NewDepartmentManager(conn interface{}) *DepartmentManager {
     return &item
 }
 
-func (p *DepartmentManager) Close() {
+func (p *GiroManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *DepartmentManager) SetIndex(index string) {
+func (p *GiroManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *DepartmentManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *GiroManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     log.Println(query)
     log.Println(params)    
     if p.Conn != nil {
@@ -81,7 +82,7 @@ func (p *DepartmentManager) Exec(query string, params ...interface{}) (sql.Resul
     }
 }
 
-func (p *DepartmentManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *GiroManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     log.Println(query)
     log.Println(params)    
     if p.Conn != nil {
@@ -91,10 +92,10 @@ func (p *DepartmentManager) Query(query string, params ...interface{}) (*sql.Row
     }
 }
 
-func (p *DepartmentManager) GetQuery() string {
+func (p *GiroManager) GetQuery() string {
     ret := ""
 
-    str := "select de_id, de_name, de_status, de_order, de_parent, de_company, de_master, de_date from department_tb "
+    str := "select gi_id, gi_insertdate, gi_number, gi_price, gi_acceptdate, gi_charge, gi_type, gi_content, gi_date from giro_tb "
 
     if p.Index == "" {
         ret = str
@@ -108,10 +109,10 @@ func (p *DepartmentManager) GetQuery() string {
     return ret;
 }
 
-func (p *DepartmentManager) GetQuerySelect() string {
+func (p *GiroManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from department_tb "
+    str := "select count(*) from giro_tb "
 
     if p.Index == "" {
         ret = str
@@ -125,12 +126,12 @@ func (p *DepartmentManager) GetQuerySelect() string {
     return ret;
 }
 
-func (p *DepartmentManager) Truncate() error {
+func (p *GiroManager) Truncate() error {
      if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
-    query := "truncate department_tb "
+    query := "truncate giro_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -140,7 +141,7 @@ func (p *DepartmentManager) Truncate() error {
     return nil
 }
 
-func (p *DepartmentManager) Insert(item *Department) error {
+func (p *GiroManager) Insert(item *Giro) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -152,6 +153,12 @@ func (p *DepartmentManager) Insert(item *Department) error {
     }
 
     
+    if item.Insertdate == "" {
+       item.Insertdate = "1000-01-01"
+    }
+    if item.Acceptdate == "" {
+       item.Acceptdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -160,11 +167,11 @@ func (p *DepartmentManager) Insert(item *Department) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into department_tb (de_id, de_name, de_status, de_order, de_parent, de_company, de_master, de_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Status, item.Order, item.Parent, item.Company, item.Master, item.Date)
+        query = "insert into giro_tb (gi_id, gi_insertdate, gi_number, gi_price, gi_acceptdate, gi_charge, gi_type, gi_content, gi_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Insertdate, item.Number, item.Price, item.Acceptdate, item.Charge, item.Type, item.Content, item.Date)
     } else {
-        query = "insert into department_tb (de_name, de_status, de_order, de_parent, de_company, de_master, de_date) values (?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Status, item.Order, item.Parent, item.Company, item.Master, item.Date)
+        query = "insert into giro_tb (gi_insertdate, gi_number, gi_price, gi_acceptdate, gi_charge, gi_type, gi_content, gi_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Insertdate, item.Number, item.Price, item.Acceptdate, item.Charge, item.Type, item.Content, item.Date)
     }
     
     if err == nil {
@@ -178,19 +185,19 @@ func (p *DepartmentManager) Insert(item *Department) error {
     return err
 }
 
-func (p *DepartmentManager) Delete(id int64) error {
+func (p *GiroManager) Delete(id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-    query := "delete from department_tb where de_id = ?"
+    query := "delete from giro_tb where gi_id = ?"
     _, err := p.Exec(query, id)
 
     
     return err
 }
 
-func (p *DepartmentManager) DeleteWhere(args []interface{}) error {
+func (p *GiroManager) DeleteWhere(args []interface{}) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
@@ -204,15 +211,15 @@ func (p *DepartmentManager) DeleteWhere(args []interface{}) error {
             item := v
 
             if item.Compare == "in" {
-                query += " and de_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and de_" + item.Column + " between ? and ?"
+                query += " and gi_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and de_" + item.Column + " " + item.Compare + " ?"
+                query += " and gi_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -226,156 +233,140 @@ func (p *DepartmentManager) DeleteWhere(args []interface{}) error {
         }        
     }
 
-    query = "delete from department_tb where " + query[5:]
+    query = "delete from giro_tb where " + query[5:]
     _, err := p.Exec(query, params...)
 
     
     return err
 }
 
-func (p *DepartmentManager) Update(item *Department) error {
+func (p *GiroManager) Update(item *Giro) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
     
     
+    if item.Insertdate == "" {
+       item.Insertdate = "1000-01-01"
+    }
+    if item.Acceptdate == "" {
+       item.Acceptdate = "1000-01-01"
+    }
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update department_tb set de_name = ?, de_status = ?, de_order = ?, de_parent = ?, de_company = ?, de_master = ?, de_date = ? where de_id = ?"
-	_, err := p.Exec(query , item.Name, item.Status, item.Order, item.Parent, item.Company, item.Master, item.Date, item.Id)
+	query := "update giro_tb set gi_insertdate = ?, gi_number = ?, gi_price = ?, gi_acceptdate = ?, gi_charge = ?, gi_type = ?, gi_content = ?, gi_date = ? where gi_id = ?"
+	_, err := p.Exec(query , item.Insertdate, item.Number, item.Price, item.Acceptdate, item.Charge, item.Type, item.Content, item.Date, item.Id)
     
         
     return err
 }
 
 
-func (p *DepartmentManager) UpdateName(value string, id int64) error {
+func (p *GiroManager) UpdateInsertdate(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_name = ? where de_id = ?"
+	query := "update giro_tb set gi_insertdate = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *DepartmentManager) UpdateStatus(value int, id int64) error {
+func (p *GiroManager) UpdateNumber(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_status = ? where de_id = ?"
+	query := "update giro_tb set gi_number = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *DepartmentManager) UpdateOrder(value int, id int64) error {
+func (p *GiroManager) UpdatePrice(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_order = ? where de_id = ?"
+	query := "update giro_tb set gi_price = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *DepartmentManager) UpdateParent(value int64, id int64) error {
+func (p *GiroManager) UpdateAcceptdate(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_parent = ? where de_id = ?"
+	query := "update giro_tb set gi_acceptdate = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *DepartmentManager) UpdateCompany(value int64, id int64) error {
+func (p *GiroManager) UpdateCharge(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_company = ? where de_id = ?"
+	query := "update giro_tb set gi_charge = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-func (p *DepartmentManager) UpdateMaster(value int64, id int64) error {
+func (p *GiroManager) UpdateType(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_master = ? where de_id = ?"
+	query := "update giro_tb set gi_type = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
-
-
-func (p *DepartmentManager) IncreaseStatus(value int, id int64) error {
+func (p *GiroManager) UpdateContent(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
     }
 
-	query := "update department_tb set de_status = de_status + ? where de_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *DepartmentManager) IncreaseOrder(value int, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update department_tb set de_order = de_order + ? where de_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *DepartmentManager) IncreaseParent(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update department_tb set de_parent = de_parent + ? where de_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *DepartmentManager) IncreaseCompany(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update department_tb set de_company = de_company + ? where de_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    return err
-}
-
-func (p *DepartmentManager) IncreaseMaster(value int64, id int64) error {
-    if p.Conn == nil && p.Tx == nil {
-        return errors.New("Connection Error")
-    }
-
-	query := "update department_tb set de_master = de_master + ? where de_id = ?"
+	query := "update giro_tb set gi_content = ? where gi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
 }
 
 
-func (p *DepartmentManager) GetIdentity() int64 {
+
+func (p *GiroManager) IncreasePrice(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update giro_tb set gi_price = gi_price + ? where gi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *GiroManager) IncreaseCharge(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update giro_tb set gi_charge = gi_charge + ? where gi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+
+func (p *GiroManager) GetIdentity() int64 {
     if p.Result == nil && p.Tx == nil {
         return 0
     }
@@ -389,27 +380,33 @@ func (p *DepartmentManager) GetIdentity() int64 {
     }
 }
 
-func (p *Department) InitExtra() {
+func (p *Giro) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *DepartmentManager) ReadRow(rows *sql.Rows) *Department {
-    var item Department
+func (p *GiroManager) ReadRow(rows *sql.Rows) *Giro {
+    var item Giro
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Status, &item.Order, &item.Parent, &item.Company, &item.Master, &item.Date)
+        err = rows.Scan(&item.Id, &item.Insertdate, &item.Number, &item.Price, &item.Acceptdate, &item.Charge, &item.Type, &item.Content, &item.Date)
+        
+        
+        if item.Insertdate == "0000-00-00" || item.Insertdate == "1000-01-01" {
+            item.Insertdate = ""
+        }
         
         
         
         
         
-        
-        
+        if item.Acceptdate == "0000-00-00" || item.Acceptdate == "1000-01-01" {
+            item.Acceptdate = ""
+        }
         
         
         
@@ -436,23 +433,28 @@ func (p *DepartmentManager) ReadRow(rows *sql.Rows) *Department {
     }
 }
 
-func (p *DepartmentManager) ReadRows(rows *sql.Rows) []Department {
-    var items []Department
+func (p *GiroManager) ReadRows(rows *sql.Rows) []Giro {
+    var items []Giro
 
     for rows.Next() {
-        var item Department
+        var item Giro
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Status, &item.Order, &item.Parent, &item.Company, &item.Master, &item.Date)
+        err := rows.Scan(&item.Id, &item.Insertdate, &item.Number, &item.Price, &item.Acceptdate, &item.Charge, &item.Type, &item.Content, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
         
+        if item.Insertdate == "0000-00-00" || item.Insertdate == "1000-01-01" {
+            item.Insertdate = ""
+        }
         
         
-        
+        if item.Acceptdate == "0000-00-00" || item.Acceptdate == "1000-01-01" {
+            item.Acceptdate = ""
+        }
         
         
         
@@ -470,12 +472,12 @@ func (p *DepartmentManager) ReadRows(rows *sql.Rows) []Department {
      return items
 }
 
-func (p *DepartmentManager) Get(id int64) *Department {
+func (p *GiroManager) Get(id int64) *Giro {
     if p.Conn == nil && p.Tx == nil {
         return nil
     }
 
-    query := p.GetQuery() + " and de_id = ?"
+    query := p.GetQuery() + " and gi_id = ?"
 
     
     
@@ -491,7 +493,7 @@ func (p *DepartmentManager) Get(id int64) *Department {
     return p.ReadRow(rows)
 }
 
-func (p *DepartmentManager) Count(args []interface{}) int {
+func (p *GiroManager) Count(args []interface{}) int {
     if p.Conn == nil && p.Tx == nil {
         return 0
     }
@@ -505,15 +507,15 @@ func (p *DepartmentManager) Count(args []interface{}) int {
             item := v
 
             if item.Compare == "in" {
-                query += " and de_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and de_" + item.Column + " between ? and ?"
+                query += " and gi_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and de_" + item.Column + " " + item.Compare + " ?"
+                query += " and gi_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -550,13 +552,13 @@ func (p *DepartmentManager) Count(args []interface{}) int {
     }
 }
 
-func (p *DepartmentManager) FindAll() []Department {
+func (p *GiroManager) FindAll() []Giro {
     return p.Find(nil)
 }
 
-func (p *DepartmentManager) Find(args []interface{}) []Department {
+func (p *GiroManager) Find(args []interface{}) []Giro {
     if p.Conn == nil && p.Tx == nil {
-        var items []Department
+        var items []Giro
         return items
     }
 
@@ -595,15 +597,15 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
             item := v
 
             if item.Compare == "in" {
-                query += " and de_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " and gi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and de_" + item.Column + " between ? and ?"
+                query += " and gi_" + item.Column + " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and de_" + item.Column + " " + item.Compare + " ?"
+                query += " and gi_" + item.Column + " " + item.Compare + " ?"
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {
@@ -625,10 +627,10 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "de_id desc"
+            orderby = "gi_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "de_" + orderby
+                orderby = "gi_" + orderby
             }
             
         }
@@ -646,10 +648,10 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
         */
     } else {
         if orderby == "" {
-            orderby = "de_id"
+            orderby = "gi_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "de_" + orderby
+                orderby = "gi_" + orderby
             }
         }
         query += " order by " + orderby
@@ -661,7 +663,7 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
 
     if err != nil {
         log.Printf("query error : %v, %v\n", err, query)
-        var items []Department
+        var items []Giro
         return items
     }
 
@@ -671,22 +673,126 @@ func (p *DepartmentManager) Find(args []interface{}) []Department {
 }
 
 
-func (p *DepartmentManager) GetByCompanyName(company int64, name string, args ...interface{}) *Department {
-    if company != 0 {
-        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+
+func (p *GiroManager) Sum(args []interface{}) *Giro {
+    if p.Conn == nil && p.Tx == nil {
+        var item Giro
+        return &item
     }
-    if name != "" {
-        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+
+    var params []interface{}
+
+    
+    query := "select sum(gi_price) from giro_tb"
+
+    if p.Index != "" {
+        query = query + " use index(" + p.Index + ") "
+    }
+
+    query += "where 1=1 "
+
+    page := 0
+    pagesize := 0
+    orderby := ""
+    
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case PagingType:
+            item := v
+            page = item.Page
+            pagesize = item.Pagesize
+        case OrderingType:
+            item := v
+            orderby = item.Order
+        case LimitType:
+            item := v
+            page = 1
+            pagesize = item.Limit
+        case OptionType:
+            item := v
+            if item.Limit > 0 {
+                page = 1
+                pagesize = item.Limit
+            } else {
+                page = item.Page
+                pagesize = item.Pagesize                
+            }
+            orderby = item.Order
+        case Where:
+            item := v
+
+            if item.Compare == "in" {
+                query += " and gi_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+            } else if item.Compare == "between" {
+                query += " and gi_" + item.Column + " between ? and ?"
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                query += " and gi_" + item.Column + " " + item.Compare + " ?"
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+             query += " and " + item.Query
+        }        
     }
     
-    items := p.Find(args)
-
-    if len(items) > 0 {
-        return &items[0]
+    startpage := (page - 1) * pagesize
+    
+    if page > 0 && pagesize > 0 {
+        if orderby == "" {
+            orderby = "gi_id desc"
+        } else {
+            if !strings.Contains(orderby, "_") {                   
+                orderby = "gi_" + orderby
+            }
+            
+        }
+        query += " order by " + orderby
+        //if config.Database == "mysql" {
+            query += " limit ? offset ?"
+            params = append(params, pagesize)
+            params = append(params, startpage)
+            /*
+        } else if config.Database == "mssql" || config.Database == "sqlserver" {
+            query += "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
+            params = append(params, startpage)
+            params = append(params, pagesize)
+        }
+        */
     } else {
-        return nil
+        if orderby == "" {
+            orderby = "gi_id"
+        } else {
+            if !strings.Contains(orderby, "_") {
+                orderby = "gi_" + orderby
+            }
+        }
+        query += " order by " + orderby
     }
+
+    rows, err := p.Query(query, params...)
+
+    var item Giro
+    
+    if err != nil {
+        log.Printf("query error : %v, %v\n", err, query)
+        return &item
+    }
+
+    defer rows.Close()
+
+    if rows.Next() {
+        
+        rows.Scan(&item.Price)        
+    }
+
+    return &item        
 }
-
-
-

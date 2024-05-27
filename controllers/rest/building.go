@@ -118,6 +118,10 @@ func (c *BuildingController) Count() {
     if _ceo != "" {
         args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"="})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
@@ -169,6 +173,14 @@ func (c *BuildingController) Count() {
     _periodic := c.Geti("periodic")
     if _periodic != 0 {
         args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _businesscondition := c.Get("businesscondition")
+    if _businesscondition != "" {
+        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"="})
+    }
+    _businessitem := c.Get("businessitem")
+    if _businessitem != "" {
+        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"="})
     }
     _usage := c.Get("usage")
     if _usage != "" {
@@ -246,6 +258,10 @@ func (c *BuildingController) Index(page int, pagesize int) {
     if _ceo != "" {
         args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"="})
     }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"="})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
@@ -297,6 +313,14 @@ func (c *BuildingController) Index(page int, pagesize int) {
     _periodic := c.Geti("periodic")
     if _periodic != 0 {
         args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _businesscondition := c.Get("businesscondition")
+    if _businesscondition != "" {
+        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"="})
+    }
+    _businessitem := c.Get("businessitem")
+    if _businessitem != "" {
+        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"="})
     }
     _usage := c.Get("usage")
     if _usage != "" {
@@ -398,6 +422,16 @@ func (c *BuildingController) UpdateCeo(ceo string, id int64) {
 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateCeo(ceo, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateZip(zip string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateZip(zip, id)
 }
 
 // @Put()
@@ -531,6 +565,26 @@ func (c *BuildingController) UpdatePeriodic(periodic int, id int64) {
 }
 
 // @Put()
+func (c *BuildingController) UpdateBusinesscondition(businesscondition string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateBusinesscondition(businesscondition, id)
+}
+
+// @Put()
+func (c *BuildingController) UpdateBusinessitem(businessitem string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateBusinessitem(businessitem, id)
+}
+
+// @Put()
 func (c *BuildingController) UpdateUsage(usage string, id int64) {
     
     
@@ -607,6 +661,10 @@ func (c *BuildingController) Sum() {
     if _ceo != "" {
         args = append(args, models.Where{Column:"ceo", Value:_ceo, Compare:"like"})
     }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"like"})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
@@ -658,6 +716,14 @@ func (c *BuildingController) Sum() {
     _periodic := c.Geti("periodic")
     if _periodic != 0 {
         args = append(args, models.Where{Column:"periodic", Value:_periodic, Compare:"="})    
+    }
+    _businesscondition := c.Get("businesscondition")
+    if _businesscondition != "" {
+        args = append(args, models.Where{Column:"businesscondition", Value:_businesscondition, Compare:"like"})
+    }
+    _businessitem := c.Get("businessitem")
+    if _businessitem != "" {
+        args = append(args, models.Where{Column:"businessitem", Value:_businessitem, Compare:"like"})
     }
     _usage := c.Get("usage")
     if _usage != "" {

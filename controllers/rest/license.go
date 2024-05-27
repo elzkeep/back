@@ -42,6 +42,23 @@ func (c *LicenseController) DeleteByUser(user int64) {
 }
 
 
+func (c *LicenseController) FindByUser(user int64) []models.License {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewLicenseManager(conn)
+    
+    item := _manager.FindByUser(user)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
 func (c *LicenseController) Insert(item *models.License) {
     
     

@@ -38,11 +38,12 @@ func (c *DownloadController) Giro(ids []int64) {
 	log.Println("Print==================")
 	log.Println(ids)
 
-	user := c.Session
+	session := c.Session
 
 	companyManager := models.NewCompanyManager(conn)
 	billingManager := models.NewBillingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
+	userManager := models.NewUserManager(conn)
 
 	items := billingManager.Find([]interface{}{
 		models.Where{Column: "id", Value: ids, Compare: "in"},
@@ -70,12 +71,28 @@ func (c *DownloadController) Giro(ids []int64) {
 		return
 	}
 
-	my := companyManager.Get(user.Company)
+	my := companyManager.Get(session.Company)
 	today := global.GetDate(time.Now())
 
+	yRatio := 2.9
+
 	for _, v := range items {
-		company := v.Extra["company"].(models.Company)
 		building := v.Extra["building"].(models.Building)
+
+		customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
+
+		billdate := ""
+		temp := strings.Split(v.Billdate, "-")
+		year := global.Atoi(temp[0])
+		month := global.Atoi(temp[1])
+
+		lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
+
+		if v.Period == 1 {
+			billdate = fmt.Sprintf("%v/%v", year, month)
+		} else {
+			billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+		}
 
 		pdf.SetFont("noto", "", 14)
 
@@ -83,65 +100,92 @@ func (c *DownloadController) Giro(ids []int64) {
 		onlyPrice := vat * 10
 
 		pdf.AddPage()
-		pdf.SetXY(2.8*90, 2.8*80)
-		pdf.Cell(nil, fmt.Sprintf("%v %v", company.Address, company.Addressetc))
-		pdf.SetXY(2.8*90, 2.8*90)
-		pdf.Cell(nil, fmt.Sprintf("%v 귀하", company.Name))
 
-		//pdf.SetXY(2.8*70, 2.8*140)
-		//pdf.Cell(nil, "입금 계좌")
+		pdf.SetXY(yRatio*100, 2.8*80)
+		pdf.Cell(nil, building.Address)
 
-		//pdf.SetXY(2.8*70, 2.8*150)
-		//pdf.Cell(nil, my.Bankname)
+		pdf.SetXY(yRatio*100, 2.8*90)
+		pdf.Cell(nil, fmt.Sprintf("%v %v 귀하", building.Addressetc, customer.Billingname))
 
-		//pdf.SetXY(2.8*70, 2.8*158)
-		//pdf.Cell(nil, my.Bankno)
+		building.Zip = "12345"
+		customer.User = 1
 
-		pdf.SetXY(2.8*155, 2.8*223)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+		pdf.SetXY(yRatio*160, 2.8*100)
+		pdf.Cell(nil, building.Zip)
 
 		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(2.8*14, 2.8*140)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+		if customer.User > 0 {
+			user := userManager.Get(customer.User)
 
-		pdf.SetXY(2.8*12, 2.8*150)
-		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
-
-		pdf.SetXY(2.8*39, 2.8*150)
-		pdf.Cell(nil, humanize.Comma(int64(vat)))
-
-		pdf.SetXY(2.8*24, 2.8*154)
-		pdf.Cell(nil, fmt.Sprintf("%v", company.Id))
-
-		pdf.SetXY(2.8*12, 2.8*158)
-		pdf.Cell(nil, company.Name)
-
-		pdf.SetXY(2.8*24, 2.8*164)
-		pdf.Cell(nil, today)
-
-		pdf.SetXY(2.8*73, 2.8*254)
-		pdf.Cell(nil, fmt.Sprintf("%v", company.Id))
-
-		pdf.SetXY(2.8*73, 2.8*260)
-		pdf.Cell(nil, company.Name)
-
-		pdf.SetXY(2.8*73, 2.8*266)
-		pdf.Cell(nil, company.Ceo)
-
-		pdf.SetXY(2.8*73, 2.8*272)
-		temp := strings.Split(v.Billdate, "-")
-		month := global.Atoi(temp[1])
-
-		if v.Period == 1 {
-			billdate := fmt.Sprintf("%v", month)
-			pdf.Cell(nil, billdate)
-		} else {
-			billdate := fmt.Sprintf("%v ~ %v", month, month+v.Period-1)
-			pdf.Cell(nil, billdate)
+			if user != nil {
+				pdf.SetXY(yRatio*180, 2.8*110)
+				pdf.Cell(nil, fmt.Sprintf("(%v %v)", user.Id, user.Name))
+			}
 		}
 
-		pdf.SetFont("orc", "", 12)
+		pdf.SetFont("noto", "", 14)
+
+		pdf.SetXY(yRatio*155, 2.8*223)
+		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+
+		pdf.SetFont("noto", "", 12)
+
+		pdf.SetXY(yRatio*14, 2.8*140)
+		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+
+		pdf.SetFont("noto", "", 12)
+
+		pdf.SetXY(yRatio*40, 2.8*140)
+		pdf.Cell(nil, billdate)
+
+		pdf.SetFont("noto", "", 10)
+
+		contents := strings.Split(my.Content, "\n")
+		for i, content := range contents {
+			pdf.SetXY(yRatio*75, 2.8*float64(140+i*6))
+			pdf.Cell(nil, content)
+		}
+
+		pdf.SetFont("noto", "", 12)
+
+		pdf.SetXY(yRatio*25, 2.8*145)
+		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
+
+		pdf.SetXY(yRatio*12, 2.8*150)
+		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
+
+		pdf.SetXY(yRatio*39, 2.8*150)
+		pdf.Cell(nil, humanize.Comma(int64(vat)))
+
+		pdf.SetXY(yRatio*24, 2.8*154)
+		pdf.Cell(nil, fmt.Sprintf("%v", building.Companyno))
+
+		pdf.SetXY(yRatio*12, 2.8*158)
+		pdf.Cell(nil, building.Name)
+
+		pdf.SetXY(yRatio*24, 2.8*164)
+		pdf.Cell(nil, today)
+
+		pdf.SetXY(yRatio*73, 2.8*254)
+		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
+
+		pdf.SetXY(yRatio*140, 2.8*254)
+		pdf.Cell(nil, fmt.Sprintf("%v", month))
+
+		pdf.SetXY(yRatio*158, 2.8*254)
+		pdf.Cell(nil, fmt.Sprintf("%v", lastday))
+
+		pdf.SetXY(yRatio*73, 2.8*260)
+		pdf.Cell(nil, building.Name)
+
+		pdf.SetXY(yRatio*73, 2.8*266)
+		pdf.Cell(nil, building.Ceo)
+
+		pdf.SetXY(yRatio*73, 2.8*272)
+		pdf.Cell(nil, billdate)
+
+		pdf.SetFont("ocr", "", 12)
 
 		price := v.Price
 		sum := 0
@@ -179,10 +223,8 @@ func (c *DownloadController) Giro(ids []int64) {
 		strPrice := global.Itoa(v.Price)
 		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
 
-		customer := customerManager.GetByCompanyBuilding(user.Company, building.Id)
-		log.Println(user.Company, building.Id)
-		log.Println("customer number", customer.Number)
-		companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
+		//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
+		companyNo := 1000000000 + v.Id
 
 		sum = 0
 
@@ -226,7 +268,7 @@ func (c *DownloadController) Giro(ids []int64) {
 		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
 
 		str := fmt.Sprintf("<%v+ %v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
-		pdf.SetXY(2.8*73, 2.8*237)
+		pdf.SetXY(yRatio*73, 2.8*237)
 		pdf.Cell(nil, str)
 	}
 
@@ -341,7 +383,10 @@ func (c *DownloadController) UserExample() {
 	c.Download("./doc/user.xlsx", "user.xlsx")
 }
 
-func (c *DownloadController) All() {
+func (c *DownloadController) All(category int) {
+	log.Println("======================================")
+	log.Println("typeid", category)
+	log.Println("======================================")
 	conn := c.NewConnection()
 
 	session := c.Session
@@ -349,6 +394,7 @@ func (c *DownloadController) All() {
 	departmentManager := models.NewDepartmentManager(conn)
 	userlistManager := models.NewUserlistManager(conn)
 	customerManager := models.NewCustomerManager(conn)
+	licenseManager := models.NewLicenseManager(conn)
 
 	departments := departmentManager.Find([]interface{}{
 		models.Where{Column: "company", Value: session.Company, Compare: "="},
@@ -364,145 +410,200 @@ func (c *DownloadController) All() {
 		models.Ordering("u_name"),
 	})
 
-	contracttypes := []string{"", "안전관리", "유지보수", "안전관리+유지보수"}
+	excel := global.New()
 
-	header := []string{"코드", "수용가명", "사업자번호", "대표자", "수용가 주소", "계약 용량", "점검자", "영업자", "건물용도", "관할구청",
-		"고객명", "사업자번호", "대표자", "업태", "종목", "고객주소",
-		"계약형태", "계약일자", "계약만료일", "한전 고객번호", "안전공사 고객번호",
-		"담당자", "담당자 연락처", "담당자 Email", "계약담당자", "Tel No.", "Fax No.",
-		"대행수수료", "부가세", "계산서", "수금방법", "수금일"}
-	width := []int{10, 30, 15, 15, 50, 10, 15, 15, 15, 20,
-		30, 15, 15, 15, 20, 50,
-		15, 15, 15, 20, 20,
-		15, 20, 30, 15, 20, 20,
-		15, 15, 15, 15, 15}
-	align := []string{"L", "L", "L", "L", "L", "R", "L", "L", "L", "L",
-		"L", "L", "L", "L", "L", "L",
-		"C", "C", "C", "L", "L",
-		"L", "L", "L", "L", "L", "L",
-		"R", "R", "L", "C", "C"}
-	excel := global.NewExcel("소속회원 현황", "수용가 현황", 10, header, width, align)
-	excel.SetHeight(24)
+	if category != 2 {
+		contracttypes := []string{"", "안전관리", "유지보수", "안전관리+유지보수"}
 
-	excel.InsertRow(1, 1)
-	excel.SetRowHeight(1, 24)
-	excel.MergeCell("A", 1, "A", 2)
-	excel.MergeCell("B", 1, "J", 1)
-	excel.MergeCell("K", 1, "AF", 1)
-	excel.SetHeaderStyle("A", 1, 10)
-	excel.SetHeaderStyle("B", 1, 10)
-	excel.SetHeaderStyle("K", 1, 10)
-	excel.SetHeaderStyle("AF", 1, 10)
-	excel.SetCellValue("A", 1, "코드")
-	excel.SetCellValue("B", 1, "수용가정보")
-	excel.SetCellValue("V", 1, "고객정보")
+		header := []string{"고객코드", "고객명", "사업자번호", "대표자", "기본주소", "상세주소", "연락처", "이메일",
+			"점검건물명", "사업자번호", "대표자", "우편번호", "기본주소", "상세주소",
+			"업태", "종목", "건물용도",
+			"계약형태", "계약용량", "점검자", "영업자", "계약일자", "계약만료일",
+			"관할구청", "한전 고객번호", "안전공사 고객번호", "정기점검 주기", "최종검사일",
 
-	excel.Rows++
+			"(관리)담당자", "(관리)담당자 연락처", "(관리)담당자 Email",
+			"(계약)담당자", "(계약)담당자 연락처", "(계약)책임자 Email", "Fax No.",
+			"대행수수료", "부가세", "계산서 발행일", "청구방법", "수금일", "특이사항"}
+		width := []int{10, 30, 15, 50, 40, 40, 20, 30,
+			30, 20, 15, 12, 50, 40,
+			20, 20, 20,
+			20, 20, 20, 20, 20, 20,
+			20, 15, 15, 15, 20,
 
-	log.Println(len(items))
+			20, 20, 50,
+			20, 20, 50, 20,
 
-	for _, v := range items {
-		company := v.Extra["company"].(models.Company)
-		building := v.Extra["building"].(models.Building)
-		excel.CellInt(v.Number)
-		excel.Cell(company.Name)
-		excel.Cell(company.Companyno)
-		excel.Cell(company.Ceo)
-		excel.Cell(fmt.Sprintf("%v %v", company.Address, company.Addressetc))
-		excel.Cell(fmt.Sprintf("%v", building.Totalweight))
+			15, 15, 20, 15, 20, 50}
+		align := []string{"L", "L", "L", "L", "L", "L", "L", "L",
+			"L", "L", "L", "L", "L", "L",
+			"L", "L", "L",
+			"C", "R", "L", "L", "C", "C",
+			"L", "L", "L", "L", "C",
 
-		username := ""
-		for _, user := range users {
-			if user.Id == v.User {
-				username = user.Name
-				break
+			"L", "L", "L",
+			"L", "L", "L", "L",
+
+			"R", "R", "C", "C", "C", "L"}
+		excel.NewSheet("고객 현황", header, width, align)
+		excel.SetHeight(24)
+
+		excel.InsertRow(1, 1)
+		excel.SetRowHeight(1, 24)
+		excel.MergeCell("A", 1, "A", 2)
+		excel.MergeCell("B", 1, "H", 1)
+		excel.MergeCell("I", 1, "AO", 1)
+		excel.SetHeaderStyle("A", 1, 10)
+		excel.SetHeaderStyle("B", 1, 10)
+		excel.SetHeaderStyle("I", 1, 10)
+		excel.SetHeaderStyle("AO", 1, 10)
+		excel.SetCellValue("A", 1, "고객코드")
+		excel.SetCellValue("B", 1, "고객정보")
+		excel.SetCellValue("I", 1, "점건건물정보")
+
+		excel.Rows++
+
+		for _, v := range items {
+			company := v.Extra["company"].(models.Company)
+			building := v.Extra["building"].(models.Building)
+			excel.CellInt(v.Number)
+			excel.Cell(company.Name)
+			excel.Cell(company.Companyno)
+			excel.Cell(company.Ceo)
+			excel.Cell(company.Address)
+			excel.Cell(company.Addressetc)
+			excel.Cell(company.Tel)
+			excel.Cell(company.Email)
+
+			excel.Cell(building.Name)
+			excel.Cell(building.Companyno)
+			excel.Cell(building.Ceo)
+			excel.Cell(building.Zip)
+			excel.Cell(building.Address)
+			excel.Cell(building.Addressetc)
+
+			excel.Cell(building.Businesscondition)
+			excel.Cell(building.Businessitem)
+
+			excel.Cell(building.Usage)
+
+			excel.Cell(contracttypes[v.Contracttype])
+			excel.Cell(humanize.FormatFloat("#,###.#", float64(building.Totalweight)))
+
+			username := ""
+			for _, user := range users {
+				if user.Id == v.User {
+					username = user.Name
+					break
+				}
 			}
-		}
-		excel.Cell(username)
+			excel.Cell(username)
 
-		saileusername := ""
-		for _, user := range users {
-			if user.Id == v.Salesuser {
-				saileusername = user.Name
-				break
+			saileusername := ""
+			for _, user := range users {
+				if user.Id == v.Salesuser {
+					saileusername = user.Name
+					break
+				}
 			}
+			excel.Cell(saileusername)
+
+			excel.Cell(v.Contractstartdate)
+			excel.Cell(v.Contractenddate)
+			excel.Cell(building.District)
+			excel.Cell(v.Kepconumber)
+			excel.Cell(v.Kesconumber)
+
+			excel.Cell(v.Periodic)
+			excel.Cell(v.Lastdate)
+
+			excel.Cell(v.Managername)
+			excel.Cell(v.Managertel)
+			excel.Cell(v.Manageremail)
+			excel.Cell(v.Billingname)
+			excel.Cell(v.Billingtel)
+			excel.Cell(v.Billingemail)
+			excel.Cell(v.Fax)
+			excel.Cell(fmt.Sprintf("%v", v.Contractprice))
+			excel.Cell(fmt.Sprintf("%v", v.Contractvat))
+
+			excel.Cell(fmt.Sprintf("%v일", v.Billingdate))
+			if v.Billingtype == 1 {
+				excel.Cell("지로")
+			} else {
+				excel.Cell("계산서")
+			}
+
+			month := ""
+			if v.Collectmonth == 1 {
+				month = "매월"
+			} else {
+				month = "익월"
+			}
+
+			excel.Cell(fmt.Sprintf("%v %v일", month, v.Collectday))
+
+			excel.Cell(v.Remark)
 		}
-		excel.Cell(saileusername)
-
-		//excel.Cell(fmt.Sprintf("%v", building.Receivevolt))
-		//excel.Cell(fmt.Sprintf("%v", building.Generatevolt))
-		//excel.Cell("")
-		excel.Cell(building.Usage)
-		excel.Cell(building.District)
-
-		// building
-
-		excel.Cell(building.Name)
-		excel.Cell(building.Companyno)
-		excel.Cell(building.Ceo)
-
-		excel.Cell(company.Businesscondition)
-		excel.Cell(company.Businessitem)
-		excel.Cell(fmt.Sprintf("%v %v", building.Address, building.Addressetc))
-		excel.Cell(contracttypes[v.Contracttype])
-		excel.Cell(v.Contractstartdate)
-		excel.Cell(v.Contractenddate)
-		excel.Cell(v.Kepconumber)
-		excel.Cell(v.Kesconumber)
-		excel.Cell(v.Managername)
-		excel.Cell(v.Managertel)
-		excel.Cell(v.Manageremail)
-		excel.Cell(v.Billingname)
-		excel.Cell(v.Billingtel)
-		excel.Cell(v.Fax)
-		excel.Cell(fmt.Sprintf("%v", v.Contractprice))
-		excel.Cell(fmt.Sprintf("%v", v.Contractvat))
-
-		excel.Cell("")
-		if v.Billingtype == 1 {
-			excel.Cell("지로")
-		} else {
-			excel.Cell("계산서")
-		}
-
-		month := ""
-		if v.Collectmonth == 1 {
-			month = "매월"
-		} else {
-			month = "익월"
-		}
-
-		excel.Cell(fmt.Sprintf("%v %v일", month, v.Collectday))
 	}
 
-	{
-		header := []string{"팀", "로그인아이디", "이름", "이메일", "연락처", "주소", "권한", "상태", "점수", "입사일"}
-		width := []int{30, 20, 15, 50, 30, 80, 15, 15, 15, 30}
-		align := []string{"L", "L", "L", "L", "L", "L", "L", "C", "R", "C"}
+	if category != 1 {
+		header := []string{"팀", "로그인아이디", "이름", "이메일", "연락처", "주소", "권한", "상태", "점수", "입사일", "기술자격", "등록번호", "기술자격등급", "기술자격취득일자"}
+		width := []int{30, 20, 15, 50, 30, 80, 15, 15, 15, 30, 50, 50, 20, 30}
+		align := []string{"L", "L", "L", "L", "L", "L", "L", "C", "R", "C", "L", "L", "C", "C"}
 		excel.NewSheet("소속회원", header, width, align)
 		excel.SetHeight(24)
-	}
 
-	for _, v := range users {
-		departmentName := ""
+		for _, v := range users {
+			departmentName := ""
 
-		for _, department := range departments {
-			if department.Id == v.Department {
-				departmentName = department.Name
-				break
+			for _, department := range departments {
+				if department.Id == v.Department {
+					departmentName = department.Name
+					break
+				}
+			}
+
+			excel.Cell(departmentName)
+			excel.Cell(v.Loginid)
+			excel.Cell(v.Name)
+			excel.Cell(v.Email)
+			excel.Cell(v.Tel)
+			excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
+			excel.Cell(user.GetLevel(user.Level(v.Level)))
+			excel.Cell(user.GetStatus(user.Status(v.Status)))
+			excel.Cell(fmt.Sprintf("%v", v.Score))
+			excel.Cell(v.Joindate)
+
+			licenses := licenseManager.FindByUser(session.Id)
+			if len(licenses) == 0 {
+				excel.Cell("")
+				excel.Cell("")
+				excel.Cell("")
+				excel.Cell("")
+			} else {
+				category := ""
+				level := ""
+				no := ""
+				date := ""
+				for i, license := range licenses {
+					if i > 0 {
+						category += "\n"
+						level += "\n"
+						no += "\n"
+						date += "\n"
+					}
+					category += license.Extra["licensecategory"].(models.Licensecategory).Name
+					level += license.Extra["licenselevel"].(models.Licenselevel).Name
+					no += license.Number
+					date += license.Takingdate
+				}
+
+				excel.Cell(category)
+				excel.Cell(no)
+				excel.Cell(level)
+				excel.Cell(date)
 			}
 		}
-
-		excel.Cell(departmentName)
-		excel.Cell(v.Loginid)
-		excel.Cell(v.Name)
-		excel.Cell(v.Email)
-		excel.Cell(v.Tel)
-		excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
-		excel.Cell(user.GetLevel(user.Level(v.Level)))
-		excel.Cell(user.GetStatus(user.Status(v.Status)))
-		excel.Cell(fmt.Sprintf("%v", v.Score))
-		excel.Cell(v.Joindate)
 	}
 
 	fullFilename := excel.Save("")

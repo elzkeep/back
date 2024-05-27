@@ -93,6 +93,16 @@ func OpenExcel(filename string, title string, fontSize float64, header []string,
 	return &item
 }
 
+func New() *Excel {
+	var item Excel
+
+	item.FontSize = 10
+
+	item.File = excelize.NewFile()
+
+	return &item
+}
+
 func NewExcel(title string, sheet string, fontSize float64, header []string, width []int, align []string) *Excel {
 	var item Excel
 
@@ -113,7 +123,13 @@ func NewExcel(title string, sheet string, fontSize float64, header []string, wid
 	item.Index, _ = item.File.NewSheet(sheet)
 
 	for i, value := range header {
-		t := fmt.Sprintf("%c", rune('A'+i))
+		t := ""
+
+		if i > 25 {
+			t = fmt.Sprintf("A%c", rune('A'+(i-26)))
+		} else {
+			t = fmt.Sprintf("%c", rune('A'+i))
+		}
 		item.File.SetColWidth(item.Sheet, t, t, float64(width[i])*0.8)
 		item.HeaderCell(value)
 	}
@@ -137,9 +153,20 @@ func (p *Excel) NewSheet(sheet string, header []string, width []int, align []str
 	p.Index, _ = p.File.NewSheet(sheet)
 
 	for i, value := range header {
-		t := fmt.Sprintf("%c", rune('A'+i))
+		t := ""
+
+		if i > 25 {
+			t = fmt.Sprintf("A%c", rune('A'+(i-26)))
+		} else {
+			t = fmt.Sprintf("%c", rune('A'+i))
+		}
+
 		p.File.SetColWidth(p.Sheet, t, t, float64(width[i])*0.8)
 		p.HeaderCell(value)
+	}
+
+	if sheet != "Sheet1" {
+		p.File.DeleteSheet("Sheet1")
 	}
 }
 
@@ -231,7 +258,6 @@ func (p *Excel) GetColName() string {
 		t = fmt.Sprintf("%c%v", rune('A'+p.Pos), p.Rows+1)
 	}
 
-	log.Println("pos", p.Pos, t)
 	return t
 }
 
@@ -333,7 +359,6 @@ func (p *Excel) InsertRow(row int, n int) {
 func (p *Excel) SetCellValue(col string, row int, value interface{}) {
 	cell := fmt.Sprintf("%v%v", col, row)
 
-	log.Println("cell", cell)
 	p.File.SetCellValue(p.Sheet, cell, value)
 }
 

@@ -70,6 +70,8 @@ func (p *WebfaqManager) SetIndex(index string) {
 }
 
 func (p *WebfaqManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -78,6 +80,8 @@ func (p *WebfaqManager) Exec(query string, params ...interface{}) (sql.Result, e
 }
 
 func (p *WebfaqManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+    log.Println(query)
+    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -460,8 +464,6 @@ func (p *WebfaqManager) Count(args []interface{}) int {
         }
     }
 
-    log.Println(query)
-    log.Println(params)
     rows, err := p.Query(query, params...)
 
     if err != nil {
