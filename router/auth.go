@@ -88,6 +88,10 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
+	if c.Method() == "GET" && u.Path == "/api/department" {
+		return c.Next()
+	}
+
 	if u.Path == "/api/jwt" {
 		return c.Next()
 	}
