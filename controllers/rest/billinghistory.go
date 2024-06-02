@@ -235,7 +235,6 @@ func (c *BillinghistoryController) UpdatePrice(price int, id int64) {
 	_manager := models.NewBillinghistoryManager(conn)
 	_manager.UpdatePrice(price, id)
 }
-
 // @Put()
 func (c *BillinghistoryController) UpdateCompany(company int64, id int64) {
     
@@ -245,7 +244,6 @@ func (c *BillinghistoryController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewBillinghistoryManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *BillinghistoryController) UpdateBuilding(building int64, id int64) {
     
@@ -255,7 +253,6 @@ func (c *BillinghistoryController) UpdateBuilding(building int64, id int64) {
 	_manager := models.NewBillinghistoryManager(conn)
 	_manager.UpdateBuilding(building, id)
 }
-
 // @Put()
 func (c *BillinghistoryController) UpdateBilling(billing int64, id int64) {
     
@@ -265,7 +262,6 @@ func (c *BillinghistoryController) UpdateBilling(billing int64, id int64) {
 	_manager := models.NewBillinghistoryManager(conn)
 	_manager.UpdateBilling(billing, id)
 }
-
 
 
 

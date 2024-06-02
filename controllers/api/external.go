@@ -251,9 +251,15 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("AF", pos), ".", "-")
 		customerItem.Type = customer.TypeOutsourcing
 
+		r, _ := regexp.Compile("[0-9]+")
+
+		billStr := f.GetCell("AS", pos)
+		billdate := r.FindString(billStr)
+
+		customerItem.Billingdate = global.Atoi(billdate)
+
 		str := f.GetCell("AU", pos)
 
-		r, _ := regexp.Compile("[0-9]+")
 		collectday := r.FindString(str)
 
 		if strings.Contains(str, "당월") {
@@ -455,6 +461,147 @@ func (c *ExternalController) All(category int, filename string) {
 		return
 	}
 
+	if category != 1 {
+		departmentManager := models.NewDepartmentManager(conn)
+		licenseManager := models.NewLicenseManager(conn)
+		licensecategoryManager := models.NewLicensecategoryManager(conn)
+		licenselevelManager := models.NewLicenselevelManager(conn)
+
+		sheet := "소속회원"
+		f.SetSheet(sheet)
+
+		pos := 1
+		for {
+			item := models.User{}
+
+			name := f.GetCell("B", pos)
+
+			if name == "" {
+				break
+			}
+
+			if name == "로그인아이디" {
+				pos++
+				continue
+			}
+
+			zip := ""
+			address := f.GetCell("F", pos)
+			tel := f.GetCell("E", pos)
+			email := f.GetCell("D", pos)
+
+			educationdate := ""
+			educationinstitution := ""
+			specialeducationdate := ""
+			specialeducationinstitution := ""
+			joindate := f.GetCell("J", pos)
+			status := f.GetCell("H", pos)
+
+			userItem := userManager.GetByCompanyTelName(session.Company, tel, name)
+
+			if userItem != nil {
+				item = *userItem
+			}
+
+			departmentName := f.GetCell("A", pos)
+			department := departmentManager.GetByCompanyName(session.Company, departmentName)
+			if department == nil {
+				department = &models.Department{
+					Name:    departmentName,
+					Status:  1,
+					Company: session.Company,
+				}
+
+				departmentManager.Insert(department)
+
+				department.Id = departmentManager.GetIdentity()
+			}
+
+			item.Department = department.Id
+			item.Name = name
+			item.Zip = zip
+			item.Address = address
+			item.Tel = tel
+			item.Email = email
+			item.Educationdate = educationdate
+			item.Educationinstitution = educationinstitution
+			item.Specialeducationdate = specialeducationdate
+			item.Specialeducationinstitution = specialeducationinstitution
+			item.Joindate = joindate
+			item.Approval = user.ApprovalComplete
+			item.Level = user.LevelNormal
+
+			if status == "재직" {
+				item.Status = user.StatusUse
+			} else {
+				item.Status = user.StatusNotuse
+			}
+
+			if userItem == nil {
+				item.Company = session.Company
+				item.Loginid = item.Name
+				item.Passwd = "0000"
+				item.Score = 60
+
+				userManager.Insert(&item)
+				item.Id = userManager.GetIdentity()
+			} else {
+				userManager.Update(&item)
+			}
+
+			licensename := f.GetCell("K", pos)
+			licenseno := f.GetCell("L", pos)
+			licenselevel := f.GetCell("M", pos)
+			licensedate := f.GetCell("N", pos)
+
+			if licensename != "" {
+				licensenames := strings.Split(licensename, "\n")
+				licensenos := strings.Split(licenseno, "\n")
+				licenselevels := strings.Split(licenselevel, "\n")
+				licensedates := strings.Split(licensedate, "\n")
+
+				for i, v := range licensenames {
+					licensename := v
+					licenseno := ""
+					licenselevel := ""
+					licensedate := ""
+
+					if len(licensenos)-1 >= i {
+						licenseno = licensenos[i]
+					}
+
+					if len(licenselevels)-1 >= i {
+						licenselevel = licenselevels[i]
+					}
+
+					if len(licensedates)-1 >= i {
+						licensedate = licensedates[i]
+					}
+
+					licensecategoryItem := licensecategoryManager.GetByName(licensename)
+					if licensecategoryItem == nil {
+						licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
+						licensecategoryItem.Id = licensecategoryManager.GetIdentity()
+					}
+
+					licenselevelItem := licenselevelManager.GetByName(licenselevel)
+					if licenselevelItem == nil {
+						licenselevelManager.Insert(&models.Licenselevel{Name: licenselevel, Order: 0})
+						licenselevelItem.Id = licenselevelManager.GetIdentity()
+					}
+
+					licenseItem := licenseManager.GetByUserLicensecategory(item.Id, licensecategoryItem.Id)
+
+					if licenseItem == nil {
+						licenseManager.Insert(&models.License{User: item.Id, Number: licenseno, Licensecategory: licensecategoryItem.Id, Licenselevel: licenselevelItem.Id, Takingdate: licensedate})
+					}
+				}
+			}
+
+			pos++
+		}
+	}
+
 	if category != 2 {
 		sheet := "고객 현황"
 		f.SetSheet(sheet)
@@ -619,6 +766,7 @@ func (c *ExternalController) All(category int, filename string) {
 			customerItem.Billingtel = f.GetCell("AG", pos)
 			customerItem.Billingemail = f.GetCell("AH", pos)
 			customerItem.Fax = f.GetCell("AI", pos)
+			customerItem.Status = 1
 
 			customerItem.Contractprice = global.Atoi(f.GetCell("AJ", pos))
 			customerItem.Contractvat = global.Atoi(f.GetCell("AK", pos))
@@ -659,147 +807,6 @@ func (c *ExternalController) All(category int, filename string) {
 
 			customerManager.DeleteByCompanyBuilding(session.Company, buildingId)
 			customerManager.Insert(&customerItem)
-
-			pos++
-		}
-	}
-
-	if category != 1 {
-		departmentManager := models.NewDepartmentManager(conn)
-		licenseManager := models.NewLicenseManager(conn)
-		licensecategoryManager := models.NewLicensecategoryManager(conn)
-		licenselevelManager := models.NewLicenselevelManager(conn)
-
-		sheet := "소속회원"
-		f.SetSheet(sheet)
-
-		pos := 1
-		for {
-			item := models.User{}
-
-			name := f.GetCell("B", pos)
-
-			if name == "" {
-				break
-			}
-
-			if name == "로그인아이디" {
-				pos++
-				continue
-			}
-
-			zip := ""
-			address := f.GetCell("F", pos)
-			tel := f.GetCell("E", pos)
-			email := f.GetCell("D", pos)
-
-			educationdate := ""
-			educationinstitution := ""
-			specialeducationdate := ""
-			specialeducationinstitution := ""
-			joindate := f.GetCell("J", pos)
-			status := f.GetCell("H", pos)
-
-			userItem := userManager.GetByCompanyName(session.Company, name)
-
-			if userItem != nil {
-				item = *userItem
-			}
-
-			departmentName := f.GetCell("A", pos)
-			department := departmentManager.GetByCompanyName(session.Company, departmentName)
-			if department == nil {
-				department = &models.Department{
-					Name:    departmentName,
-					Status:  1,
-					Company: session.Company,
-				}
-
-				departmentManager.Insert(department)
-
-				department.Id = departmentManager.GetIdentity()
-			}
-
-			item.Department = department.Id
-			item.Name = name
-			item.Zip = zip
-			item.Address = address
-			item.Tel = tel
-			item.Email = email
-			item.Educationdate = educationdate
-			item.Educationinstitution = educationinstitution
-			item.Specialeducationdate = specialeducationdate
-			item.Specialeducationinstitution = specialeducationinstitution
-			item.Joindate = joindate
-			item.Approval = user.ApprovalComplete
-			item.Level = user.LevelNormal
-
-			if status == "재직" {
-				item.Status = user.StatusUse
-			} else {
-				item.Status = user.StatusNotuse
-			}
-
-			if userItem == nil {
-				item.Company = session.Company
-				item.Loginid = item.Name
-				item.Passwd = "0000"
-				item.Score = 60
-
-				userManager.Insert(&item)
-				item.Id = userManager.GetIdentity()
-			} else {
-				userManager.Update(&item)
-			}
-
-			licensename := f.GetCell("K", pos)
-			licenseno := f.GetCell("L", pos)
-			licenselevel := f.GetCell("M", pos)
-			licensedate := f.GetCell("N", pos)
-
-			if licensename != "" {
-				licensenames := strings.Split(licensename, "\n")
-				licensenos := strings.Split(licenseno, "\n")
-				licenselevels := strings.Split(licenselevel, "\n")
-				licensedates := strings.Split(licensedate, "\n")
-
-				for i, v := range licensenames {
-					licensename := v
-					licenseno := ""
-					licenselevel := ""
-					licensedate := ""
-
-					if len(licensenos)-1 >= i {
-						licenseno = licensenos[i]
-					}
-
-					if len(licenselevels)-1 >= i {
-						licenselevel = licenselevels[i]
-					}
-
-					if len(licensedates)-1 >= i {
-						licensedate = licensedates[i]
-					}
-
-					licensecategoryItem := licensecategoryManager.GetByName(licensename)
-					if licensecategoryItem == nil {
-						licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
-						licensecategoryItem.Id = licensecategoryManager.GetIdentity()
-					}
-
-					licenselevelItem := licenselevelManager.GetByName(licenselevel)
-					if licenselevelItem == nil {
-						licenselevelManager.Insert(&models.Licenselevel{Name: licenselevel, Order: 0})
-						licenselevelItem.Id = licenselevelManager.GetIdentity()
-					}
-
-					licenseItem := licenseManager.GetByUserLicensecategory(item.Id, licensecategoryItem.Id)
-
-					if licenseItem == nil {
-						licenseManager.Insert(&models.License{User: item.Id, Number: licenseno, Licensecategory: licensecategoryItem.Id, Licenselevel: licenselevelItem.Id, Takingdate: licensedate})
-					}
-				}
-			}
 
 			pos++
 		}

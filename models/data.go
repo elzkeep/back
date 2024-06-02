@@ -75,8 +75,6 @@ func (p *DataManager) SetIndex(index string) {
 }
 
 func (p *DataManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -85,8 +83,6 @@ func (p *DataManager) Exec(query string, params ...interface{}) (sql.Result, err
 }
 
 func (p *DataManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -673,8 +669,6 @@ func (p *DataManager) Find(args []interface{}) []Data {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {

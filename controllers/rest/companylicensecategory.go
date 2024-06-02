@@ -210,7 +210,6 @@ func (c *CompanylicensecategoryController) UpdateName(name string, id int64) {
 	_manager := models.NewCompanylicensecategoryManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *CompanylicensecategoryController) UpdateOrder(order int, id int64) {
     
@@ -220,7 +219,6 @@ func (c *CompanylicensecategoryController) UpdateOrder(order int, id int64) {
 	_manager := models.NewCompanylicensecategoryManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 
 
 

@@ -280,7 +280,6 @@ func (c *BillingController) UpdatePrice(price int, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdatePrice(price, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateStatus(status int, id int64) {
     
@@ -290,7 +289,6 @@ func (c *BillingController) UpdateStatus(status int, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateGiro(giro int, id int64) {
     
@@ -300,7 +298,6 @@ func (c *BillingController) UpdateGiro(giro int, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateGiro(giro, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateBilldate(billdate string, id int64) {
     
@@ -310,7 +307,6 @@ func (c *BillingController) UpdateBilldate(billdate string, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateBilldate(billdate, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateMonth(month string, id int64) {
     
@@ -320,7 +316,6 @@ func (c *BillingController) UpdateMonth(month string, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateMonth(month, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateEndmonth(endmonth string, id int64) {
     
@@ -330,7 +325,6 @@ func (c *BillingController) UpdateEndmonth(endmonth string, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateEndmonth(endmonth, id)
 }
-
 // @Put()
 func (c *BillingController) UpdatePeriod(period int, id int64) {
     
@@ -340,7 +334,6 @@ func (c *BillingController) UpdatePeriod(period int, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdatePeriod(period, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateCompany(company int64, id int64) {
     
@@ -350,7 +343,6 @@ func (c *BillingController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *BillingController) UpdateBuilding(building int64, id int64) {
     
@@ -360,7 +352,6 @@ func (c *BillingController) UpdateBuilding(building int64, id int64) {
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdateBuilding(building, id)
 }
-
 
 
 

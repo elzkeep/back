@@ -68,8 +68,6 @@ func (p *CustomercompanyManager) SetIndex(index string) {
 }
 
 func (p *CustomercompanyManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -78,8 +76,6 @@ func (p *CustomercompanyManager) Exec(query string, params ...interface{}) (sql.
 }
 
 func (p *CustomercompanyManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -90,7 +86,7 @@ func (p *CustomercompanyManager) Query(query string, params ...interface{}) (*sq
 func (p *CustomercompanyManager) GetQuery() string {
     ret := ""
 
-    str := "select cc_id, cc_company, cc_customer, cc_date from customercompany_tb "
+    str := "select cc_id, cc_company, cc_customer, cc_date, c_id, c_name, c_companyno, c_ceo, c_tel, c_email, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_giro, c_egirologinid, c_egiropasswd, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from customercompany_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -99,6 +95,8 @@ func (p *CustomercompanyManager) GetQuery() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and cc_customer = c_id "
     
 
     return ret;
@@ -107,7 +105,7 @@ func (p *CustomercompanyManager) GetQuery() string {
 func (p *CustomercompanyManager) GetQuerySelect() string {
     ret := ""
     
-    str := "select count(*) from customercompany_tb "
+    str := "select count(*) from customercompany_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -116,6 +114,8 @@ func (p *CustomercompanyManager) GetQuerySelect() string {
     }
 
     ret += "where 1=1 "
+    
+    ret += "and cc_customer = c_id "    
     
 
     return ret;
@@ -318,10 +318,11 @@ func (p *CustomercompanyManager) ReadRow(rows *sql.Rows) *Customercompany {
     var item Customercompany
     var err error
 
+    var _company Company
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date)
+        err = rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         
         
         
@@ -342,7 +343,9 @@ func (p *CustomercompanyManager) ReadRow(rows *sql.Rows) *Customercompany {
     } else {
 
         item.InitExtra()
-        
+        _company.InitExtra()
+        item.AddExtra("company",  _company)
+
         return &item
     }
 }
@@ -352,9 +355,10 @@ func (p *CustomercompanyManager) ReadRows(rows *sql.Rows) []Customercompany {
 
     for rows.Next() {
         var item Customercompany
-        
+        var _company Company
+            
     
-        err := rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date)
+        err := rows.Scan(&item.Id, &item.Company, &item.Customer, &item.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -369,7 +373,9 @@ func (p *CustomercompanyManager) ReadRows(rows *sql.Rows) []Customercompany {
         }
         
         item.InitExtra()        
-        
+        _company.InitExtra()
+        item.AddExtra("company",  _company)
+
         items = append(items, item)
     }
 
@@ -384,6 +390,8 @@ func (p *CustomercompanyManager) Get(id int64) *Customercompany {
 
     query := p.GetQuery() + " and cc_id = ?"
 
+    
+    query += " and cc_customer = c_id "    
     
     
     rows, err := p.Query(query, id)
@@ -562,8 +570,6 @@ func (p *CustomercompanyManager) Find(args []interface{}) []Customercompany {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {

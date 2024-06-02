@@ -87,8 +87,6 @@ func (p *UserlistManager) SetIndex(index string) {
 }
 
 func (p *UserlistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -97,8 +95,6 @@ func (p *UserlistManager) Exec(query string, params ...interface{}) (sql.Result,
 }
 
 func (p *UserlistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -654,8 +650,6 @@ func (p *UserlistManager) Find(args []interface{}) []Userlist {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {

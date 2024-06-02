@@ -312,7 +312,6 @@ func (c *CompanylicenseController) UpdateNumber(number string, id int64) {
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateNumber(number, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateTakingdate(takingdate string, id int64) {
     
@@ -322,7 +321,6 @@ func (c *CompanylicenseController) UpdateTakingdate(takingdate string, id int64)
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateTakingdate(takingdate, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateEducationdate(educationdate string, id int64) {
     
@@ -332,7 +330,6 @@ func (c *CompanylicenseController) UpdateEducationdate(educationdate string, id 
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateEducationdate(educationdate, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateEducationinstitution(educationinstitution string, id int64) {
     
@@ -342,7 +339,6 @@ func (c *CompanylicenseController) UpdateEducationinstitution(educationinstituti
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateEducationinstitution(educationinstitution, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateSpecialeducationdate(specialeducationdate string, id int64) {
     
@@ -352,7 +348,6 @@ func (c *CompanylicenseController) UpdateSpecialeducationdate(specialeducationda
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateSpecialeducationdate(specialeducationdate, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateSpecialeducationinstitution(specialeducationinstitution string, id int64) {
     
@@ -362,7 +357,6 @@ func (c *CompanylicenseController) UpdateSpecialeducationinstitution(specialeduc
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateSpecialeducationinstitution(specialeducationinstitution, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateCompany(company int64, id int64) {
     
@@ -372,7 +366,6 @@ func (c *CompanylicenseController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateLicensecategory(licensecategory int64, id int64) {
     
@@ -382,7 +375,6 @@ func (c *CompanylicenseController) UpdateLicensecategory(licensecategory int64, 
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateLicensecategory(licensecategory, id)
 }
-
 // @Put()
 func (c *CompanylicenseController) UpdateLicenselevel(licenselevel int64, id int64) {
     
@@ -392,7 +384,6 @@ func (c *CompanylicenseController) UpdateLicenselevel(licenselevel int64, id int
 	_manager := models.NewCompanylicenseManager(conn)
 	_manager.UpdateLicenselevel(licenselevel, id)
 }
-
 
 
 

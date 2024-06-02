@@ -381,3 +381,70 @@ func (c *CustomerController) MaxNumber(id int64) {
 
 	c.Set("max", max)
 }
+
+func (c *CustomerController) InitData() {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	/*
+		companylistManager := models.NewCompanylistManager(conn)
+		companylists := companylistManager.Find([]interface{}{
+			models.Where{Column: "company", Value: session.Company, Compare: "="},
+			models.Where{Column: "type", Value: company.TypeBuilding, Compare: "="},
+			models.Ordering("c_name"),
+		})
+	*/
+
+	customercompanyManager := models.NewCustomercompanyManager(conn)
+	customercompanys := customercompanyManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("c_name"),
+	})
+
+	c.Set("companys", customercompanys)
+
+	userManager := models.NewUserManager(conn)
+	users := userManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("u_name"),
+	})
+
+	c.Set("users", users)
+
+	customerManager := models.NewCustomerManager(conn)
+	items := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Where{Column: "status", Value: 1, Compare: "="},
+	})
+
+	user := customerManager.Count([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Where{Column: "status", Value: 2, Compare: "="},
+	})
+
+	var money int64 = 0
+	var score float32 = 0.0
+
+	for _, v := range items {
+		money += int64(v.Contractprice)
+		money += int64(v.Contractvat)
+
+		building := v.Extra["building"].(models.Building)
+
+		score += float32(building.Score)
+	}
+
+	c.Set("currentuser", len(items))
+	c.Set("user", user)
+	c.Set("money", money)
+	c.Set("score", score)
+
+	departmentManager := models.NewDepartmentManager(conn)
+	departments := departmentManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Ordering("de_name"),
+	})
+
+	c.Set("departments", departments)
+}

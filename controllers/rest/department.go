@@ -259,7 +259,6 @@ func (c *DepartmentController) UpdateName(name string, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *DepartmentController) UpdateStatus(status int, id int64) {
     
@@ -269,7 +268,6 @@ func (c *DepartmentController) UpdateStatus(status int, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *DepartmentController) UpdateOrder(order int, id int64) {
     
@@ -279,7 +277,6 @@ func (c *DepartmentController) UpdateOrder(order int, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 // @Put()
 func (c *DepartmentController) UpdateParent(parent int64, id int64) {
     
@@ -289,7 +286,6 @@ func (c *DepartmentController) UpdateParent(parent int64, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateParent(parent, id)
 }
-
 // @Put()
 func (c *DepartmentController) UpdateCompany(company int64, id int64) {
     
@@ -299,7 +295,6 @@ func (c *DepartmentController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *DepartmentController) UpdateMaster(master int64, id int64) {
     
@@ -309,7 +304,6 @@ func (c *DepartmentController) UpdateMaster(master int64, id int64) {
 	_manager := models.NewDepartmentManager(conn)
 	_manager.UpdateMaster(master, id)
 }
-
 
 
 

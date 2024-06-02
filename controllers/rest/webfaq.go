@@ -228,7 +228,6 @@ func (c *WebfaqController) UpdateCategory(category int, id int64) {
 	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateCategory(category, id)
 }
-
 // @Put()
 func (c *WebfaqController) UpdateTitle(title string, id int64) {
     
@@ -238,7 +237,6 @@ func (c *WebfaqController) UpdateTitle(title string, id int64) {
 	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *WebfaqController) UpdateContent(content string, id int64) {
     
@@ -248,7 +246,6 @@ func (c *WebfaqController) UpdateContent(content string, id int64) {
 	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *WebfaqController) UpdateOrder(order int, id int64) {
     
@@ -258,7 +255,6 @@ func (c *WebfaqController) UpdateOrder(order int, id int64) {
 	_manager := models.NewWebfaqManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 
 
 

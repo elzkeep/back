@@ -32,7 +32,8 @@ type Billinglist struct {
     Buildingname                string `json:"buildingname"`         
     Billingname                string `json:"billingname"`         
     Billingtel                string `json:"billingtel"`         
-    Billingemail                string `json:"billingemail"` 
+    Billingemail                string `json:"billingemail"`         
+    Companyname                string `json:"companyname"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
@@ -80,8 +81,6 @@ func (p *BillinglistManager) SetIndex(index string) {
 }
 
 func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -90,8 +89,6 @@ func (p *BillinglistManager) Exec(query string, params ...interface{}) (sql.Resu
 }
 
 func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -102,7 +99,7 @@ func (p *BillinglistManager) Query(query string, params ...interface{}) (*sql.Ro
 func (p *BillinglistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinglist_vw "
+    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail, bi_companyname from billinglist_vw "
 
     if p.Index == "" {
         ret = str
@@ -281,7 +278,7 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Companyname)
         
         
         
@@ -308,6 +305,8 @@ func (p *BillinglistManager) ReadRow(rows *sql.Rows) *Billinglist {
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
+        
         
         
         
@@ -338,7 +337,7 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
         var item Billinglist
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail, &item.Companyname)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -360,6 +359,7 @@ func (p *BillinglistManager) ReadRows(rows *sql.Rows) []Billinglist {
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" {
             item.Date = ""
         }
+        
         
         
         
@@ -559,8 +559,6 @@ func (p *BillinglistManager) Find(args []interface{}) []Billinglist {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {

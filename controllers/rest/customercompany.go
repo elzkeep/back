@@ -225,7 +225,6 @@ func (c *CustomercompanyController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewCustomercompanyManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *CustomercompanyController) UpdateCustomer(customer int64, id int64) {
     
@@ -235,7 +234,6 @@ func (c *CustomercompanyController) UpdateCustomer(customer int64, id int64) {
 	_manager := models.NewCustomercompanyManager(conn)
 	_manager.UpdateCustomer(customer, id)
 }
-
 
 
 

@@ -101,6 +101,23 @@ func (c *UserController) GetByCompanyName(company int64 ,name string) *models.Us
 }
 
 
+func (c *UserController) GetByCompanyTelName(company int64 ,tel string ,name string) *models.User {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewUserManager(conn)
+    
+    item := _manager.GetByCompanyTelName(company, tel, name)
+    
+    c.Set("item", item)
+    
+    
+    
+    return item
+    
+}
+
+
 func (c *UserController) Insert(item *models.User) {
     
     
@@ -505,7 +522,6 @@ func (c *UserController) UpdateLoginid(loginid string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateLoginid(loginid, id)
 }
-
 // @Put()
 func (c *UserController) UpdatePasswd(passwd string, id int64) {
     
@@ -515,7 +531,6 @@ func (c *UserController) UpdatePasswd(passwd string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdatePasswd(passwd, id)
 }
-
 // @Put()
 func (c *UserController) UpdateName(name string, id int64) {
     
@@ -525,7 +540,6 @@ func (c *UserController) UpdateName(name string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *UserController) UpdateEmail(email string, id int64) {
     
@@ -535,7 +549,6 @@ func (c *UserController) UpdateEmail(email string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateEmail(email, id)
 }
-
 // @Put()
 func (c *UserController) UpdateTel(tel string, id int64) {
     
@@ -545,7 +558,6 @@ func (c *UserController) UpdateTel(tel string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateTel(tel, id)
 }
-
 // @Put()
 func (c *UserController) UpdateZip(zip string, id int64) {
     
@@ -555,7 +567,6 @@ func (c *UserController) UpdateZip(zip string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateZip(zip, id)
 }
-
 // @Put()
 func (c *UserController) UpdateAddress(address string, id int64) {
     
@@ -565,7 +576,6 @@ func (c *UserController) UpdateAddress(address string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateAddress(address, id)
 }
-
 // @Put()
 func (c *UserController) UpdateAddressetc(addressetc string, id int64) {
     
@@ -575,7 +585,6 @@ func (c *UserController) UpdateAddressetc(addressetc string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
 }
-
 // @Put()
 func (c *UserController) UpdateJoindate(joindate string, id int64) {
     
@@ -585,7 +594,6 @@ func (c *UserController) UpdateJoindate(joindate string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateJoindate(joindate, id)
 }
-
 // @Put()
 func (c *UserController) UpdateCareeryear(careeryear int, id int64) {
     
@@ -595,7 +603,6 @@ func (c *UserController) UpdateCareeryear(careeryear int, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateCareeryear(careeryear, id)
 }
-
 // @Put()
 func (c *UserController) UpdateCareermonth(careermonth int, id int64) {
     
@@ -605,7 +612,6 @@ func (c *UserController) UpdateCareermonth(careermonth int, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateCareermonth(careermonth, id)
 }
-
 // @Put()
 func (c *UserController) UpdateLevel(level int, id int64) {
     
@@ -615,7 +621,6 @@ func (c *UserController) UpdateLevel(level int, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateLevel(level, id)
 }
-
 // @Put()
 func (c *UserController) UpdateScore(score models.Double, id int64) {
     
@@ -625,7 +630,6 @@ func (c *UserController) UpdateScore(score models.Double, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateScore(score, id)
 }
-
 // @Put()
 func (c *UserController) UpdateApproval(approval int, id int64) {
     
@@ -635,7 +639,6 @@ func (c *UserController) UpdateApproval(approval int, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateApproval(approval, id)
 }
-
 // @Put()
 func (c *UserController) UpdateEducationdate(educationdate string, id int64) {
     
@@ -645,7 +648,6 @@ func (c *UserController) UpdateEducationdate(educationdate string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateEducationdate(educationdate, id)
 }
-
 // @Put()
 func (c *UserController) UpdateEducationinstitution(educationinstitution string, id int64) {
     
@@ -655,7 +657,6 @@ func (c *UserController) UpdateEducationinstitution(educationinstitution string,
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateEducationinstitution(educationinstitution, id)
 }
-
 // @Put()
 func (c *UserController) UpdateSpecialeducationdate(specialeducationdate string, id int64) {
     
@@ -665,7 +666,6 @@ func (c *UserController) UpdateSpecialeducationdate(specialeducationdate string,
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateSpecialeducationdate(specialeducationdate, id)
 }
-
 // @Put()
 func (c *UserController) UpdateSpecialeducationinstitution(specialeducationinstitution string, id int64) {
     
@@ -675,7 +675,6 @@ func (c *UserController) UpdateSpecialeducationinstitution(specialeducationinsti
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateSpecialeducationinstitution(specialeducationinstitution, id)
 }
-
 // @Put()
 func (c *UserController) UpdateRejectreason(rejectreason string, id int64) {
     
@@ -685,7 +684,6 @@ func (c *UserController) UpdateRejectreason(rejectreason string, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateRejectreason(rejectreason, id)
 }
-
 // @Put()
 func (c *UserController) UpdateStatus(status int, id int64) {
     
@@ -695,7 +693,6 @@ func (c *UserController) UpdateStatus(status int, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *UserController) UpdateCompany(company int64, id int64) {
     
@@ -705,7 +702,6 @@ func (c *UserController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *UserController) UpdateDepartment(department int64, id int64) {
     
@@ -715,7 +711,6 @@ func (c *UserController) UpdateDepartment(department int64, id int64) {
 	_manager := models.NewUserManager(conn)
 	_manager.UpdateDepartment(department, id)
 }
-
 
 
 

@@ -90,8 +90,6 @@ func (p *UserManager) SetIndex(index string) {
 }
 
 func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -100,8 +98,6 @@ func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, err
 }
 
 func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -930,8 +926,6 @@ func (p *UserManager) Find(args []interface{}) []User {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
@@ -996,6 +990,26 @@ func (p *UserManager) CountByCompany(company int64, args ...interface{}) int {
 func (p *UserManager) GetByCompanyName(company int64, name string, args ...interface{}) *User {
     if company != 0 {
         args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+    }
+    if name != "" {
+        args = append(args, Where{Column:"name", Value:name, Compare:"="})        
+    }
+    
+    items := p.Find(args)
+
+    if len(items) > 0 {
+        return &items[0]
+    } else {
+        return nil
+    }
+}
+
+func (p *UserManager) GetByCompanyTelName(company int64, tel string, name string, args ...interface{}) *User {
+    if company != 0 {
+        args = append(args, Where{Column:"company", Value:company, Compare:"="})        
+    }
+    if tel != "" {
+        args = append(args, Where{Column:"tel", Value:tel, Compare:"="})        
     }
     if name != "" {
         args = append(args, Where{Column:"name", Value:name, Compare:"="})        

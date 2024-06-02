@@ -234,7 +234,6 @@ func (c *WebjoinController) UpdateCategory(category int, id int64) {
 	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateCategory(category, id)
 }
-
 // @Put()
 func (c *WebjoinController) UpdateName(name string, id int64) {
     
@@ -244,7 +243,6 @@ func (c *WebjoinController) UpdateName(name string, id int64) {
 	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *WebjoinController) UpdateManager(manager string, id int64) {
     
@@ -254,7 +252,6 @@ func (c *WebjoinController) UpdateManager(manager string, id int64) {
 	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateManager(manager, id)
 }
-
 // @Put()
 func (c *WebjoinController) UpdateTel(tel string, id int64) {
     
@@ -264,7 +261,6 @@ func (c *WebjoinController) UpdateTel(tel string, id int64) {
 	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateTel(tel, id)
 }
-
 // @Put()
 func (c *WebjoinController) UpdateEmail(email string, id int64) {
     
@@ -274,7 +270,6 @@ func (c *WebjoinController) UpdateEmail(email string, id int64) {
 	_manager := models.NewWebjoinManager(conn)
 	_manager.UpdateEmail(email, id)
 }
-
 
 
 

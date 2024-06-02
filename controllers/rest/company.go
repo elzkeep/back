@@ -187,6 +187,14 @@ func (c *CompanyController) Count() {
     if _giro != "" {
         args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"="})
     }
+    _egirologinid := c.Get("egirologinid")
+    if _egirologinid != "" {
+        args = append(args, models.Where{Column:"egirologinid", Value:_egirologinid, Compare:"="})
+    }
+    _egiropasswd := c.Get("egiropasswd")
+    if _egiropasswd != "" {
+        args = append(args, models.Where{Column:"egiropasswd", Value:_egiropasswd, Compare:"="})
+    }
     _content := c.Get("content")
     if _content != "" {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
@@ -408,6 +416,14 @@ func (c *CompanyController) Index(page int, pagesize int) {
     if _giro != "" {
         args = append(args, models.Where{Column:"giro", Value:_giro, Compare:"="})
     }
+    _egirologinid := c.Get("egirologinid")
+    if _egirologinid != "" {
+        args = append(args, models.Where{Column:"egirologinid", Value:_egirologinid, Compare:"="})
+    }
+    _egiropasswd := c.Get("egiropasswd")
+    if _egiropasswd != "" {
+        args = append(args, models.Where{Column:"egiropasswd", Value:_egiropasswd, Compare:"="})
+    }
     _content := c.Get("content")
     if _content != "" {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"="})
@@ -582,7 +598,6 @@ func (c *CompanyController) UpdateName(name string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateCompanyno(companyno string, id int64) {
     
@@ -592,7 +607,6 @@ func (c *CompanyController) UpdateCompanyno(companyno string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateCompanyno(companyno, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateCeo(ceo string, id int64) {
     
@@ -602,7 +616,6 @@ func (c *CompanyController) UpdateCeo(ceo string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateCeo(ceo, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateTel(tel string, id int64) {
     
@@ -612,7 +625,6 @@ func (c *CompanyController) UpdateTel(tel string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateTel(tel, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateEmail(email string, id int64) {
     
@@ -622,7 +634,6 @@ func (c *CompanyController) UpdateEmail(email string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateEmail(email, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateAddress(address string, id int64) {
     
@@ -632,7 +643,6 @@ func (c *CompanyController) UpdateAddress(address string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateAddress(address, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateAddressetc(addressetc string, id int64) {
     
@@ -642,7 +652,6 @@ func (c *CompanyController) UpdateAddressetc(addressetc string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateType(typeid int, id int64) {
     
@@ -652,7 +661,6 @@ func (c *CompanyController) UpdateType(typeid int, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBillingname(billingname string, id int64) {
     
@@ -662,7 +670,6 @@ func (c *CompanyController) UpdateBillingname(billingname string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBillingname(billingname, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBillingtel(billingtel string, id int64) {
     
@@ -672,7 +679,6 @@ func (c *CompanyController) UpdateBillingtel(billingtel string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBillingtel(billingtel, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBillingemail(billingemail string, id int64) {
     
@@ -682,7 +688,6 @@ func (c *CompanyController) UpdateBillingemail(billingemail string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBillingemail(billingemail, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBankname(bankname string, id int64) {
     
@@ -692,7 +697,6 @@ func (c *CompanyController) UpdateBankname(bankname string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBankname(bankname, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBankno(bankno string, id int64) {
     
@@ -702,7 +706,6 @@ func (c *CompanyController) UpdateBankno(bankno string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBankno(bankno, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBusinesscondition(businesscondition string, id int64) {
     
@@ -712,7 +715,6 @@ func (c *CompanyController) UpdateBusinesscondition(businesscondition string, id
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBusinesscondition(businesscondition, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateBusinessitem(businessitem string, id int64) {
     
@@ -722,7 +724,6 @@ func (c *CompanyController) UpdateBusinessitem(businessitem string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateBusinessitem(businessitem, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateGiro(giro string, id int64) {
     
@@ -732,7 +733,24 @@ func (c *CompanyController) UpdateGiro(giro string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateGiro(giro, id)
 }
+// @Put()
+func (c *CompanyController) UpdateEgirologinid(egirologinid string, id int64) {
+    
+    
+	conn := c.NewConnection()
 
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateEgirologinid(egirologinid, id)
+}
+// @Put()
+func (c *CompanyController) UpdateEgiropasswd(egiropasswd string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCompanyManager(conn)
+	_manager.UpdateEgiropasswd(egiropasswd, id)
+}
 // @Put()
 func (c *CompanyController) UpdateContent(content string, id int64) {
     
@@ -742,7 +760,6 @@ func (c *CompanyController) UpdateContent(content string, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX1(x1 models.Double, id int64) {
     
@@ -752,7 +769,6 @@ func (c *CompanyController) UpdateX1(x1 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX1(x1, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY1(y1 models.Double, id int64) {
     
@@ -762,7 +778,6 @@ func (c *CompanyController) UpdateY1(y1 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY1(y1, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX2(x2 models.Double, id int64) {
     
@@ -772,7 +787,6 @@ func (c *CompanyController) UpdateX2(x2 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX2(x2, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY2(y2 models.Double, id int64) {
     
@@ -782,7 +796,6 @@ func (c *CompanyController) UpdateY2(y2 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY2(y2, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX3(x3 models.Double, id int64) {
     
@@ -792,7 +805,6 @@ func (c *CompanyController) UpdateX3(x3 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX3(x3, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY3(y3 models.Double, id int64) {
     
@@ -802,7 +814,6 @@ func (c *CompanyController) UpdateY3(y3 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY3(y3, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX4(x4 models.Double, id int64) {
     
@@ -812,7 +823,6 @@ func (c *CompanyController) UpdateX4(x4 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX4(x4, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY4(y4 models.Double, id int64) {
     
@@ -822,7 +832,6 @@ func (c *CompanyController) UpdateY4(y4 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY4(y4, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX5(x5 models.Double, id int64) {
     
@@ -832,7 +841,6 @@ func (c *CompanyController) UpdateX5(x5 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX5(x5, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY5(y5 models.Double, id int64) {
     
@@ -842,7 +850,6 @@ func (c *CompanyController) UpdateY5(y5 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY5(y5, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX6(x6 models.Double, id int64) {
     
@@ -852,7 +859,6 @@ func (c *CompanyController) UpdateX6(x6 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX6(x6, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY6(y6 models.Double, id int64) {
     
@@ -862,7 +868,6 @@ func (c *CompanyController) UpdateY6(y6 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY6(y6, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX7(x7 models.Double, id int64) {
     
@@ -872,7 +877,6 @@ func (c *CompanyController) UpdateX7(x7 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX7(x7, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY7(y7 models.Double, id int64) {
     
@@ -882,7 +886,6 @@ func (c *CompanyController) UpdateY7(y7 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY7(y7, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX8(x8 models.Double, id int64) {
     
@@ -892,7 +895,6 @@ func (c *CompanyController) UpdateX8(x8 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX8(x8, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY8(y8 models.Double, id int64) {
     
@@ -902,7 +904,6 @@ func (c *CompanyController) UpdateY8(y8 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY8(y8, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX9(x9 models.Double, id int64) {
     
@@ -912,7 +913,6 @@ func (c *CompanyController) UpdateX9(x9 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX9(x9, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY9(y9 models.Double, id int64) {
     
@@ -922,7 +922,6 @@ func (c *CompanyController) UpdateY9(y9 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY9(y9, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX10(x10 models.Double, id int64) {
     
@@ -932,7 +931,6 @@ func (c *CompanyController) UpdateX10(x10 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX10(x10, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY10(y10 models.Double, id int64) {
     
@@ -942,7 +940,6 @@ func (c *CompanyController) UpdateY10(y10 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY10(y10, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX11(x11 models.Double, id int64) {
     
@@ -952,7 +949,6 @@ func (c *CompanyController) UpdateX11(x11 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX11(x11, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY11(y11 models.Double, id int64) {
     
@@ -962,7 +958,6 @@ func (c *CompanyController) UpdateY11(y11 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY11(y11, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX12(x12 models.Double, id int64) {
     
@@ -972,7 +967,6 @@ func (c *CompanyController) UpdateX12(x12 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX12(x12, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY12(y12 models.Double, id int64) {
     
@@ -982,7 +976,6 @@ func (c *CompanyController) UpdateY12(y12 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY12(y12, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateX13(x13 models.Double, id int64) {
     
@@ -992,7 +985,6 @@ func (c *CompanyController) UpdateX13(x13 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateX13(x13, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateY13(y13 models.Double, id int64) {
     
@@ -1002,7 +994,6 @@ func (c *CompanyController) UpdateY13(y13 models.Double, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateY13(y13, id)
 }
-
 // @Put()
 func (c *CompanyController) UpdateStatus(status int, id int64) {
     
@@ -1012,7 +1003,6 @@ func (c *CompanyController) UpdateStatus(status int, id int64) {
 	_manager := models.NewCompanyManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 
 
 

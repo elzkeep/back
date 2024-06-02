@@ -316,7 +316,6 @@ func (c *ReportController) UpdateTitle(title string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *ReportController) UpdatePeriod(period int, id int64) {
     
@@ -326,7 +325,6 @@ func (c *ReportController) UpdatePeriod(period int, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdatePeriod(period, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateNumber(number int, id int64) {
     
@@ -336,7 +334,6 @@ func (c *ReportController) UpdateNumber(number int, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateNumber(number, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateCheckdate(checkdate string, id int64) {
     
@@ -346,7 +343,6 @@ func (c *ReportController) UpdateCheckdate(checkdate string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateCheckdate(checkdate, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateChecktime(checktime string, id int64) {
     
@@ -356,7 +352,6 @@ func (c *ReportController) UpdateChecktime(checktime string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateChecktime(checktime, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateContent(content string, id int64) {
     
@@ -366,7 +361,6 @@ func (c *ReportController) UpdateContent(content string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateImage(image string, id int64) {
     
@@ -376,7 +370,6 @@ func (c *ReportController) UpdateImage(image string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateImage(image, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateSign1(sign1 string, id int64) {
     
@@ -386,7 +379,6 @@ func (c *ReportController) UpdateSign1(sign1 string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateSign1(sign1, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateSign2(sign2 string, id int64) {
     
@@ -396,7 +388,6 @@ func (c *ReportController) UpdateSign2(sign2 string, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateSign2(sign2, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateStatus(status int, id int64) {
     
@@ -406,7 +397,6 @@ func (c *ReportController) UpdateStatus(status int, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateCompany(company int64, id int64) {
     
@@ -416,7 +406,6 @@ func (c *ReportController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateUser(user int64, id int64) {
     
@@ -426,7 +415,6 @@ func (c *ReportController) UpdateUser(user int64, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateUser(user, id)
 }
-
 // @Put()
 func (c *ReportController) UpdateBuilding(building int64, id int64) {
     
@@ -436,7 +424,6 @@ func (c *ReportController) UpdateBuilding(building int64, id int64) {
 	_manager := models.NewReportManager(conn)
 	_manager.UpdateBuilding(building, id)
 }
-
 
 
 

@@ -101,6 +101,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/billinglist/initdata", func(c *fiber.Ctx) error {
+			var controller api.BillinglistController
+			controller.Init(c)
+			controller.InitData()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/billinguserlist/excel/:company", func(c *fiber.Ctx) error {
 			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
 			startdate_ := c.Query("startdate")
@@ -194,11 +202,18 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Get("/dashboard", func(c *fiber.Ctx) error {
-			company_, _ := strconv.ParseInt(c.Query("company"), 10, 64)
+		apiGroup.Get("/customer/initdata", func(c *fiber.Ctx) error {
+			var controller api.CustomerController
+			controller.Init(c)
+			controller.InitData()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/dashboard/initdata", func(c *fiber.Ctx) error {
 			var controller api.DashboardController
 			controller.Init(c)
-			controller.Index(company_)
+			controller.InitData()
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1994,6 +2009,44 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/company/egirologinid", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var egirologinid_ string
+			if v, flag := results["egirologinid"]; flag {
+				egirologinid_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateEgirologinid(egirologinid_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/company/egiropasswd", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var egiropasswd_ string
+			if v, flag := results["egiropasswd"]; flag {
+				egiropasswd_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CompanyController
+			controller.Init(c)
+			controller.UpdateEgiropasswd(egiropasswd_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/company/content", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -3233,6 +3286,44 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomerController
 			controller.Init(c)
 			controller.UpdateContractenddate(contractenddate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/usevat", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var usevat_ int
+			if v, flag := results["usevat"]; flag {
+				usevat_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateUsevat(usevat_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/customer/contracttotalprice", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var contracttotalprice_ int
+			if v, flag := results["contracttotalprice"]; flag {
+				contracttotalprice_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.UpdateContracttotalprice(contracttotalprice_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -7030,6 +7121,17 @@ func SetRouter(r *fiber.App) {
 			var controller rest.UserController
 			controller.Init(c)
 			controller.GetByCompanyName(company_, name_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/user/get/companytelname/:company", func(c *fiber.Ctx) error {
+			company_, _ := strconv.ParseInt(c.Params("company"), 10, 64)
+			tel_ := c.Query("tel")
+			name_ := c.Query("name")
+			var controller rest.UserController
+			controller.Init(c)
+			controller.GetByCompanyTelName(company_, tel_, name_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

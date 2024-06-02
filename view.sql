@@ -1,6 +1,9 @@
 drop view billinglist_vw;
 create view billinglist_vw as
-select billing_tb.*, b_name as bi_buildingname, c_billingname as bi_billingname, c_billingtel as bi_billingtel, c_billingemail as bi_billingemail from billing_tb, building_tb, company_tb where bi_building = b_id and b_company = c_id;
+select billing_tb.*,
+b_name as bi_buildingname, c_billingname as bi_billingname, c_billingtel as bi_billingtel, c_billingemail as bi_billingemail,
+c_name as bi_companyname
+from billing_tb, building_tb, company_tb where bi_building = b_id and b_company = c_id;
 
 drop view billinguserlist_vw;
 create view billinguserlist_vw as

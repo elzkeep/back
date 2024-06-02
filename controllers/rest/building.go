@@ -403,7 +403,6 @@ func (c *BuildingController) UpdateName(name string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateCompanyno(companyno string, id int64) {
     
@@ -413,7 +412,6 @@ func (c *BuildingController) UpdateCompanyno(companyno string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateCompanyno(companyno, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateCeo(ceo string, id int64) {
     
@@ -423,7 +421,6 @@ func (c *BuildingController) UpdateCeo(ceo string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateCeo(ceo, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateZip(zip string, id int64) {
     
@@ -433,7 +430,6 @@ func (c *BuildingController) UpdateZip(zip string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateZip(zip, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateAddress(address string, id int64) {
     
@@ -443,7 +439,6 @@ func (c *BuildingController) UpdateAddress(address string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateAddress(address, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateAddressetc(addressetc string, id int64) {
     
@@ -453,7 +448,6 @@ func (c *BuildingController) UpdateAddressetc(addressetc string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateContractvolumn(contractvolumn models.Double, id int64) {
     
@@ -463,7 +457,6 @@ func (c *BuildingController) UpdateContractvolumn(contractvolumn models.Double, 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateContractvolumn(contractvolumn, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateReceivevolumn(receivevolumn models.Double, id int64) {
     
@@ -473,7 +466,6 @@ func (c *BuildingController) UpdateReceivevolumn(receivevolumn models.Double, id
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateReceivevolumn(receivevolumn, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateGeneratevolumn(generatevolumn models.Double, id int64) {
     
@@ -483,7 +475,6 @@ func (c *BuildingController) UpdateGeneratevolumn(generatevolumn models.Double, 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateGeneratevolumn(generatevolumn, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateSunlightvolumn(sunlightvolumn models.Double, id int64) {
     
@@ -493,7 +484,6 @@ func (c *BuildingController) UpdateSunlightvolumn(sunlightvolumn models.Double, 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateSunlightvolumn(sunlightvolumn, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateVolttype(volttype int, id int64) {
     
@@ -503,7 +493,6 @@ func (c *BuildingController) UpdateVolttype(volttype int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateVolttype(volttype, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateWeight(weight models.Double, id int64) {
     
@@ -513,7 +502,6 @@ func (c *BuildingController) UpdateWeight(weight models.Double, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateWeight(weight, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateTotalweight(totalweight models.Double, id int64) {
     
@@ -523,7 +511,6 @@ func (c *BuildingController) UpdateTotalweight(totalweight models.Double, id int
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateTotalweight(totalweight, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateCheckcount(checkcount int, id int64) {
     
@@ -533,7 +520,6 @@ func (c *BuildingController) UpdateCheckcount(checkcount int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateCheckcount(checkcount, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateReceivevolt(receivevolt int, id int64) {
     
@@ -543,7 +529,6 @@ func (c *BuildingController) UpdateReceivevolt(receivevolt int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateReceivevolt(receivevolt, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateGeneratevolt(generatevolt int, id int64) {
     
@@ -553,7 +538,6 @@ func (c *BuildingController) UpdateGeneratevolt(generatevolt int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateGeneratevolt(generatevolt, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdatePeriodic(periodic int, id int64) {
     
@@ -563,7 +547,6 @@ func (c *BuildingController) UpdatePeriodic(periodic int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdatePeriodic(periodic, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateBusinesscondition(businesscondition string, id int64) {
     
@@ -573,7 +556,6 @@ func (c *BuildingController) UpdateBusinesscondition(businesscondition string, i
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateBusinesscondition(businesscondition, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateBusinessitem(businessitem string, id int64) {
     
@@ -583,7 +565,6 @@ func (c *BuildingController) UpdateBusinessitem(businessitem string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateBusinessitem(businessitem, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateUsage(usage string, id int64) {
     
@@ -593,7 +574,6 @@ func (c *BuildingController) UpdateUsage(usage string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateUsage(usage, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateDistrict(district string, id int64) {
     
@@ -603,7 +583,6 @@ func (c *BuildingController) UpdateDistrict(district string, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateDistrict(district, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateScore(score models.Double, id int64) {
     
@@ -613,7 +592,6 @@ func (c *BuildingController) UpdateScore(score models.Double, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateScore(score, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateStatus(status int, id int64) {
     
@@ -623,7 +601,6 @@ func (c *BuildingController) UpdateStatus(status int, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *BuildingController) UpdateCompany(company int64, id int64) {
     
@@ -633,7 +610,6 @@ func (c *BuildingController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 
 
 

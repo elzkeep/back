@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
@@ -64,6 +65,8 @@ func (c *BuildingController) Score(id int64) {
 		}
 	}
 
+	log.Println("total", total)
+
 	buildingManager.UpdateTotalweight(models.Double(total), id)
 
 	var totalScore float64 = 0.0
@@ -77,6 +80,8 @@ func (c *BuildingController) Score(id int64) {
 			if v.Category != category {
 				continue
 			}
+
+			log.Println("category", category)
 
 			typeid := v.Type
 			if typeid != 2 {
@@ -126,7 +131,8 @@ func (c *BuildingController) Score(id int64) {
 		var score float64 = 0.0
 
 		total := totals[1]
-		if total <= 50 {
+		if total <= 0 {
+		} else if total <= 50 {
 			score += 0.7
 		} else if total <= 100 {
 			score += 0.8
@@ -141,7 +147,8 @@ func (c *BuildingController) Score(id int64) {
 		}
 
 		total = totals[2]
-		if total <= 100 {
+		if total <= 0 {
+		} else if total <= 100 {
 			score += 1
 		} else if total <= 200 {
 			score += 1.2
@@ -174,5 +181,6 @@ func (c *BuildingController) Score(id int64) {
 		totalScore += score
 	}
 
+	log.Println("totalScore", totalScore)
 	buildingManager.UpdateScore(models.Double(totalScore), id)
 }

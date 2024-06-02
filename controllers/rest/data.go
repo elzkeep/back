@@ -261,7 +261,6 @@ func (c *DataController) UpdateTopcategory(topcategory int, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateTopcategory(topcategory, id)
 }
-
 // @Put()
 func (c *DataController) UpdateTitle(title string, id int64) {
     
@@ -271,7 +270,6 @@ func (c *DataController) UpdateTitle(title string, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *DataController) UpdateType(typeid int, id int64) {
     
@@ -281,7 +279,6 @@ func (c *DataController) UpdateType(typeid int, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *DataController) UpdateCategory(category int, id int64) {
     
@@ -291,7 +288,6 @@ func (c *DataController) UpdateCategory(category int, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateCategory(category, id)
 }
-
 // @Put()
 func (c *DataController) UpdateOrder(order int, id int64) {
     
@@ -301,7 +297,6 @@ func (c *DataController) UpdateOrder(order int, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 // @Put()
 func (c *DataController) UpdateReport(report int64, id int64) {
     
@@ -311,7 +306,6 @@ func (c *DataController) UpdateReport(report int64, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateReport(report, id)
 }
-
 // @Put()
 func (c *DataController) UpdateCompany(company int64, id int64) {
     
@@ -321,7 +315,6 @@ func (c *DataController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewDataManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 
 
 

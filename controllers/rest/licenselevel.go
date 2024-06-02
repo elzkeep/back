@@ -227,7 +227,6 @@ func (c *LicenselevelController) UpdateName(name string, id int64) {
 	_manager := models.NewLicenselevelManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *LicenselevelController) UpdateOrder(order int, id int64) {
     
@@ -237,7 +236,6 @@ func (c *LicenselevelController) UpdateOrder(order int, id int64) {
 	_manager := models.NewLicenselevelManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 
 
 

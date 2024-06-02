@@ -282,7 +282,6 @@ func (c *GiroController) UpdateInsertdate(insertdate string, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateInsertdate(insertdate, id)
 }
-
 // @Put()
 func (c *GiroController) UpdateNumber(number string, id int64) {
     
@@ -292,7 +291,6 @@ func (c *GiroController) UpdateNumber(number string, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateNumber(number, id)
 }
-
 // @Put()
 func (c *GiroController) UpdatePrice(price int, id int64) {
     
@@ -302,7 +300,6 @@ func (c *GiroController) UpdatePrice(price int, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdatePrice(price, id)
 }
-
 // @Put()
 func (c *GiroController) UpdateAcceptdate(acceptdate string, id int64) {
     
@@ -312,7 +309,6 @@ func (c *GiroController) UpdateAcceptdate(acceptdate string, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateAcceptdate(acceptdate, id)
 }
-
 // @Put()
 func (c *GiroController) UpdateCharge(charge int, id int64) {
     
@@ -322,7 +318,6 @@ func (c *GiroController) UpdateCharge(charge int, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateCharge(charge, id)
 }
-
 // @Put()
 func (c *GiroController) UpdateType(typeid string, id int64) {
     
@@ -332,7 +327,6 @@ func (c *GiroController) UpdateType(typeid string, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *GiroController) UpdateContent(content string, id int64) {
     
@@ -342,7 +336,6 @@ func (c *GiroController) UpdateContent(content string, id int64) {
 	_manager := models.NewGiroManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 
 
 

@@ -455,7 +455,6 @@ func (c *FacilityController) UpdateCategory(category int, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateCategory(category, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateParent(parent int64, id int64) {
     
@@ -465,7 +464,6 @@ func (c *FacilityController) UpdateParent(parent int64, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateParent(parent, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateName(name string, id int64) {
     
@@ -475,7 +473,6 @@ func (c *FacilityController) UpdateName(name string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateName(name, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateType(typeid int, id int64) {
     
@@ -485,7 +482,6 @@ func (c *FacilityController) UpdateType(typeid int, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue1(value1 string, id int64) {
     
@@ -495,7 +491,6 @@ func (c *FacilityController) UpdateValue1(value1 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue1(value1, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue2(value2 string, id int64) {
     
@@ -505,7 +500,6 @@ func (c *FacilityController) UpdateValue2(value2 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue2(value2, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue3(value3 string, id int64) {
     
@@ -515,7 +509,6 @@ func (c *FacilityController) UpdateValue3(value3 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue3(value3, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue4(value4 string, id int64) {
     
@@ -525,7 +518,6 @@ func (c *FacilityController) UpdateValue4(value4 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue4(value4, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue5(value5 string, id int64) {
     
@@ -535,7 +527,6 @@ func (c *FacilityController) UpdateValue5(value5 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue5(value5, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue6(value6 string, id int64) {
     
@@ -545,7 +536,6 @@ func (c *FacilityController) UpdateValue6(value6 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue6(value6, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue7(value7 string, id int64) {
     
@@ -555,7 +545,6 @@ func (c *FacilityController) UpdateValue7(value7 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue7(value7, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue8(value8 string, id int64) {
     
@@ -565,7 +554,6 @@ func (c *FacilityController) UpdateValue8(value8 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue8(value8, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue9(value9 string, id int64) {
     
@@ -575,7 +563,6 @@ func (c *FacilityController) UpdateValue9(value9 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue9(value9, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue10(value10 string, id int64) {
     
@@ -585,7 +572,6 @@ func (c *FacilityController) UpdateValue10(value10 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue10(value10, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue11(value11 string, id int64) {
     
@@ -595,7 +581,6 @@ func (c *FacilityController) UpdateValue11(value11 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue11(value11, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue12(value12 string, id int64) {
     
@@ -605,7 +590,6 @@ func (c *FacilityController) UpdateValue12(value12 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue12(value12, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue13(value13 string, id int64) {
     
@@ -615,7 +599,6 @@ func (c *FacilityController) UpdateValue13(value13 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue13(value13, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue14(value14 string, id int64) {
     
@@ -625,7 +608,6 @@ func (c *FacilityController) UpdateValue14(value14 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue14(value14, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue15(value15 string, id int64) {
     
@@ -635,7 +617,6 @@ func (c *FacilityController) UpdateValue15(value15 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue15(value15, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue16(value16 string, id int64) {
     
@@ -645,7 +626,6 @@ func (c *FacilityController) UpdateValue16(value16 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue16(value16, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue17(value17 string, id int64) {
     
@@ -655,7 +635,6 @@ func (c *FacilityController) UpdateValue17(value17 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue17(value17, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue18(value18 string, id int64) {
     
@@ -665,7 +644,6 @@ func (c *FacilityController) UpdateValue18(value18 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue18(value18, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue19(value19 string, id int64) {
     
@@ -675,7 +653,6 @@ func (c *FacilityController) UpdateValue19(value19 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue19(value19, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue20(value20 string, id int64) {
     
@@ -685,7 +662,6 @@ func (c *FacilityController) UpdateValue20(value20 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue20(value20, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue21(value21 string, id int64) {
     
@@ -695,7 +671,6 @@ func (c *FacilityController) UpdateValue21(value21 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue21(value21, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue22(value22 string, id int64) {
     
@@ -705,7 +680,6 @@ func (c *FacilityController) UpdateValue22(value22 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue22(value22, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue23(value23 string, id int64) {
     
@@ -715,7 +689,6 @@ func (c *FacilityController) UpdateValue23(value23 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue23(value23, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue24(value24 string, id int64) {
     
@@ -725,7 +698,6 @@ func (c *FacilityController) UpdateValue24(value24 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue24(value24, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateValue25(value25 string, id int64) {
     
@@ -735,7 +707,6 @@ func (c *FacilityController) UpdateValue25(value25 string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateValue25(value25, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateContent(content string, id int64) {
     
@@ -745,7 +716,6 @@ func (c *FacilityController) UpdateContent(content string, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *FacilityController) UpdateBuilding(building int64, id int64) {
     
@@ -755,7 +725,6 @@ func (c *FacilityController) UpdateBuilding(building int64, id int64) {
 	_manager := models.NewFacilityManager(conn)
 	_manager.UpdateBuilding(building, id)
 }
-
 
 
 

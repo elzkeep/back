@@ -228,7 +228,6 @@ func (c *WebnoticeController) UpdateTitle(title string, id int64) {
 	_manager := models.NewWebnoticeManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *WebnoticeController) UpdateContent(content string, id int64) {
     
@@ -238,7 +237,6 @@ func (c *WebnoticeController) UpdateContent(content string, id int64) {
 	_manager := models.NewWebnoticeManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *WebnoticeController) UpdateImage(image string, id int64) {
     
@@ -248,7 +246,6 @@ func (c *WebnoticeController) UpdateImage(image string, id int64) {
 	_manager := models.NewWebnoticeManager(conn)
 	_manager.UpdateImage(image, id)
 }
-
 // @Put()
 func (c *WebnoticeController) UpdateCategory(category int, id int64) {
     
@@ -258,7 +255,6 @@ func (c *WebnoticeController) UpdateCategory(category int, id int64) {
 	_manager := models.NewWebnoticeManager(conn)
 	_manager.UpdateCategory(category, id)
 }
-
 
 
 

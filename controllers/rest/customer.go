@@ -189,6 +189,14 @@ func (c *CustomerController) Count() {
     } else if  _endcontractenddate != "" {          
         args = append(args, models.Where{Column:"contractenddate", Value:_endcontractenddate, Compare:"<="})            
     }
+    _usevat := c.Geti("usevat")
+    if _usevat != 0 {
+        args = append(args, models.Where{Column:"usevat", Value:_usevat, Compare:"="})    
+    }
+    _contracttotalprice := c.Geti("contracttotalprice")
+    if _contracttotalprice != 0 {
+        args = append(args, models.Where{Column:"contracttotalprice", Value:_contracttotalprice, Compare:"="})    
+    }
     _contractprice := c.Geti("contractprice")
     if _contractprice != 0 {
         args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
@@ -392,6 +400,14 @@ func (c *CustomerController) Index(page int, pagesize int) {
     } else if  _endcontractenddate != "" {          
         args = append(args, models.Where{Column:"contractenddate", Value:_endcontractenddate, Compare:"<="})            
     }
+    _usevat := c.Geti("usevat")
+    if _usevat != 0 {
+        args = append(args, models.Where{Column:"usevat", Value:_usevat, Compare:"="})    
+    }
+    _contracttotalprice := c.Geti("contracttotalprice")
+    if _contracttotalprice != 0 {
+        args = append(args, models.Where{Column:"contracttotalprice", Value:_contracttotalprice, Compare:"="})    
+    }
     _contractprice := c.Geti("contractprice")
     if _contractprice != 0 {
         args = append(args, models.Where{Column:"contractprice", Value:_contractprice, Compare:"="})    
@@ -557,7 +573,6 @@ func (c *CustomerController) UpdateNumber(number int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateNumber(number, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateKepconumber(kepconumber string, id int64) {
     
@@ -567,7 +582,6 @@ func (c *CustomerController) UpdateKepconumber(kepconumber string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateKepconumber(kepconumber, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateKesconumber(kesconumber string, id int64) {
     
@@ -577,7 +591,6 @@ func (c *CustomerController) UpdateKesconumber(kesconumber string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateKesconumber(kesconumber, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateType(typeid int, id int64) {
     
@@ -587,7 +600,6 @@ func (c *CustomerController) UpdateType(typeid int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateCheckdate(checkdate int, id int64) {
     
@@ -597,7 +609,6 @@ func (c *CustomerController) UpdateCheckdate(checkdate int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateCheckdate(checkdate, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateManagername(managername string, id int64) {
     
@@ -607,7 +618,6 @@ func (c *CustomerController) UpdateManagername(managername string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateManagername(managername, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateManagertel(managertel string, id int64) {
     
@@ -617,7 +627,6 @@ func (c *CustomerController) UpdateManagertel(managertel string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateManagertel(managertel, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateManageremail(manageremail string, id int64) {
     
@@ -627,7 +636,6 @@ func (c *CustomerController) UpdateManageremail(manageremail string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateManageremail(manageremail, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateContractstartdate(contractstartdate string, id int64) {
     
@@ -637,7 +645,6 @@ func (c *CustomerController) UpdateContractstartdate(contractstartdate string, i
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractstartdate(contractstartdate, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateContractenddate(contractenddate string, id int64) {
     
@@ -647,7 +654,24 @@ func (c *CustomerController) UpdateContractenddate(contractenddate string, id in
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractenddate(contractenddate, id)
 }
+// @Put()
+func (c *CustomerController) UpdateUsevat(usevat int, id int64) {
+    
+    
+	conn := c.NewConnection()
 
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateUsevat(usevat, id)
+}
+// @Put()
+func (c *CustomerController) UpdateContracttotalprice(contracttotalprice int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+	_manager.UpdateContracttotalprice(contracttotalprice, id)
+}
 // @Put()
 func (c *CustomerController) UpdateContractprice(contractprice int, id int64) {
     
@@ -657,7 +681,6 @@ func (c *CustomerController) UpdateContractprice(contractprice int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractprice(contractprice, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateContractvat(contractvat int, id int64) {
     
@@ -667,7 +690,6 @@ func (c *CustomerController) UpdateContractvat(contractvat int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractvat(contractvat, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateContractday(contractday int, id int64) {
     
@@ -677,7 +699,6 @@ func (c *CustomerController) UpdateContractday(contractday int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContractday(contractday, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateContracttype(contracttype int, id int64) {
     
@@ -687,7 +708,6 @@ func (c *CustomerController) UpdateContracttype(contracttype int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateContracttype(contracttype, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBillingdate(billingdate int, id int64) {
     
@@ -697,7 +717,6 @@ func (c *CustomerController) UpdateBillingdate(billingdate int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingdate(billingdate, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBillingtype(billingtype int, id int64) {
     
@@ -707,7 +726,6 @@ func (c *CustomerController) UpdateBillingtype(billingtype int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingtype(billingtype, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBillingname(billingname string, id int64) {
     
@@ -717,7 +735,6 @@ func (c *CustomerController) UpdateBillingname(billingname string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingname(billingname, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBillingtel(billingtel string, id int64) {
     
@@ -727,7 +744,6 @@ func (c *CustomerController) UpdateBillingtel(billingtel string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingtel(billingtel, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBillingemail(billingemail string, id int64) {
     
@@ -737,7 +753,6 @@ func (c *CustomerController) UpdateBillingemail(billingemail string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBillingemail(billingemail, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateAddress(address string, id int64) {
     
@@ -747,7 +762,6 @@ func (c *CustomerController) UpdateAddress(address string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateAddress(address, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateAddressetc(addressetc string, id int64) {
     
@@ -757,7 +771,6 @@ func (c *CustomerController) UpdateAddressetc(addressetc string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateCollectmonth(collectmonth int, id int64) {
     
@@ -767,7 +780,6 @@ func (c *CustomerController) UpdateCollectmonth(collectmonth int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateCollectmonth(collectmonth, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateCollectday(collectday int, id int64) {
     
@@ -777,7 +789,6 @@ func (c *CustomerController) UpdateCollectday(collectday int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateCollectday(collectday, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateManager(manager string, id int64) {
     
@@ -787,7 +798,6 @@ func (c *CustomerController) UpdateManager(manager string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateManager(manager, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateTel(tel string, id int64) {
     
@@ -797,7 +807,6 @@ func (c *CustomerController) UpdateTel(tel string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateTel(tel, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateFax(fax string, id int64) {
     
@@ -807,7 +816,6 @@ func (c *CustomerController) UpdateFax(fax string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateFax(fax, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdatePeriodic(periodic string, id int64) {
     
@@ -817,7 +825,6 @@ func (c *CustomerController) UpdatePeriodic(periodic string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdatePeriodic(periodic, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateLastdate(lastdate string, id int64) {
     
@@ -827,7 +834,6 @@ func (c *CustomerController) UpdateLastdate(lastdate string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateLastdate(lastdate, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateRemark(remark string, id int64) {
     
@@ -837,7 +843,6 @@ func (c *CustomerController) UpdateRemark(remark string, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateRemark(remark, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateStatus(status int, id int64) {
     
@@ -847,7 +852,6 @@ func (c *CustomerController) UpdateStatus(status int, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateSalesuser(salesuser int64, id int64) {
     
@@ -857,7 +861,6 @@ func (c *CustomerController) UpdateSalesuser(salesuser int64, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateSalesuser(salesuser, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateUser(user int64, id int64) {
     
@@ -867,7 +870,6 @@ func (c *CustomerController) UpdateUser(user int64, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateUser(user, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateCompany(company int64, id int64) {
     
@@ -877,7 +879,6 @@ func (c *CustomerController) UpdateCompany(company int64, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateCompany(company, id)
 }
-
 // @Put()
 func (c *CustomerController) UpdateBuilding(building int64, id int64) {
     
@@ -887,7 +888,6 @@ func (c *CustomerController) UpdateBuilding(building int64, id int64) {
 	_manager := models.NewCustomerManager(conn)
 	_manager.UpdateBuilding(building, id)
 }
-
 
 
 

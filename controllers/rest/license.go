@@ -357,7 +357,6 @@ func (c *LicenseController) UpdateUser(user int64, id int64) {
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateUser(user, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateNumber(number string, id int64) {
     
@@ -367,7 +366,6 @@ func (c *LicenseController) UpdateNumber(number string, id int64) {
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateNumber(number, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateTakingdate(takingdate string, id int64) {
     
@@ -377,7 +375,6 @@ func (c *LicenseController) UpdateTakingdate(takingdate string, id int64) {
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateTakingdate(takingdate, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateEducationdate(educationdate string, id int64) {
     
@@ -387,7 +384,6 @@ func (c *LicenseController) UpdateEducationdate(educationdate string, id int64) 
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateEducationdate(educationdate, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateEducationinstitution(educationinstitution string, id int64) {
     
@@ -397,7 +393,6 @@ func (c *LicenseController) UpdateEducationinstitution(educationinstitution stri
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateEducationinstitution(educationinstitution, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateSpecialeducationdate(specialeducationdate string, id int64) {
     
@@ -407,7 +402,6 @@ func (c *LicenseController) UpdateSpecialeducationdate(specialeducationdate stri
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateSpecialeducationdate(specialeducationdate, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateSpecialeducationinstitution(specialeducationinstitution string, id int64) {
     
@@ -417,7 +411,6 @@ func (c *LicenseController) UpdateSpecialeducationinstitution(specialeducationin
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateSpecialeducationinstitution(specialeducationinstitution, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateLicensecategory(licensecategory int64, id int64) {
     
@@ -427,7 +420,6 @@ func (c *LicenseController) UpdateLicensecategory(licensecategory int64, id int6
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateLicensecategory(licensecategory, id)
 }
-
 // @Put()
 func (c *LicenseController) UpdateLicenselevel(licenselevel int64, id int64) {
     
@@ -437,7 +429,6 @@ func (c *LicenseController) UpdateLicenselevel(licenselevel int64, id int64) {
 	_manager := models.NewLicenseManager(conn)
 	_manager.UpdateLicenselevel(licenselevel, id)
 }
-
 
 
 

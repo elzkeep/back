@@ -97,6 +97,10 @@ func (c *BillinglistController) Count() {
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
     }
+    _companyname := c.Get("companyname")
+    if _companyname != "" {
+        args = append(args, models.Where{Column:"companyname", Value:_companyname, Compare:"="})
+    }
     
 
     
@@ -199,6 +203,10 @@ func (c *BillinglistController) Index(page int, pagesize int) {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"="})
+    }
+    _companyname := c.Get("companyname")
+    if _companyname != "" {
+        args = append(args, models.Where{Column:"companyname", Value:_companyname, Compare:"="})
     }
     
 
@@ -325,6 +333,10 @@ func (c *BillinglistController) Sum() {
     _billingemail := c.Get("billingemail")
     if _billingemail != "" {
         args = append(args, models.Where{Column:"billingemail", Value:_billingemail, Compare:"like"})
+    }
+    _companyname := c.Get("companyname")
+    if _companyname != "" {
+        args = append(args, models.Where{Column:"companyname", Value:_companyname, Compare:"like"})
     }
     
 

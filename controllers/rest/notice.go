@@ -212,7 +212,6 @@ func (c *NoticeController) UpdateTitle(title string, id int64) {
 	_manager := models.NewNoticeManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *NoticeController) UpdateContent(content string, id int64) {
     
@@ -222,7 +221,6 @@ func (c *NoticeController) UpdateContent(content string, id int64) {
 	_manager := models.NewNoticeManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 
 
 

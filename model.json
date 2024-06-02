@@ -34,7 +34,8 @@
         "CountByLoginid",
         "FindByLevel",
         "CountByCompany",
-        "GetByCompanyName"
+        "GetByCompanyName",
+        "GetByCompanyTelName"
       ]      
     },    
     {
@@ -199,6 +200,12 @@
     },
     {
       "name": "customercompany",
+      "join": [
+        {
+          "name": "company",
+          "column": "customer"
+        }
+      ],
       "method": [
         "GetByCompanyCustomer"        
       ]

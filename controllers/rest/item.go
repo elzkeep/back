@@ -391,7 +391,6 @@ func (c *ItemController) UpdateTitle(title string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateTitle(title, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateType(typeid int, id int64) {
     
@@ -401,7 +400,6 @@ func (c *ItemController) UpdateType(typeid int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateType(typeid, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue1(value1 int, id int64) {
     
@@ -411,7 +409,6 @@ func (c *ItemController) UpdateValue1(value1 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue1(value1, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue2(value2 int, id int64) {
     
@@ -421,7 +418,6 @@ func (c *ItemController) UpdateValue2(value2 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue2(value2, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue3(value3 int, id int64) {
     
@@ -431,7 +427,6 @@ func (c *ItemController) UpdateValue3(value3 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue3(value3, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue4(value4 int, id int64) {
     
@@ -441,7 +436,6 @@ func (c *ItemController) UpdateValue4(value4 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue4(value4, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue5(value5 int, id int64) {
     
@@ -451,7 +445,6 @@ func (c *ItemController) UpdateValue5(value5 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue5(value5, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue6(value6 int, id int64) {
     
@@ -461,7 +454,6 @@ func (c *ItemController) UpdateValue6(value6 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue6(value6, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue7(value7 int, id int64) {
     
@@ -471,7 +463,6 @@ func (c *ItemController) UpdateValue7(value7 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue7(value7, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue8(value8 int, id int64) {
     
@@ -481,7 +472,6 @@ func (c *ItemController) UpdateValue8(value8 int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue8(value8, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateValue(value int, id int64) {
     
@@ -491,7 +481,6 @@ func (c *ItemController) UpdateValue(value int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateValue(value, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateContent(content string, id int64) {
     
@@ -501,7 +490,6 @@ func (c *ItemController) UpdateContent(content string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateUnit(unit string, id int64) {
     
@@ -511,7 +499,6 @@ func (c *ItemController) UpdateUnit(unit string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateUnit(unit, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateStatus(status int, id int64) {
     
@@ -521,7 +508,6 @@ func (c *ItemController) UpdateStatus(status int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateStatus(status, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateReason(reason int, id int64) {
     
@@ -531,7 +517,6 @@ func (c *ItemController) UpdateReason(reason int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateReason(reason, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateReasontext(reasontext string, id int64) {
     
@@ -541,7 +526,6 @@ func (c *ItemController) UpdateReasontext(reasontext string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateReasontext(reasontext, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateAction(action int, id int64) {
     
@@ -551,7 +535,6 @@ func (c *ItemController) UpdateAction(action int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateAction(action, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateActiontext(actiontext string, id int64) {
     
@@ -561,7 +544,6 @@ func (c *ItemController) UpdateActiontext(actiontext string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateActiontext(actiontext, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateImage(image string, id int64) {
     
@@ -571,7 +553,6 @@ func (c *ItemController) UpdateImage(image string, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateImage(image, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateOrder(order int, id int64) {
     
@@ -581,7 +562,6 @@ func (c *ItemController) UpdateOrder(order int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateOrder(order, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateTopcategory(topcategory int, id int64) {
     
@@ -591,7 +571,6 @@ func (c *ItemController) UpdateTopcategory(topcategory int, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateTopcategory(topcategory, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateData(data int64, id int64) {
     
@@ -601,7 +580,6 @@ func (c *ItemController) UpdateData(data int64, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateData(data, id)
 }
-
 // @Put()
 func (c *ItemController) UpdateReport(report int64, id int64) {
     
@@ -611,7 +589,6 @@ func (c *ItemController) UpdateReport(report int64, id int64) {
 	_manager := models.NewItemManager(conn)
 	_manager.UpdateReport(report, id)
 }
-
 
 
 

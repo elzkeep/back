@@ -218,7 +218,6 @@ func (c *WebquestionController) UpdateEmail(email string, id int64) {
 	_manager := models.NewWebquestionManager(conn)
 	_manager.UpdateEmail(email, id)
 }
-
 // @Put()
 func (c *WebquestionController) UpdateTel(tel string, id int64) {
     
@@ -228,7 +227,6 @@ func (c *WebquestionController) UpdateTel(tel string, id int64) {
 	_manager := models.NewWebquestionManager(conn)
 	_manager.UpdateTel(tel, id)
 }
-
 // @Put()
 func (c *WebquestionController) UpdateContent(content string, id int64) {
     
@@ -238,7 +236,6 @@ func (c *WebquestionController) UpdateContent(content string, id int64) {
 	_manager := models.NewWebquestionManager(conn)
 	_manager.UpdateContent(content, id)
 }
-
 
 
 

@@ -70,8 +70,6 @@ func (p *WebnoticeManager) SetIndex(index string) {
 }
 
 func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -80,8 +78,6 @@ func (p *WebnoticeManager) Exec(query string, params ...interface{}) (sql.Result
 }
 
 func (p *WebnoticeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    log.Println(query)
-    log.Println(params)    
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {
@@ -581,8 +577,6 @@ func (p *WebnoticeManager) Find(args []interface{}) []Webnotice {
         query += " order by " + orderby
     }
 
-    log.Println(baseQuery + query)
-    log.Println(params)
     rows, err := p.Query(baseQuery + query, params...)
 
     if err != nil {
