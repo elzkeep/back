@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"strconv"
 	"zkeep/config"
 	"zkeep/controllers"
 	"zkeep/global"
@@ -17,16 +18,38 @@ type CustomerController struct {
 }
 
 func (c *CustomerController) Index(page int, pagesize int) {
-
 	conn := c.NewConnection()
 
+	session := c.Session
+
 	manager := models.NewCustomerManager(conn)
+	userManager := models.NewUserManager(conn)
 
 	var args []interface{}
 
 	_name := c.Get("name")
 	if _name != "" {
-		args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%')", _name, _name)})
+		users := userManager.Find([]interface{}{
+			models.Where{Column: "company", Value: session.Company, Compare: "="},
+			models.Where{Column: "name", Value: _name, Compare: "like"},
+		})
+
+		userIds := make([]string, 0)
+		for _, v := range users {
+			userIds = append(userIds, fmt.Sprintf("%v", v.Id))
+		}
+
+		if len(userIds) > 0 {
+			ids := strings.Join(userIds, ", ")
+			args = append(args, models.Custom{Query: fmt.Sprintf("(cu_user in (%v) or cu_salesuser in (%v))", ids, ids)})
+		} else {
+			_, err := strconv.Atoi(_name)
+			if err != nil {
+				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%')", _name, _name)})
+			} else {
+				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%' or cu_number = %v)", _name, _name, _name)})
+			}
+		}
 	}
 
 	_type := c.Geti("type")

@@ -111,7 +111,7 @@ type Pair struct {
 }
 
 // @POST()
-func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64) {
+func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64, price []int, vat []int) {
 	session := c.Session
 
 	conn := c.NewConnection()
@@ -124,7 +124,9 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		models.Where{Column: "building", Value: ids, Compare: "in"},
 	})
 
+	log.Println("-----------------------------------")
 	log.Println("durationtype:", durationtype, durationmonth)
+	log.Println(customers)
 	now := time.Now()
 
 	months := make([]Pair, 0)
@@ -154,12 +156,19 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 
 		if base == 1 {
 			targetMonth = currentMonth
-		} else {
+		} else if base == 2 {
 			if currentMonth == 12 {
 				year++
 				targetMonth = 1
 			} else {
 				targetMonth = currentMonth + 1
+			}
+		} else {
+			if currentMonth == 1 {
+				year--
+				targetMonth = 12
+			} else {
+				targetMonth = currentMonth - 1
 			}
 		}
 
@@ -167,6 +176,8 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 	}
 
 	today := global.GetCurrentDatetime()
+
+	log.Println("months", months)
 
 	for _, d := range months {
 		yearmonth := fmt.Sprintf("%04d-%02d", d.Year, d.Month)
@@ -176,20 +187,33 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		log.Println(ed.Year(), ed.Month())
 		endmonth := fmt.Sprintf("%04d-%02d", ed.Year(), ed.Month())
 		for _, v := range customers {
+			/*
+				cnt := billingManager.Count([]interface{}{
+					models.Where{Column: "company", Value: session.Company, Compare: "="},
+					models.Where{Column: "building", Value: v.Building, Compare: "="},
+					models.Where{Column: "month", Value: yearmonth, Compare: "="},
+					models.Where{Column: "period", Value: d.Period, Compare: "="},
+				})
 
-			cnt := billingManager.Count([]interface{}{
-				models.Where{Column: "company", Value: session.Company, Compare: "="},
-				models.Where{Column: "building", Value: v.Building, Compare: "="},
-				models.Where{Column: "month", Value: yearmonth, Compare: "="},
-				models.Where{Column: "period", Value: d.Period, Compare: "="},
-			})
 
-			if cnt > 0 {
-				continue
+					if cnt > 0 {
+						continue
+					}
+			*/
+
+			priceValue := 0
+			vatValue := 0
+			for i, id := range ids {
+				if id != v.Id {
+					continue
+				}
+
+				priceValue = price[i]
+				vatValue = vat[i]
+				break
 			}
-
 			item := models.Billing{}
-			item.Price = (v.Contractprice + v.Contractvat) * d.Period
+			item.Price = (priceValue + vatValue) * d.Period
 			item.Status = billing.StatusWait
 			item.Giro = billing.GiroWait
 			item.Billdate = today

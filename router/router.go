@@ -84,9 +84,17 @@ func SetRouter(r *fiber.App) {
 			if v, flag := results["ids"]; flag {
 				ids_= getArrayCommal(v.(string))
 			}
+			var price_ []int
+			if v, flag := results["price"]; flag {
+				price_= getArrayCommai(v.(string))
+			}
+			var vat_ []int
+			if v, flag := results["vat"]; flag {
+				vat_= getArrayCommai(v.(string))
+			}
 			var controller api.BillingController
 			controller.Init(c)
-			controller.Make(durationtype_, base_, year_, month_, durationmonth_, ids_)
+			controller.Make(durationtype_, base_, year_, month_, durationmonth_, ids_, price_, vat_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -1209,6 +1217,82 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/building/postzip", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var postzip_ string
+			if v, flag := results["postzip"]; flag {
+				postzip_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePostzip(postzip_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/postaddress", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var postaddress_ string
+			if v, flag := results["postaddress"]; flag {
+				postaddress_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePostaddress(postaddress_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/postname", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var postname_ string
+			if v, flag := results["postname"]; flag {
+				postname_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePostname(postname_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/posttel", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var posttel_ string
+			if v, flag := results["posttel"]; flag {
+				posttel_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePosttel(posttel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/building/contractvolumn", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1484,6 +1568,44 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BuildingController
 			controller.Init(c)
 			controller.UpdateDistrict(district_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/check", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var check_ int
+			if v, flag := results["check"]; flag {
+				check_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCheck(check_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/checkpost", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var checkpost_ int
+			if v, flag := results["checkpost"]; flag {
+				checkpost_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCheckpost(checkpost_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

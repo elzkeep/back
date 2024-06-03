@@ -44,7 +44,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 	buildingManager := models.NewBuildingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
-	facilityManager := models.NewFacilityManager(conn)
+	//facilityManager := models.NewFacilityManager(conn)
 
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
@@ -172,7 +172,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		building.Weight = models.Double(weight)
 		volttype := f.GetCell("I", pos)
 
-		if volttype == "고압" {
+		if volttype == "고압" || volttype == "특고압" {
 			building.Volttype = 2
 		} else {
 			building.Volttype = 1
@@ -210,6 +210,10 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 		building.Totalweight = models.Double(basic + generator + sunlight)
 
+		building.Postaddress = f.GetCell("AM", pos)
+		building.Postname = f.GetCell("AN", pos)
+		building.Posttel = f.GetCell("AO", pos)
+
 		var buildingId int64 = 0
 
 		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
@@ -223,19 +227,19 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		if basic > 0 {
 			basicFacility.Building = buildingId
 
-			facilityManager.Insert(&basicFacility)
+			//facilityManager.Insert(&basicFacility)
 		}
 
 		if generator > 0 {
 			generatorFacility.Building = buildingId
 
-			facilityManager.Insert(&generatorFacility)
+			//facilityManager.Insert(&generatorFacility)
 		}
 
 		if sunlight > 0 {
 			sunlightFacility.Building = buildingId
 
-			facilityManager.Insert(&sunlightFacility)
+			//facilityManager.Insert(&sunlightFacility)
 		}
 
 		customerItem.Number = global.Atoi(f.GetCell("B", pos))
@@ -610,7 +614,6 @@ func (c *ExternalController) All(category int, filename string) {
 		for {
 			log.Println("POS:", pos)
 			item := models.Company{}
-			building := models.Building{}
 			customerItem := models.Customer{}
 
 			no := f.GetCell("A", pos)
@@ -655,6 +658,12 @@ func (c *ExternalController) All(category int, filename string) {
 
 			if customercompany == nil {
 				customercompanyManager.Insert(&models.Customercompany{Company: session.Company, Customer: companyId})
+			}
+
+			buildingName := f.GetCell("I", pos)
+			building := buildingManager.GetByCompanyName(companyId, buildingName)
+			if building == nil {
+				building = &models.Building{}
 			}
 
 			building.Name = f.GetCell("I", pos)
@@ -746,14 +755,18 @@ func (c *ExternalController) All(category int, filename string) {
 
 			building.Company = companyId
 
+			building.Postzip = f.GetCell("AI", pos)
+			building.Postaddress = f.GetCell("AJ", pos)
+			building.Postname = f.GetCell("AK", pos)
+			building.Posttel = f.GetCell("AL", pos)
+
 			var buildingId int64 = 0
 
-			buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
-			if buildingFind == nil {
-				buildingManager.Insert(&building)
+			if building.Id == 0 {
+				buildingManager.Insert(building)
 				buildingId = buildingManager.GetIdentity()
 			} else {
-				buildingId = buildingFind.Id
+				buildingId = building.Id
 			}
 
 			customerItem.Number = global.Atoi(f.GetCell("A", pos))
@@ -765,23 +778,24 @@ func (c *ExternalController) All(category int, filename string) {
 			customerItem.Billingname = f.GetCell("AF", pos)
 			customerItem.Billingtel = f.GetCell("AG", pos)
 			customerItem.Billingemail = f.GetCell("AH", pos)
-			customerItem.Fax = f.GetCell("AI", pos)
+
+			customerItem.Fax = f.GetCell("AM", pos)
 			customerItem.Status = 1
 
-			customerItem.Contractprice = global.Atoi(f.GetCell("AJ", pos))
-			customerItem.Contractvat = global.Atoi(f.GetCell("AK", pos))
+			customerItem.Contractprice = global.Atoi(f.GetCell("AK", pos))
+			customerItem.Contractvat = global.Atoi(f.GetCell("AL", pos))
 
 			customerItem.Type = customer.TypeOutsourcing
 
-			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(f.GetCell("AL", pos), "일", "")))
+			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(f.GetCell("AM", pos), "일", "")))
 
-			if f.GetCell("AM", pos) == "지로" {
+			if f.GetCell("AN", pos) == "지로" {
 				customerItem.Billingtype = 1
 			} else {
 				customerItem.Billingtype = 2
 			}
 
-			str := f.GetCell("AN", pos)
+			str := f.GetCell("AO", pos)
 
 			r, _ := regexp.Compile("[0-9]+")
 			collectday := r.FindString(str)
@@ -798,7 +812,7 @@ func (c *ExternalController) All(category int, filename string) {
 				customerItem.Collectday = global.Atoi(collectday)
 			}
 
-			customerItem.Remark = f.GetCell("AO", pos)
+			customerItem.Remark = f.GetCell("AP", pos)
 
 			customerItem.Building = buildingId
 			customerItem.User = userId

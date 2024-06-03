@@ -90,6 +90,8 @@ func (p *UserManager) SetIndex(index string) {
 }
 
 func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -98,6 +100,8 @@ func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, err
 }
 
 func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {

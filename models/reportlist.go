@@ -78,6 +78,8 @@ func (p *ReportlistManager) SetIndex(index string) {
 }
 
 func (p *ReportlistManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -86,6 +88,8 @@ func (p *ReportlistManager) Exec(query string, params ...interface{}) (sql.Resul
 }
 
 func (p *ReportlistManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {

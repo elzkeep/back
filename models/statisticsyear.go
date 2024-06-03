@@ -68,6 +68,8 @@ func (p *StatisticsyearManager) SetIndex(index string) {
 }
 
 func (p *StatisticsyearManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -76,6 +78,8 @@ func (p *StatisticsyearManager) Exec(query string, params ...interface{}) (sql.R
 }
 
 func (p *StatisticsyearManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+	log.Println(query)
+	log.Println(params)
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {

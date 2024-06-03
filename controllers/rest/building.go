@@ -130,6 +130,22 @@ func (c *BuildingController) Count() {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
+    _postzip := c.Get("postzip")
+    if _postzip != "" {
+        args = append(args, models.Where{Column:"postzip", Value:_postzip, Compare:"="})
+    }
+    _postaddress := c.Get("postaddress")
+    if _postaddress != "" {
+        args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"="})
+    }
+    _postname := c.Get("postname")
+    if _postname != "" {
+        args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"="})
+    }
+    _posttel := c.Get("posttel")
+    if _posttel != "" {
+        args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"="})
+    }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
         args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
@@ -189,6 +205,14 @@ func (c *BuildingController) Count() {
     _district := c.Get("district")
     if _district != "" {
         args = append(args, models.Where{Column:"district", Value:_district, Compare:"="})
+    }
+    _check := c.Geti("check")
+    if _check != 0 {
+        args = append(args, models.Where{Column:"check", Value:_check, Compare:"="})    
+    }
+    _checkpost := c.Geti("checkpost")
+    if _checkpost != 0 {
+        args = append(args, models.Where{Column:"checkpost", Value:_checkpost, Compare:"="})    
     }
     _score := c.Geti("score")
     if _score != 0 {
@@ -270,6 +294,22 @@ func (c *BuildingController) Index(page int, pagesize int) {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"="})
     }
+    _postzip := c.Get("postzip")
+    if _postzip != "" {
+        args = append(args, models.Where{Column:"postzip", Value:_postzip, Compare:"="})
+    }
+    _postaddress := c.Get("postaddress")
+    if _postaddress != "" {
+        args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"="})
+    }
+    _postname := c.Get("postname")
+    if _postname != "" {
+        args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"="})
+    }
+    _posttel := c.Get("posttel")
+    if _posttel != "" {
+        args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"="})
+    }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
         args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
@@ -329,6 +369,14 @@ func (c *BuildingController) Index(page int, pagesize int) {
     _district := c.Get("district")
     if _district != "" {
         args = append(args, models.Where{Column:"district", Value:_district, Compare:"="})
+    }
+    _check := c.Geti("check")
+    if _check != 0 {
+        args = append(args, models.Where{Column:"check", Value:_check, Compare:"="})    
+    }
+    _checkpost := c.Geti("checkpost")
+    if _checkpost != 0 {
+        args = append(args, models.Where{Column:"checkpost", Value:_checkpost, Compare:"="})    
     }
     _score := c.Geti("score")
     if _score != 0 {
@@ -447,6 +495,42 @@ func (c *BuildingController) UpdateAddressetc(addressetc string, id int64) {
 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdateAddressetc(addressetc, id)
+}
+// @Put()
+func (c *BuildingController) UpdatePostzip(postzip string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePostzip(postzip, id)
+}
+// @Put()
+func (c *BuildingController) UpdatePostaddress(postaddress string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePostaddress(postaddress, id)
+}
+// @Put()
+func (c *BuildingController) UpdatePostname(postname string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePostname(postname, id)
+}
+// @Put()
+func (c *BuildingController) UpdatePosttel(posttel string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePosttel(posttel, id)
 }
 // @Put()
 func (c *BuildingController) UpdateContractvolumn(contractvolumn models.Double, id int64) {
@@ -584,6 +668,24 @@ func (c *BuildingController) UpdateDistrict(district string, id int64) {
 	_manager.UpdateDistrict(district, id)
 }
 // @Put()
+func (c *BuildingController) UpdateCheck(check int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCheck(check, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCheckpost(checkpost int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCheckpost(checkpost, id)
+}
+// @Put()
 func (c *BuildingController) UpdateScore(score models.Double, id int64) {
     
     
@@ -649,6 +751,22 @@ func (c *BuildingController) Sum() {
     if _addressetc != "" {
         args = append(args, models.Where{Column:"addressetc", Value:_addressetc, Compare:"like"})
     }
+    _postzip := c.Get("postzip")
+    if _postzip != "" {
+        args = append(args, models.Where{Column:"postzip", Value:_postzip, Compare:"like"})
+    }
+    _postaddress := c.Get("postaddress")
+    if _postaddress != "" {
+        args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"like"})
+    }
+    _postname := c.Get("postname")
+    if _postname != "" {
+        args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"like"})
+    }
+    _posttel := c.Get("posttel")
+    if _posttel != "" {
+        args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"like"})
+    }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
         args = append(args, models.Where{Column:"contractvolumn", Value:_contractvolumn, Compare:"="})    
@@ -708,6 +826,14 @@ func (c *BuildingController) Sum() {
     _district := c.Get("district")
     if _district != "" {
         args = append(args, models.Where{Column:"district", Value:_district, Compare:"like"})
+    }
+    _check := c.Geti("check")
+    if _check != 0 {
+        args = append(args, models.Where{Column:"check", Value:_check, Compare:"="})    
+    }
+    _checkpost := c.Geti("checkpost")
+    if _checkpost != 0 {
+        args = append(args, models.Where{Column:"checkpost", Value:_checkpost, Compare:"="})    
     }
     _score := c.Geti("score")
     if _score != 0 {

@@ -25,6 +25,7 @@ func (c *BuildingController) Score(id int64) {
 	var total float64 = 0
 
 	for _, v := range items {
+		log.Println("category", v.Category)
 		if v.Category == 10 {
 			total += float64(global.Atoi(v.Value2))
 		}

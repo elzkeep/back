@@ -23,6 +23,7 @@ func main() {
 
 	models.InitCache()
 
+	//DeleteFacility()
 	//UpdateScore()
 
 	services.Cron()
@@ -32,6 +33,34 @@ func main() {
 
 	services.Http()
 
+}
+
+func DeleteFacility() {
+	conn := models.NewConnection()
+
+	buildingManager := models.NewBuildingManager(conn)
+	facilityManager := models.NewFacilityManager(conn)
+
+	buildings := buildingManager.Find(nil)
+
+	for _, v := range buildings {
+		items := facilityManager.Find([]interface{}{
+			models.Where{Column: "building", Value: v.Id, Compare: "="},
+			models.Where{Column: "category", Value: 10, Compare: "="},
+		})
+
+		if len(items) <= 1 {
+			continue
+		}
+
+		for i, v2 := range items {
+			if i == len(items)-1 {
+				continue
+			}
+
+			facilityManager.Delete(v2.Id)
+		}
+	}
 }
 
 func UpdateScore() {
