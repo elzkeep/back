@@ -178,6 +178,9 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 	today := global.GetCurrentDatetime()
 
 	log.Println("months", months)
+	log.Println(ids)
+	log.Println(price)
+	log.Println(vat)
 
 	for _, d := range months {
 		yearmonth := fmt.Sprintf("%04d-%02d", d.Year, d.Month)
@@ -204,7 +207,7 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 			priceValue := 0
 			vatValue := 0
 			for i, id := range ids {
-				if id != v.Id {
+				if id != v.Building {
 					continue
 				}
 

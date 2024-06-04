@@ -384,6 +384,12 @@ func (c *DownloadController) All(category int) {
 	log.Println("======================================")
 	log.Println("typeid", category)
 	log.Println("======================================")
+
+	nodata := false
+	if category > 2 {
+		nodata = true
+		category -= 3
+	}
 	conn := c.NewConnection()
 
 	session := c.Session
@@ -460,93 +466,95 @@ func (c *DownloadController) All(category int) {
 
 		excel.Rows++
 
-		for _, v := range items {
-			company := v.Extra["company"].(models.Company)
-			building := v.Extra["building"].(models.Building)
-			excel.CellInt(v.Number)
-			excel.Cell(company.Name)
-			excel.Cell(company.Companyno)
-			excel.Cell(company.Ceo)
-			excel.Cell(company.Address)
-			excel.Cell(company.Addressetc)
-			excel.Cell(company.Tel)
-			excel.Cell(company.Email)
+		if nodata == false {
+			for _, v := range items {
+				company := v.Extra["company"].(models.Company)
+				building := v.Extra["building"].(models.Building)
+				excel.CellInt(v.Number)
+				excel.Cell(company.Name)
+				excel.Cell(company.Companyno)
+				excel.Cell(company.Ceo)
+				excel.Cell(company.Address)
+				excel.Cell(company.Addressetc)
+				excel.Cell(company.Tel)
+				excel.Cell(company.Email)
 
-			excel.Cell(building.Name)
-			excel.Cell(building.Companyno)
-			excel.Cell(building.Ceo)
-			excel.Cell(building.Zip)
-			excel.Cell(building.Address)
-			excel.Cell(building.Addressetc)
+				excel.Cell(building.Name)
+				excel.Cell(building.Companyno)
+				excel.Cell(building.Ceo)
+				excel.Cell(building.Zip)
+				excel.Cell(building.Address)
+				excel.Cell(building.Addressetc)
 
-			excel.Cell(building.Businesscondition)
-			excel.Cell(building.Businessitem)
+				excel.Cell(building.Businesscondition)
+				excel.Cell(building.Businessitem)
 
-			excel.Cell(building.Usage)
+				excel.Cell(building.Usage)
 
-			excel.Cell(contracttypes[v.Contracttype])
-			excel.Cell(humanize.FormatFloat("#,###.#", float64(building.Totalweight)))
+				excel.Cell(contracttypes[v.Contracttype])
+				excel.Cell(humanize.FormatFloat("#,###.#", float64(building.Totalweight)))
 
-			username := ""
-			for _, user := range users {
-				if user.Id == v.User {
-					username = user.Name
-					break
+				username := ""
+				for _, user := range users {
+					if user.Id == v.User {
+						username = user.Name
+						break
+					}
 				}
-			}
-			excel.Cell(username)
+				excel.Cell(username)
 
-			saileusername := ""
-			for _, user := range users {
-				if user.Id == v.Salesuser {
-					saileusername = user.Name
-					break
+				saileusername := ""
+				for _, user := range users {
+					if user.Id == v.Salesuser {
+						saileusername = user.Name
+						break
+					}
 				}
+				excel.Cell(saileusername)
+
+				excel.Cell(v.Contractstartdate)
+				excel.Cell(v.Contractenddate)
+				excel.Cell(building.District)
+				excel.Cell(v.Kepconumber)
+				excel.Cell(v.Kesconumber)
+
+				excel.Cell(v.Periodic)
+				excel.Cell(v.Lastdate)
+
+				excel.Cell(v.Managername)
+				excel.Cell(v.Managertel)
+				excel.Cell(v.Manageremail)
+				excel.Cell(v.Billingname)
+				excel.Cell(v.Billingtel)
+				excel.Cell(v.Billingemail)
+
+				excel.Cell(building.Postzip)
+				excel.Cell(building.Postaddress)
+				excel.Cell(building.Postname)
+				excel.Cell(building.Posttel)
+
+				excel.Cell(v.Fax)
+				excel.Cell(fmt.Sprintf("%v", v.Contractprice))
+				excel.Cell(fmt.Sprintf("%v", v.Contractvat))
+
+				excel.Cell(fmt.Sprintf("%v일", v.Billingdate))
+				if v.Billingtype == 1 {
+					excel.Cell("지로")
+				} else {
+					excel.Cell("계산서")
+				}
+
+				month := ""
+				if v.Collectmonth == 1 {
+					month = "매월"
+				} else {
+					month = "익월"
+				}
+
+				excel.Cell(fmt.Sprintf("%v %v일", month, v.Collectday))
+
+				excel.Cell(v.Remark)
 			}
-			excel.Cell(saileusername)
-
-			excel.Cell(v.Contractstartdate)
-			excel.Cell(v.Contractenddate)
-			excel.Cell(building.District)
-			excel.Cell(v.Kepconumber)
-			excel.Cell(v.Kesconumber)
-
-			excel.Cell(v.Periodic)
-			excel.Cell(v.Lastdate)
-
-			excel.Cell(v.Managername)
-			excel.Cell(v.Managertel)
-			excel.Cell(v.Manageremail)
-			excel.Cell(v.Billingname)
-			excel.Cell(v.Billingtel)
-			excel.Cell(v.Billingemail)
-
-			excel.Cell(building.Postzip)
-			excel.Cell(building.Postaddress)
-			excel.Cell(building.Postname)
-			excel.Cell(building.Posttel)
-
-			excel.Cell(v.Fax)
-			excel.Cell(fmt.Sprintf("%v", v.Contractprice))
-			excel.Cell(fmt.Sprintf("%v", v.Contractvat))
-
-			excel.Cell(fmt.Sprintf("%v일", v.Billingdate))
-			if v.Billingtype == 1 {
-				excel.Cell("지로")
-			} else {
-				excel.Cell("계산서")
-			}
-
-			month := ""
-			if v.Collectmonth == 1 {
-				month = "매월"
-			} else {
-				month = "익월"
-			}
-
-			excel.Cell(fmt.Sprintf("%v %v일", month, v.Collectday))
-
-			excel.Cell(v.Remark)
 		}
 	}
 
@@ -557,55 +565,57 @@ func (c *DownloadController) All(category int) {
 		excel.NewSheet("소속회원", header, width, align)
 		excel.SetHeight(24)
 
-		for _, v := range users {
-			departmentName := ""
+		if nodata == false {
+			for _, v := range users {
+				departmentName := ""
 
-			for _, department := range departments {
-				if department.Id == v.Department {
-					departmentName = department.Name
-					break
-				}
-			}
-
-			excel.Cell(departmentName)
-			excel.Cell(v.Loginid)
-			excel.Cell(v.Name)
-			excel.Cell(v.Email)
-			excel.Cell(v.Tel)
-			excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
-			excel.Cell(user.GetLevel(user.Level(v.Level)))
-			excel.Cell(user.GetStatus(user.Status(v.Status)))
-			excel.Cell(fmt.Sprintf("%v", v.Score))
-			excel.Cell(v.Joindate)
-
-			licenses := licenseManager.FindByUser(session.Id)
-			if len(licenses) == 0 {
-				excel.Cell("")
-				excel.Cell("")
-				excel.Cell("")
-				excel.Cell("")
-			} else {
-				category := ""
-				level := ""
-				no := ""
-				date := ""
-				for i, license := range licenses {
-					if i > 0 {
-						category += "\n"
-						level += "\n"
-						no += "\n"
-						date += "\n"
+				for _, department := range departments {
+					if department.Id == v.Department {
+						departmentName = department.Name
+						break
 					}
-					category += license.Extra["licensecategory"].(models.Licensecategory).Name
-					level += license.Extra["licenselevel"].(models.Licenselevel).Name
-					no += license.Number
-					date += license.Takingdate
 				}
 
-				excel.Cell(category)
-				excel.Cell(no)
-				excel.Cell(level)
-				excel.Cell(date)
+				excel.Cell(departmentName)
+				excel.Cell(v.Loginid)
+				excel.Cell(v.Name)
+				excel.Cell(v.Email)
+				excel.Cell(v.Tel)
+				excel.Cell(fmt.Sprintf("%v %v", v.Address, v.Addressetc))
+				excel.Cell(user.GetLevel(user.Level(v.Level)))
+				excel.Cell(user.GetStatus(user.Status(v.Status)))
+				excel.Cell(fmt.Sprintf("%v", v.Score))
+				excel.Cell(v.Joindate)
+
+				licenses := licenseManager.FindByUser(session.Id)
+				if len(licenses) == 0 {
+					excel.Cell("")
+					excel.Cell("")
+					excel.Cell("")
+					excel.Cell("")
+				} else {
+					category := ""
+					level := ""
+					no := ""
+					date := ""
+					for i, license := range licenses {
+						if i > 0 {
+							category += "\n"
+							level += "\n"
+							no += "\n"
+							date += "\n"
+						}
+						category += license.Extra["licensecategory"].(models.Licensecategory).Name
+						level += license.Extra["licenselevel"].(models.Licenselevel).Name
+						no += license.Number
+						date += license.Takingdate
+					}
+
+					excel.Cell(category)
+					excel.Cell(no)
+					excel.Cell(level)
+					excel.Cell(date)
+				}
 			}
 		}
 	}

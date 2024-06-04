@@ -253,7 +253,12 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		customerItem.Status = typeid
 		customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("AE", pos), ".", "-")
 		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("AF", pos), ".", "-")
+		customerItem.Remark = f.GetCell("AJ", pos)
 		customerItem.Type = customer.TypeOutsourcing
+
+		if f.GetCell("AH", pos) != "" {
+			customerItem.Status = 2
+		}
 
 		r, _ := regexp.Compile("[0-9]+")
 
@@ -425,7 +430,8 @@ func (c *ExternalController) User(filename string) {
 
 			licensecategoryItem := licensecategoryManager.GetByName(licensename)
 			if licensecategoryItem == nil {
-				licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
+				licensecategoryItem = &models.Licensecategory{Name: licensename, Order: 0}
+				licensecategoryManager.Insert(licensecategoryItem)
 				licensecategoryItem.Id = licensecategoryManager.GetIdentity()
 			}
 
@@ -584,13 +590,15 @@ func (c *ExternalController) All(category int, filename string) {
 
 					licensecategoryItem := licensecategoryManager.GetByName(licensename)
 					if licensecategoryItem == nil {
-						licensecategoryManager.Insert(&models.Licensecategory{Name: licensename, Order: 0})
+						licensecategoryItem = &models.Licensecategory{Name: licensename, Order: 0}
+						licensecategoryManager.Insert(licensecategoryItem)
 						licensecategoryItem.Id = licensecategoryManager.GetIdentity()
 					}
 
 					licenselevelItem := licenselevelManager.GetByName(licenselevel)
 					if licenselevelItem == nil {
-						licenselevelManager.Insert(&models.Licenselevel{Name: licenselevel, Order: 0})
+						licenselevelItem = &models.Licenselevel{Name: licenselevel, Order: 0}
+						licenselevelManager.Insert(licenselevelItem)
 						licenselevelItem.Id = licenselevelManager.GetIdentity()
 					}
 
