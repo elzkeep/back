@@ -105,7 +105,7 @@ func (c *DownloadController) Giro(ids []int64) {
 		pdf.Cell(nil, building.Address)
 
 		pdf.SetXY(yRatio*100, 2.8*90)
-		pdf.Cell(nil, fmt.Sprintf("%v %v 귀하", building.Addressetc, customer.Billingname))
+		pdf.Cell(nil, fmt.Sprintf("%v %v 귀하", building.Addressetc, building.Name))
 
 		pdf.SetXY(yRatio*160, 2.8*100)
 		pdf.Cell(nil, building.Zip)
@@ -121,22 +121,25 @@ func (c *DownloadController) Giro(ids []int64) {
 			}
 		}
 
+		// 좌측
+
 		pdf.SetFont("noto", "", 13)
 
-		pdf.SetXY(yRatio*155, 2.8*226)
+		pdf.SetXY(yRatio*155, 2.8*223)
 		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
-		pdf.SetFont("noto", "", 11)
+		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(yRatio*14, 2.8*143)
+		pdf.SetXY(yRatio*14, 2.8*142)
 		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
-		pdf.SetFont("noto", "", 11)
+		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(yRatio*40, 2.8*143)
+		pdf.SetXY(yRatio*40, 2.8*142)
 		pdf.Cell(nil, billdate)
 
-		pdf.SetFont("noto", "", 9)
+		// 중앙 컨텐츠
+		pdf.SetFont("noto", "", 8)
 
 		contents := strings.Split(my.Content, "\n")
 		for i, content := range contents {
@@ -144,43 +147,47 @@ func (c *DownloadController) Giro(ids []int64) {
 			pdf.Cell(nil, content)
 		}
 
-		pdf.SetFont("noto", "", 11)
+		pdf.SetFont("noto", "", 10)
 
 		pdf.SetXY(yRatio*25, 2.8*148)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*12, 2.8*153)
+		pdf.SetXY(yRatio*12, 2.8*152)
 		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
 
-		pdf.SetXY(yRatio*39, 2.8*153)
+		pdf.SetXY(yRatio*39, 2.8*152)
 		pdf.Cell(nil, humanize.Comma(int64(vat)))
 
 		pdf.SetXY(yRatio*24, 2.8*157)
 		pdf.Cell(nil, fmt.Sprintf("%v", building.Companyno))
 
-		pdf.SetXY(yRatio*12, 2.8*161)
+		pdf.SetXY(yRatio*12, 2.8*161.5)
 		pdf.Cell(nil, building.Name)
 
 		pdf.SetXY(yRatio*24, 2.8*171)
 		pdf.Cell(nil, today)
 
-		pdf.SetXY(yRatio*73, 2.8*258)
+		// 하단
+
+		pdf.SetXY(yRatio*73, 2.8*256)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*140, 2.8*258)
+		pdf.SetXY(yRatio*140, 2.8*256)
 		pdf.Cell(nil, fmt.Sprintf("%v", month))
 
-		pdf.SetXY(yRatio*158, 2.8*258)
+		pdf.SetXY(yRatio*158, 2.8*256)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Collectday))
 
-		pdf.SetXY(yRatio*73, 2.8*268)
+		pdf.SetXY(yRatio*73, 2.8*263)
 		pdf.Cell(nil, building.Name)
 
-		pdf.SetXY(yRatio*73, 2.8*274)
+		pdf.SetXY(yRatio*73, 2.8*270)
 		pdf.Cell(nil, building.Ceo)
 
-		pdf.SetXY(yRatio*73, 2.8*280)
+		pdf.SetXY(yRatio*73, 2.8*277)
 		pdf.Cell(nil, billdate)
+
+		// OCR
 
 		pdf.SetFont("ocr", "", 12)
 
@@ -265,7 +272,7 @@ func (c *DownloadController) Giro(ids []int64) {
 		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
 
 		str := fmt.Sprintf("<%v+ %v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
-		pdf.SetXY(yRatio*73, 2.8*242)
+		pdf.SetXY(yRatio*66, 2.8*241.5)
 		pdf.Cell(nil, str)
 	}
 
@@ -455,11 +462,11 @@ func (c *DownloadController) All(category int) {
 		excel.SetRowHeight(1, 24)
 		excel.MergeCell("A", 1, "A", 2)
 		excel.MergeCell("B", 1, "H", 1)
-		excel.MergeCell("I", 1, "AO", 1)
+		excel.MergeCell("I", 1, "AS", 1)
 		excel.SetHeaderStyle("A", 1, 10)
 		excel.SetHeaderStyle("B", 1, 10)
 		excel.SetHeaderStyle("I", 1, 10)
-		excel.SetHeaderStyle("AO", 1, 10)
+		excel.SetHeaderStyle("AS", 1, 10)
 		excel.SetCellValue("A", 1, "고객코드")
 		excel.SetCellValue("B", 1, "고객정보")
 		excel.SetCellValue("I", 1, "점건건물정보")

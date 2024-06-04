@@ -88,7 +88,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				userItem.Status = user.StatusUse
+				userItem.Status = user.StatusNotuse
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
@@ -172,7 +172,7 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		building.Weight = models.Double(weight)
 		volttype := f.GetCell("I", pos)
 
-		if volttype == "고압" || volttype == "특고압" {
+		if volttype == "고압" || volttype == "특고압" || volttype == "특 고압" {
 			building.Volttype = 2
 		} else {
 			building.Volttype = 1
@@ -224,6 +224,8 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 			buildingId = buildingFind.Id
 		}
 
+		CalculateScore(conn, buildingId)
+
 		if basic > 0 {
 			basicFacility.Building = buildingId
 
@@ -256,8 +258,10 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 		customerItem.Remark = f.GetCell("AJ", pos)
 		customerItem.Type = customer.TypeOutsourcing
 
-		if f.GetCell("AH", pos) != "" {
-			customerItem.Status = 2
+		if typeid == 1 {
+			if f.GetCell("AH", pos) != "" {
+				customerItem.Status = 2
+			}
 		}
 
 		r, _ := regexp.Compile("[0-9]+")
@@ -398,6 +402,7 @@ func (c *ExternalController) User(filename string) {
 		item.Joindate = joindate
 		item.Approval = user.ApprovalComplete
 		item.Level = user.LevelNormal
+		item.Status = user.StatusUse
 
 		if status == "재직" {
 			item.Status = user.StatusUse
@@ -540,11 +545,12 @@ func (c *ExternalController) All(category int, filename string) {
 			item.Joindate = joindate
 			item.Approval = user.ApprovalComplete
 			item.Level = user.LevelNormal
+			item.Status = user.StatusUse
 
-			if status == "재직" {
-				item.Status = user.StatusUse
-			} else {
+			if status == "퇴직" || status == "사용 안함" || status == "사용안함" || status == "미사용" {
 				item.Status = user.StatusNotuse
+			} else {
+				item.Status = user.StatusUse
 			}
 
 			if userItem == nil {
@@ -776,6 +782,8 @@ func (c *ExternalController) All(category int, filename string) {
 			} else {
 				buildingId = building.Id
 			}
+
+			CalculateScore(conn, buildingId)
 
 			customerItem.Number = global.Atoi(f.GetCell("A", pos))
 

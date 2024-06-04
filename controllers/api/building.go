@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"zkeep/controllers"
 	"zkeep/global"
@@ -11,10 +12,7 @@ type BuildingController struct {
 	controllers.Controller
 }
 
-// @POST()
-func (c *BuildingController) Score(id int64) {
-	conn := c.NewConnection()
-
+func CalculateScore(conn *sql.Tx, id int64) {
 	facilityManager := models.NewFacilityManager(conn)
 	buildingManager := models.NewBuildingManager(conn)
 
@@ -184,4 +182,17 @@ func (c *BuildingController) Score(id int64) {
 
 	log.Println("totalScore", totalScore)
 	buildingManager.UpdateScore(models.Double(totalScore), id)
+}
+
+// @POST()
+func (c *BuildingController) Score(id int64) {
+	db := c.NewConnection()
+	defer db.Close()
+
+	conn, _ := db.Begin()
+	defer conn.Rollback()
+
+	CalculateScore(conn, id)
+
+	conn.Commit()
 }
