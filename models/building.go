@@ -96,8 +96,8 @@ func (p *BuildingManager) SetIndex(index string) {
 }
 
 func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-	log.Println(query)
-	log.Println(params)
+	//log.Println(query)
+	//log.Println(params)
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -106,8 +106,8 @@ func (p *BuildingManager) Exec(query string, params ...interface{}) (sql.Result,
 }
 
 func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-	log.Println(query)
-	log.Println(params)
+	//log.Println(query)
+	//log.Println(params)
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {

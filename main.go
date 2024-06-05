@@ -23,8 +23,8 @@ func main() {
 
 	models.InitCache()
 
-	//DeleteFacility()
-	UpdateScore()
+	// DeleteFacility()
+	// UpdateScore()
 
 	services.Cron()
 	services.Chat()

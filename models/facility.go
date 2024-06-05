@@ -97,8 +97,8 @@ func (p *FacilityManager) SetIndex(index string) {
 }
 
 func (p *FacilityManager) Exec(query string, params ...interface{}) (sql.Result, error) {
-	log.Println(query)
-	log.Println(params)
+	//log.Println(query)
+	//log.Println(params)
     if p.Conn != nil {
        return p.Conn.Exec(query, params...)
     } else {
@@ -107,8 +107,8 @@ func (p *FacilityManager) Exec(query string, params ...interface{}) (sql.Result,
 }
 
 func (p *FacilityManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-	log.Println(query)
-	log.Println(params)
+	//log.Println(query)
+	//log.Println(params)
     if p.Conn != nil {
        return p.Conn.Query(query, params...)
     } else {

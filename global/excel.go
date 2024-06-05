@@ -365,3 +365,12 @@ func (p *Excel) SetCellValue(col string, row int, value interface{}) {
 func (p *Excel) SetRowHeight(row int, height float64) {
 	p.File.SetRowHeight(p.Sheet, row, height)
 }
+
+func (p *Excel) GetRows(sheet string) [][]string {
+	values, _ := p.File.GetRows(sheet, excelize.Options{})
+	return values
+}
+
+func (p *Excel) Close() {
+	p.File.Close()
+}

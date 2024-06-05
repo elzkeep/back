@@ -8,6 +8,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"zkeep/config"
 	"zkeep/controllers"
 	"zkeep/global"
@@ -18,8 +19,158 @@ import (
 	"zkeep/models/user"
 )
 
+var cols map[string]int
+
+func init() {
+	cols = map[string]int{
+		"A": 0,
+		"B": 1,
+		"C": 2,
+		"D": 3,
+		"E": 4,
+		"F": 5,
+		"G": 6,
+		"H": 7,
+		"I": 8,
+		"J": 9,
+		"K": 10,
+		"L": 11,
+		"M": 12,
+		"N": 13,
+		"O": 14,
+		"P": 15,
+		"Q": 16,
+		"R": 17,
+		"S": 18,
+		"T": 19,
+		"U": 20,
+		"V": 21,
+		"W": 22,
+		"X": 23,
+		"Y": 24,
+		"Z": 25,
+
+		"AA": 26,
+		"AB": 27,
+		"AC": 28,
+		"AD": 39,
+		"AE": 30,
+		"AF": 31,
+		"AG": 32,
+		"AH": 33,
+		"AI": 34,
+		"AJ": 35,
+		"AK": 36,
+		"AL": 37,
+		"AM": 38,
+		"AN": 39,
+		"AO": 40,
+		"AP": 41,
+		"AQ": 42,
+		"AR": 43,
+		"AS": 44,
+		"AT": 45,
+		"AU": 46,
+		"AV": 47,
+		"AW": 48,
+		"AX": 49,
+		"AY": 50,
+		"AZ": 51,
+
+		"BA": 52,
+		"BB": 53,
+		"BC": 54,
+		"BD": 55,
+		"BE": 56,
+		"BF": 57,
+		"BG": 58,
+		"BH": 59,
+		"BI": 60,
+		"BJ": 61,
+		"BK": 62,
+		"BL": 63,
+		"BM": 64,
+		"BN": 65,
+		"BO": 66,
+		"BP": 67,
+		"BQ": 68,
+		"BR": 69,
+		"BS": 70,
+		"BT": 71,
+		"BU": 72,
+		"BV": 73,
+		"BW": 74,
+		"BX": 75,
+		"BY": 76,
+		"BZ": 77,
+	}
+}
+
 type ExternalController struct {
 	controllers.Controller
+}
+
+// @POST()
+func (c *ExternalController) Giro(filename []string) {
+	session := c.Session
+
+	conn := c.NewConnection()
+
+	billingManager := models.NewBillingManager(conn)
+	giroManager := models.NewGiroManager(conn)
+
+	for _, v := range filename {
+		fullFilename := path.Join(config.UploadPath, v)
+		data, err := os.Open(fullFilename)
+		if err != nil {
+			continue
+		}
+		scanner := bufio.NewScanner(data)
+		scanner.Split(bufio.ScanLines)
+		var txtlines []string
+
+		for scanner.Scan() {
+			txtlines = append(txtlines, scanner.Text())
+		}
+
+		data.Close()
+
+		for i := 1; i < len(txtlines)-1; i++ {
+			line := txtlines[i]
+			log.Println(i, line)
+			//220000001202401252024012900429030042903025002000343000001242024010151620000000069300 0260
+			acceptdate := line[9:17]
+			insertdate := line[17:25]
+			numberStr := line[51:71]
+			number := global.Atol(numberStr) - 1000000000
+			price := global.Atoi(line[71:84])
+			typeid := line[84:85]
+			charge := global.Atoi(line[85:])
+			log.Println(acceptdate, insertdate, number, price, typeid, charge)
+
+			item := models.Giro{
+				Acceptdate: acceptdate,
+				Insertdate: insertdate,
+				Number:     numberStr,
+				Price:      price,
+				Type:       typeid,
+				Charge:     charge,
+				Content:    line,
+			}
+			giroManager.Insert(&item)
+
+			billingItem := billingManager.Get(number)
+
+			if billingItem != nil && billingItem.Id == number {
+				if billingItem.Company != session.Company {
+					continue
+				}
+
+				billingItem.Status = billing.StatusComplete
+				billingManager.Update(billingItem)
+			}
+		}
+	}
 }
 
 func (c *ExternalController) Index(filenames string, typeid int) {
@@ -28,11 +179,321 @@ func (c *ExternalController) Index(filenames string, typeid int) {
 	files := strings.Split(filenames, ",")
 
 	for _, v := range files {
-		ExcelProcess(v, typeid, user.Company)
+		Thread(v, typeid, user.Company)
 	}
 }
 
-func ExcelProcess(filename string, typeid int, myCompanyId int64) {
+func Thread(filename string, typeid int, myCompanyId int64) {
+	fullFilename := path.Join(config.UploadPath, filename)
+	f := global.NewExcelReader(fullFilename)
+	if f == nil {
+		log.Println("not found file")
+		return
+	}
+
+	list := f.File.GetSheetList()
+
+	sheet := list[0]
+	f.SetSheet(sheet)
+
+	cells := f.GetRows(sheet)
+
+	f.Close()
+
+	max := 10
+
+	wg := new(sync.WaitGroup)
+
+	for i := 0; i < max; i++ {
+		wg.Add(1)
+		ExcelProcess(i, max, typeid, myCompanyId, cells)
+		wg.Done()
+	}
+
+	wg.Wait()
+}
+
+func GetCell(str string, cells []string) string {
+	col := cols[str]
+
+	if col >= len(cells) {
+		return ""
+	}
+
+	return cells[col]
+}
+
+func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]string) {
+	rows := len(cells)
+
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	companyManager := models.NewCompanyManager(conn)
+	customercompanyManager := models.NewCustomercompanyManager(conn)
+	buildingManager := models.NewBuildingManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+	userManager := models.NewUserManager(conn)
+
+	pos := start
+	for {
+		if pos < 4 {
+			pos += max
+			continue
+		}
+
+		if pos >= rows {
+			break
+		}
+
+		item := models.Company{}
+		building := models.Building{}
+		customerItem := models.Customer{}
+
+		cell := cells[pos]
+
+		no := GetCell("A", cell)
+
+		if no == "" {
+			break
+		}
+
+		userName := GetCell("M", cell)
+		if userName == "" {
+			userName = GetCell("L", cell)
+		}
+
+		var userId int64 = 0
+
+		if userName != "" {
+			userFind := userManager.GetByCompanyName(myCompanyId, userName)
+
+			if userFind == nil {
+				userItem := models.User{}
+				userItem.Level = user.LevelNormal
+				userItem.Company = myCompanyId
+				userItem.Name = userName
+				userItem.Loginid = userItem.Name
+				userItem.Passwd = "0000"
+				userItem.Status = user.StatusNotuse
+				userItem.Approval = user.ApprovalComplete
+				userItem.Score = 60
+
+				userManager.Insert(&userItem)
+				userId = userManager.GetIdentity()
+			} else {
+				userId = userFind.Id
+			}
+		}
+
+		salesuserName := GetCell("N", cell)
+		var salesuserId int64 = 0
+
+		if salesuserName != "" {
+			userFind := userManager.GetByCompanyName(myCompanyId, salesuserName)
+
+			if userFind == nil {
+				userItem := models.User{}
+				userItem.Level = user.LevelNormal
+				userItem.Company = myCompanyId
+				userItem.Name = salesuserName
+				userItem.Loginid = userItem.Name
+				userItem.Passwd = "0000"
+				userItem.Status = user.StatusUse
+				userItem.Approval = user.ApprovalComplete
+				userItem.Score = 60
+
+				userManager.Insert(&userItem)
+				salesuserId = userManager.GetIdentity()
+			} else {
+				salesuserId = userFind.Id
+			}
+		}
+
+		item.Name = GetCell("Y", cell)
+		item.Companyno = GetCell("Z", cell)
+		item.Ceo = GetCell("AA", cell)
+		item.Businesscondition = GetCell("AB", cell)
+		item.Businessitem = GetCell("AC", cell)
+		item.Address = GetCell("AD", cell)
+		item.Type = company.TypeBuilding
+
+		var companyId int64 = 0
+
+		if item.Companyno == "" {
+			companyFind := companyManager.GetByName(item.Name)
+
+			if companyFind == nil {
+				companyManager.Insert(&item)
+				companyId = companyManager.GetIdentity()
+			} else {
+				companyId = companyFind.Id
+			}
+
+		} else {
+			companyFind := companyManager.GetByCompanyno(item.Companyno)
+
+			if companyFind == nil {
+				companyManager.Insert(&item)
+				companyId = companyManager.GetIdentity()
+			} else {
+				companyId = companyFind.Id
+			}
+		}
+
+		customercompany := customercompanyManager.GetByCompanyCustomer(myCompanyId, companyId)
+
+		if customercompany == nil {
+			customercompanyManager.Insert(&models.Customercompany{Company: myCompanyId, Customer: companyId})
+		}
+
+		building.Name = GetCell("C", cell)
+		building.Address = GetCell("D", cell)
+		building.Contractvolumn = models.Double(global.Atol(GetCell("E", cell)))
+		building.Receivevolumn = models.Double(global.Atol(GetCell("F", cell)))
+		building.Generatevolumn = models.Double(global.Atol(GetCell("G", cell)))
+		building.Sunlightvolumn = models.Double(global.Atol(GetCell("H", cell)))
+		building.Ceo = GetCell("AN", cell)
+
+		weight := global.Atof(GetCell("E", cell))
+		building.Weight = models.Double(weight)
+		volttype := GetCell("I", cell)
+
+		if volttype == "고압" || volttype == "특고압" || volttype == "특 고압" {
+			building.Volttype = 2
+		} else {
+			building.Volttype = 1
+		}
+
+		building.Checkcount = global.Atoi(GetCell("K", cell))
+
+		building.Receivevolt = global.Atoi(strings.ReplaceAll(GetCell("O", cell), "V", ""))
+		building.Usage = GetCell("T", cell)
+		building.District = GetCell("U", cell)
+		building.Company = companyId
+
+		basic := global.Atoi(GetCell("F", cell))
+		generator := global.Atoi(GetCell("G", cell))
+		sunlight := global.Atoi(GetCell("H", cell))
+
+		basicFacility := models.Facility{}
+		generatorFacility := models.Facility{}
+		sunlightFacility := models.Facility{}
+
+		if basic > 0 {
+			basicFacility.Category = 10
+			basicFacility.Value2 = fmt.Sprintf("%v", basic)
+		}
+
+		if generator > 0 {
+			generatorFacility.Category = 20
+			generatorFacility.Value12 = fmt.Sprintf("%v", generator)
+		}
+
+		if sunlight > 0 {
+			sunlightFacility.Category = 30
+			sunlightFacility.Value6 = fmt.Sprintf("%v", sunlight)
+		}
+
+		building.Totalweight = models.Double(basic + generator + sunlight)
+
+		building.Postaddress = GetCell("AM", cell)
+		building.Postname = GetCell("AN", cell)
+		building.Posttel = GetCell("AO", cell)
+
+		var buildingId int64 = 0
+
+		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
+		if buildingFind == nil {
+			buildingManager.Insert(&building)
+			buildingId = buildingManager.GetIdentity()
+		} else {
+			buildingId = buildingFind.Id
+		}
+
+		CalculateScore2(conn, buildingId)
+
+		if basic > 0 {
+			basicFacility.Building = buildingId
+
+			//facilityManager.Insert(&basicFacility)
+		}
+
+		if generator > 0 {
+			generatorFacility.Building = buildingId
+
+			//facilityManager.Insert(&generatorFacility)
+		}
+
+		if sunlight > 0 {
+			sunlightFacility.Building = buildingId
+
+			//facilityManager.Insert(&sunlightFacility)
+		}
+
+		customerItem.Number = global.Atoi(GetCell("B", cell))
+		customerItem.Managername = GetCell("V", cell)
+		customerItem.Managertel = GetCell("W", cell)
+		customerItem.Manageremail = GetCell("X", cell)
+		customerItem.Address = GetCell("AM", cell)
+		customerItem.Manager = GetCell("AN", cell)
+		customerItem.Contractprice = global.Atoi(GetCell("AQ", cell))
+		customerItem.Contractvat = global.Atoi(GetCell("AR", cell))
+		customerItem.Contracttype = 1
+		customerItem.Status = typeid
+		customerItem.Contractstartdate = strings.ReplaceAll(GetCell("AE", cell), ".", "-")
+		customerItem.Contractenddate = strings.ReplaceAll(GetCell("AF", cell), ".", "-")
+		customerItem.Remark = GetCell("AJ", cell)
+		customerItem.Type = customer.TypeOutsourcing
+
+		if typeid == 1 {
+			if GetCell("AH", cell) != "" {
+				customerItem.Status = 2
+			}
+		}
+
+		r, _ := regexp.Compile("[0-9]+")
+
+		billStr := GetCell("AS", cell)
+		billdate := r.FindString(billStr)
+
+		customerItem.Billingdate = global.Atoi(billdate)
+
+		str := GetCell("AU", cell)
+
+		collectday := r.FindString(str)
+
+		if strings.Contains(str, "당월") {
+			customerItem.Collectmonth = 1
+		} else {
+			customerItem.Collectmonth = 2
+		}
+
+		if collectday == "" {
+			customerItem.Collectday = 0
+		} else {
+			customerItem.Collectday = global.Atoi(collectday)
+		}
+
+		if GetCell("AT", cell) == "지로" {
+			customerItem.Billingtype = 1
+		} else {
+			customerItem.Billingtype = 2
+		}
+
+		customerItem.Building = buildingId
+		customerItem.User = userId
+		customerItem.Salesuser = salesuserId
+		customerItem.Company = myCompanyId
+
+		customerManager.DeleteByCompanyBuilding(myCompanyId, buildingId)
+		customerManager.Insert(&customerItem)
+
+		pos += max
+	}
+}
+
+func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 	db := models.NewConnection()
 	defer db.Close()
 
@@ -57,6 +518,9 @@ func ExcelProcess(filename string, typeid int, myCompanyId int64) {
 
 	sheet := list[0]
 	f.SetSheet(sheet)
+
+	values := f.GetRows(sheet)
+	log.Println(values)
 
 	pos := 5
 	for {
@@ -457,18 +921,6 @@ func (c *ExternalController) User(filename string) {
 func (c *ExternalController) All(category int, filename string) {
 	session := c.Session
 
-	db := models.NewConnection()
-	defer db.Close()
-
-	conn, _ := db.Begin()
-	defer conn.Rollback()
-
-	companyManager := models.NewCompanyManager(conn)
-	customercompanyManager := models.NewCustomercompanyManager(conn)
-	buildingManager := models.NewBuildingManager(conn)
-	customerManager := models.NewCustomerManager(conn)
-	userManager := models.NewUserManager(conn)
-
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
 	if f == nil {
@@ -476,20 +928,69 @@ func (c *ExternalController) All(category int, filename string) {
 		return
 	}
 
+	userCells := make([][]string, 0)
+	if category != 1 {
+		sheet := "소속회원"
+		f.SetSheet(sheet)
+		userCells = f.GetRows(sheet)
+	}
+
+	companyCells := make([][]string, 0)
+	if category != 2 {
+		sheet := "고객 현황"
+		f.SetSheet(sheet)
+		companyCells = f.GetRows(sheet)
+	}
+
+	f.Close()
+
+	max := 10
+
+	wg := new(sync.WaitGroup)
+
+	for i := 0; i < max; i++ {
+		wg.Add(1)
+		AllProcess(i, max, category, session.Company, userCells, companyCells)
+		wg.Done()
+	}
+
+	wg.Wait()
+}
+
+func AllProcess(start int, max int, category int, myCompanyId int64, userCells [][]string, companyCells [][]string) {
+	conn := models.NewConnection()
+	defer conn.Close()
+
+	companyManager := models.NewCompanyManager(conn)
+	customercompanyManager := models.NewCustomercompanyManager(conn)
+	buildingManager := models.NewBuildingManager(conn)
+	customerManager := models.NewCustomerManager(conn)
+	userManager := models.NewUserManager(conn)
+
 	if category != 1 {
 		departmentManager := models.NewDepartmentManager(conn)
 		licenseManager := models.NewLicenseManager(conn)
 		licensecategoryManager := models.NewLicensecategoryManager(conn)
 		licenselevelManager := models.NewLicenselevelManager(conn)
 
-		sheet := "소속회원"
-		f.SetSheet(sheet)
+		rows := len(userCells)
 
-		pos := 1
+		pos := start
 		for {
+			if pos < 1 {
+				pos += max
+				continue
+			}
+
+			if pos >= rows {
+				break
+			}
+
+			cell := userCells[pos]
+
 			item := models.User{}
 
-			name := f.GetCell("B", pos)
+			name := GetCell("B", cell)
 
 			if name == "" {
 				break
@@ -501,30 +1002,30 @@ func (c *ExternalController) All(category int, filename string) {
 			}
 
 			zip := ""
-			address := f.GetCell("F", pos)
-			tel := f.GetCell("E", pos)
-			email := f.GetCell("D", pos)
+			address := GetCell("F", cell)
+			tel := GetCell("E", cell)
+			email := GetCell("D", cell)
 
 			educationdate := ""
 			educationinstitution := ""
 			specialeducationdate := ""
 			specialeducationinstitution := ""
-			joindate := f.GetCell("J", pos)
-			status := f.GetCell("H", pos)
+			joindate := GetCell("J", cell)
+			status := GetCell("H", cell)
 
-			userItem := userManager.GetByCompanyTelName(session.Company, tel, name)
+			userItem := userManager.GetByCompanyTelName(myCompanyId, tel, name)
 
 			if userItem != nil {
 				item = *userItem
 			}
 
-			departmentName := f.GetCell("A", pos)
-			department := departmentManager.GetByCompanyName(session.Company, departmentName)
+			departmentName := GetCell("A", cell)
+			department := departmentManager.GetByCompanyName(myCompanyId, departmentName)
 			if department == nil {
 				department = &models.Department{
 					Name:    departmentName,
 					Status:  1,
-					Company: session.Company,
+					Company: myCompanyId,
 				}
 
 				departmentManager.Insert(department)
@@ -554,7 +1055,7 @@ func (c *ExternalController) All(category int, filename string) {
 			}
 
 			if userItem == nil {
-				item.Company = session.Company
+				item.Company = myCompanyId
 				item.Loginid = item.Name
 				item.Passwd = "0000"
 				item.Score = 60
@@ -565,10 +1066,10 @@ func (c *ExternalController) All(category int, filename string) {
 				userManager.Update(&item)
 			}
 
-			licensename := f.GetCell("K", pos)
-			licenseno := f.GetCell("L", pos)
-			licenselevel := f.GetCell("M", pos)
-			licensedate := f.GetCell("N", pos)
+			licensename := GetCell("K", cell)
+			licenseno := GetCell("L", cell)
+			licenselevel := GetCell("M", cell)
+			licensedate := GetCell("N", cell)
 
 			if licensename != "" {
 				licensenames := strings.Split(licensename, "\n")
@@ -616,33 +1117,42 @@ func (c *ExternalController) All(category int, filename string) {
 				}
 			}
 
-			pos++
+			pos += max
 		}
 	}
 
 	if category != 2 {
-		sheet := "고객 현황"
-		f.SetSheet(sheet)
+		rows := len(companyCells)
 
-		pos := 2
+		pos := start
 		for {
-			log.Println("POS:", pos)
+			if pos < 2 {
+				pos += max
+				continue
+			}
+
+			if pos >= rows {
+				break
+			}
+
+			cell := companyCells[pos]
+
 			item := models.Company{}
 			customerItem := models.Customer{}
 
-			no := f.GetCell("A", pos)
+			no := GetCell("A", cell)
 
 			if no == "" {
 				break
 			}
 
-			item.Name = f.GetCell("B", pos)
-			item.Companyno = f.GetCell("C", pos)
-			item.Ceo = f.GetCell("D", pos)
-			item.Address = f.GetCell("E", pos)
-			item.Addressetc = f.GetCell("F", pos)
-			item.Tel = f.GetCell("G", pos)
-			item.Email = f.GetCell("H", pos)
+			item.Name = GetCell("B", cell)
+			item.Companyno = GetCell("C", cell)
+			item.Ceo = GetCell("D", cell)
+			item.Address = GetCell("E", cell)
+			item.Addressetc = GetCell("F", cell)
+			item.Tel = GetCell("G", cell)
+			item.Email = GetCell("H", cell)
 			item.Type = company.TypeBuilding
 
 			var companyId int64 = 0
@@ -668,31 +1178,31 @@ func (c *ExternalController) All(category int, filename string) {
 				}
 			}
 
-			customercompany := customercompanyManager.GetByCompanyCustomer(session.Company, companyId)
+			customercompany := customercompanyManager.GetByCompanyCustomer(myCompanyId, companyId)
 
 			if customercompany == nil {
-				customercompanyManager.Insert(&models.Customercompany{Company: session.Company, Customer: companyId})
+				customercompanyManager.Insert(&models.Customercompany{Company: myCompanyId, Customer: companyId})
 			}
 
-			buildingName := f.GetCell("I", pos)
+			buildingName := GetCell("I", cell)
 			building := buildingManager.GetByCompanyName(companyId, buildingName)
 			if building == nil {
 				building = &models.Building{}
 			}
 
-			building.Name = f.GetCell("I", pos)
-			building.Companyno = f.GetCell("J", pos)
-			building.Ceo = f.GetCell("K", pos)
-			building.Zip = f.GetCell("L", pos)
+			building.Name = GetCell("I", cell)
+			building.Companyno = GetCell("J", cell)
+			building.Ceo = GetCell("K", cell)
+			building.Zip = GetCell("L", cell)
 
-			building.Address = f.GetCell("M", pos)
-			building.Addressetc = f.GetCell("N", pos)
+			building.Address = GetCell("M", cell)
+			building.Addressetc = GetCell("N", cell)
 
-			building.Businesscondition = f.GetCell("O", pos)
-			building.Businessitem = f.GetCell("P", pos)
-			building.Usage = f.GetCell("Q", pos)
+			building.Businesscondition = GetCell("O", cell)
+			building.Businessitem = GetCell("P", cell)
+			building.Usage = GetCell("Q", cell)
 
-			contracttype := f.GetCell("R", pos)
+			contracttype := GetCell("R", cell)
 			if contracttype == "안전관리" {
 				customerItem.Contracttype = 1
 			} else if contracttype == "유지보수" {
@@ -703,20 +1213,20 @@ func (c *ExternalController) All(category int, filename string) {
 				customerItem.Contracttype = 1
 			}
 
-			weight := global.Atof(f.GetCell("S", pos))
+			weight := global.Atof(GetCell("S", cell))
 			building.Weight = models.Double(weight)
 
-			userName := f.GetCell("T", pos)
+			userName := GetCell("T", cell)
 
 			var userId int64 = 0
 
 			if userName != "" {
-				userFind := userManager.GetByCompanyName(session.Company, userName)
+				userFind := userManager.GetByCompanyName(myCompanyId, userName)
 
 				if userFind == nil {
 					userItem := models.User{}
 					userItem.Level = user.LevelNormal
-					userItem.Company = session.Company
+					userItem.Company = myCompanyId
 					userItem.Name = userName
 					userItem.Loginid = userItem.Name
 					userItem.Passwd = "0000"
@@ -731,16 +1241,16 @@ func (c *ExternalController) All(category int, filename string) {
 				}
 			}
 
-			salesuserName := f.GetCell("U", pos)
+			salesuserName := GetCell("U", cell)
 			var salesuserId int64 = 0
 
 			if salesuserName != "" {
-				userFind := userManager.GetByCompanyName(session.Company, salesuserName)
+				userFind := userManager.GetByCompanyName(myCompanyId, salesuserName)
 
 				if userFind == nil {
 					userItem := models.User{}
 					userItem.Level = user.LevelNormal
-					userItem.Company = session.Company
+					userItem.Company = myCompanyId
 					userItem.Name = salesuserName
 					userItem.Loginid = userItem.Name
 					userItem.Passwd = "0000"
@@ -755,24 +1265,24 @@ func (c *ExternalController) All(category int, filename string) {
 				}
 			}
 
-			customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("V", pos), ".", "-")
-			customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("W", pos), ".", "-")
+			customerItem.Contractstartdate = strings.ReplaceAll(GetCell("V", cell), ".", "-")
+			customerItem.Contractenddate = strings.ReplaceAll(GetCell("W", cell), ".", "-")
 
-			building.District = f.GetCell("X", pos)
+			building.District = GetCell("X", cell)
 
-			customerItem.Kepconumber = f.GetCell("Y", pos)
-			customerItem.Kesconumber = f.GetCell("Z", pos)
+			customerItem.Kepconumber = GetCell("Y", cell)
+			customerItem.Kesconumber = GetCell("Z", cell)
 
-			customerItem.Periodic = f.GetCell("AA", pos)
+			customerItem.Periodic = GetCell("AA", cell)
 
-			customerItem.Lastdate = strings.ReplaceAll(f.GetCell("AB", pos), ".", "-")
+			customerItem.Lastdate = strings.ReplaceAll(GetCell("AB", cell), ".", "-")
 
 			building.Company = companyId
 
-			building.Postzip = f.GetCell("AI", pos)
-			building.Postaddress = f.GetCell("AJ", pos)
-			building.Postname = f.GetCell("AK", pos)
-			building.Posttel = f.GetCell("AL", pos)
+			building.Postzip = GetCell("AI", cell)
+			building.Postaddress = GetCell("AJ", cell)
+			building.Postname = GetCell("AK", cell)
+			building.Posttel = GetCell("AL", cell)
 
 			var buildingId int64 = 0
 
@@ -783,35 +1293,35 @@ func (c *ExternalController) All(category int, filename string) {
 				buildingId = building.Id
 			}
 
-			CalculateScore(conn, buildingId)
+			CalculateScore2(conn, buildingId)
 
-			customerItem.Number = global.Atoi(f.GetCell("A", pos))
+			customerItem.Number = global.Atoi(GetCell("A", cell))
 
-			customerItem.Managername = f.GetCell("AC", pos)
-			customerItem.Managertel = f.GetCell("AD", pos)
-			customerItem.Manageremail = f.GetCell("AE", pos)
+			customerItem.Managername = GetCell("AC", cell)
+			customerItem.Managertel = GetCell("AD", cell)
+			customerItem.Manageremail = GetCell("AE", cell)
 
-			customerItem.Billingname = f.GetCell("AF", pos)
-			customerItem.Billingtel = f.GetCell("AG", pos)
-			customerItem.Billingemail = f.GetCell("AH", pos)
+			customerItem.Billingname = GetCell("AF", cell)
+			customerItem.Billingtel = GetCell("AG", cell)
+			customerItem.Billingemail = GetCell("AH", cell)
 
-			customerItem.Fax = f.GetCell("AM", pos)
+			customerItem.Fax = GetCell("AM", cell)
 			customerItem.Status = 1
 
-			customerItem.Contractprice = global.Atoi(f.GetCell("AK", pos))
-			customerItem.Contractvat = global.Atoi(f.GetCell("AL", pos))
+			customerItem.Contractprice = global.Atoi(GetCell("AN", cell))
+			customerItem.Contractvat = global.Atoi(GetCell("AO", cell))
 
 			customerItem.Type = customer.TypeOutsourcing
 
-			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(f.GetCell("AM", pos), "일", "")))
+			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(GetCell("AP", cell), "일", "")))
 
-			if f.GetCell("AN", pos) == "지로" {
+			if GetCell("AQ", cell) == "지로" {
 				customerItem.Billingtype = 1
 			} else {
 				customerItem.Billingtype = 2
 			}
 
-			str := f.GetCell("AO", pos)
+			str := GetCell("AR", cell)
 
 			r, _ := regexp.Compile("[0-9]+")
 			collectday := r.FindString(str)
@@ -828,82 +1338,17 @@ func (c *ExternalController) All(category int, filename string) {
 				customerItem.Collectday = global.Atoi(collectday)
 			}
 
-			customerItem.Remark = f.GetCell("AP", pos)
+			customerItem.Remark = GetCell("AS", cell)
 
 			customerItem.Building = buildingId
 			customerItem.User = userId
 			customerItem.Salesuser = salesuserId
-			customerItem.Company = session.Company
+			customerItem.Company = myCompanyId
 
-			customerManager.DeleteByCompanyBuilding(session.Company, buildingId)
+			customerManager.DeleteByCompanyBuilding(myCompanyId, buildingId)
 			customerManager.Insert(&customerItem)
 
-			pos++
-		}
-	}
-
-	conn.Commit()
-}
-
-// @POST()
-func (c *ExternalController) Giro(filename []string) {
-	session := c.Session
-
-	conn := c.NewConnection()
-
-	billingManager := models.NewBillingManager(conn)
-	giroManager := models.NewGiroManager(conn)
-
-	for _, v := range filename {
-		fullFilename := path.Join(config.UploadPath, v)
-		data, err := os.Open(fullFilename)
-		if err != nil {
-			continue
-		}
-		scanner := bufio.NewScanner(data)
-		scanner.Split(bufio.ScanLines)
-		var txtlines []string
-
-		for scanner.Scan() {
-			txtlines = append(txtlines, scanner.Text())
-		}
-
-		data.Close()
-
-		for i := 1; i < len(txtlines)-1; i++ {
-			line := txtlines[i]
-			log.Println(i, line)
-			//220000001202401252024012900429030042903025002000343000001242024010151620000000069300 0260
-			acceptdate := line[9:17]
-			insertdate := line[17:25]
-			numberStr := line[51:71]
-			number := global.Atol(numberStr) - 1000000000
-			price := global.Atoi(line[71:84])
-			typeid := line[84:85]
-			charge := global.Atoi(line[85:])
-			log.Println(acceptdate, insertdate, number, price, typeid, charge)
-
-			item := models.Giro{
-				Acceptdate: acceptdate,
-				Insertdate: insertdate,
-				Number:     numberStr,
-				Price:      price,
-				Type:       typeid,
-				Charge:     charge,
-				Content:    line,
-			}
-			giroManager.Insert(&item)
-
-			billingItem := billingManager.Get(number)
-
-			if billingItem != nil && billingItem.Id == number {
-				if billingItem.Company != session.Company {
-					continue
-				}
-
-				billingItem.Status = billing.StatusComplete
-				billingManager.Update(billingItem)
-			}
+			pos += max
 		}
 	}
 }

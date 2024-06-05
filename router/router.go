@@ -307,6 +307,25 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Post("/external/giro", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var filename_ []string
+			if v, flag := results["filename"]; flag {
+			    strs := make([]string, 0)
+			    for _, str := range v.([]interface{}) {
+			        strs = append(strs, str.(string))
+			    }
+				filename_ = strs
+			}
+			var controller api.ExternalController
+			controller.Init(c)
+			controller.Giro(filename_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/external", func(c *fiber.Ctx) error {
 			filenames_ := c.Query("filenames")
 			type_, _ := strconv.Atoi(c.Query("type"))
@@ -332,25 +351,6 @@ func SetRouter(r *fiber.App) {
 			var controller api.ExternalController
 			controller.Init(c)
 			controller.All(category_, filename_)
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Post("/external/giro", func(c *fiber.Ctx) error {
-			var results map[string]interface{}
-			jsonData := c.Body()
-			json.Unmarshal(jsonData, &results)
-			var filename_ []string
-			if v, flag := results["filename"]; flag {
-			    strs := make([]string, 0)
-			    for _, str := range v.([]interface{}) {
-			        strs = append(strs, str.(string))
-			    }
-				filename_ = strs
-			}
-			var controller api.ExternalController
-			controller.Init(c)
-			controller.Giro(filename_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
