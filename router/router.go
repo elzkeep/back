@@ -4549,6 +4549,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Delete("/facility/bybuilding", func(c *fiber.Ctx) error {
+			item_ := &models.Facility{}
+			c.BodyParser(item_)
+			var controller rest.FacilityController
+			controller.Init(c)
+			controller.DeleteByBuilding(item_.Building)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/facility", func(c *fiber.Ctx) error {
 			item_ := &models.Facility{}
 			c.BodyParser(item_)

@@ -24,6 +24,17 @@ func (c *FacilityController) DeleteByBuildingCategory(building int64 ,category i
     
 }
 
+// @Delete()
+func (c *FacilityController) DeleteByBuilding(building int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewFacilityManager(conn)
+    
+    _manager.DeleteByBuilding(building)
+    
+}
+
 
 func (c *FacilityController) Insert(item *models.Facility) {
     

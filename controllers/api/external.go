@@ -234,6 +234,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 	buildingManager := models.NewBuildingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
+	facilityManager := models.NewFacilityManager(conn)
 
 	pos := start
 	for {
@@ -275,7 +276,11 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				userItem.Status = user.StatusNotuse
+				if typeid == 1 {
+					userItem.Status = user.StatusUse
+				} else {
+					userItem.Status = user.StatusNotuse
+				}
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
@@ -299,7 +304,11 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userItem.Name = salesuserName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				userItem.Status = user.StatusUse
+				if typeid == 1 {
+					userItem.Status = user.StatusUse
+				} else {
+					userItem.Status = user.StatusNotuse
+				}
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
@@ -374,7 +383,9 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 
 		basic := global.Atoi(GetCell("F", cell))
 		generator := global.Atoi(GetCell("G", cell))
+
 		sunlight := global.Atoi(GetCell("H", cell))
+		log.Println("SUn", GetCell("H", cell), sunlight)
 
 		basicFacility := models.Facility{}
 		generatorFacility := models.Facility{}
@@ -383,16 +394,19 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		if basic > 0 {
 			basicFacility.Category = 10
 			basicFacility.Value2 = fmt.Sprintf("%v", basic)
+			basicFacility.Type = building.Volttype
 		}
 
 		if generator > 0 {
 			generatorFacility.Category = 20
 			generatorFacility.Value12 = fmt.Sprintf("%v", generator)
+			generatorFacility.Type = building.Volttype
 		}
 
 		if sunlight > 0 {
 			sunlightFacility.Category = 30
 			sunlightFacility.Value6 = fmt.Sprintf("%v", sunlight)
+			sunlightFacility.Type = building.Volttype
 		}
 
 		building.Totalweight = models.Double(basic + generator + sunlight)
@@ -411,25 +425,26 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 			buildingId = buildingFind.Id
 		}
 
-		CalculateScore2(conn, buildingId)
-
+		facilityManager.DeleteByBuilding(buildingId)
 		if basic > 0 {
 			basicFacility.Building = buildingId
 
-			//facilityManager.Insert(&basicFacility)
+			facilityManager.Insert(&basicFacility)
 		}
 
 		if generator > 0 {
 			generatorFacility.Building = buildingId
 
-			//facilityManager.Insert(&generatorFacility)
+			facilityManager.Insert(&generatorFacility)
 		}
 
 		if sunlight > 0 {
 			sunlightFacility.Building = buildingId
 
-			//facilityManager.Insert(&sunlightFacility)
+			facilityManager.Insert(&sunlightFacility)
 		}
+
+		CalculateScore2(conn, buildingId)
 
 		customerItem.Number = global.Atoi(GetCell("B", cell))
 		customerItem.Managername = GetCell("V", cell)
@@ -552,7 +567,11 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				userItem.Status = user.StatusNotuse
+				if typeid == 1 {
+					userItem.Status = user.StatusUse
+				} else {
+					userItem.Status = user.StatusNotuse
+				}
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
@@ -576,7 +595,11 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 				userItem.Name = salesuserName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				userItem.Status = user.StatusUse
+				if typeid == 1 {
+					userItem.Status = user.StatusUse
+				} else {
+					userItem.Status = user.StatusNotuse
+				}
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 

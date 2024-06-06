@@ -159,7 +159,8 @@
     {
       "name": "facility",        
       "method": [
-        "DeleteByBuildingCategory"        
+        "DeleteByBuildingCategory",
+        "DeleteByBuilding"
       ]      
     },
     {

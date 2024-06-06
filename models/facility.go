@@ -1044,5 +1044,16 @@ func (p *FacilityManager) DeleteByBuildingCategory(building int64, category int)
     return err
 }
 
+func (p *FacilityManager) DeleteByBuilding(building int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from facility_tb where f_building = ?"
+    _, err := p.Exec(query, building)
+
+    return err
+}
+
 
 

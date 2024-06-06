@@ -74,6 +74,8 @@ func GetTimestamp(str string) int64 {
 }
 
 func Atoi(value string) int {
+	temp := strings.Split(value, ".")
+	value = temp[0]
 	value = strings.ReplaceAll(value, ",", "")
 	value = strings.ReplaceAll(value, " ", "")
 	i, _ := strconv.Atoi(value)
