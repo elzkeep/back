@@ -163,6 +163,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/company/totalscore", func(c *fiber.Ctx) error {
+			var controller api.CompanyController
+			controller.Init(c)
+			controller.Totalscore()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/companylist/search/:page", func(c *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(c.Params("page"))
 			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))

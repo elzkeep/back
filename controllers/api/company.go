@@ -172,3 +172,23 @@ func (c *CompanyController) Upload(filename string) {
 		pos++
 	}
 }
+
+func (c *CompanyController) Totalscore() {
+	session := c.Session
+
+	conn := c.NewConnection()
+
+	customerManager := models.NewCustomerManager(conn)
+	items := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+	})
+
+	var total float64
+	for _, v := range items {
+		building := v.Extra["building"].(models.Building)
+
+		total += float64(building.Score)
+	}
+
+	c.Set("score", total)
+}
