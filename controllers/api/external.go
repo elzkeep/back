@@ -276,11 +276,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
 				userItem.Passwd = "0000"
-				if typeid == 1 {
-					userItem.Status = user.StatusUse
-				} else {
-					userItem.Status = user.StatusNotuse
-				}
+				userItem.Status = user.StatusNotuse
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
@@ -303,12 +299,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userItem.Company = myCompanyId
 				userItem.Name = salesuserName
 				userItem.Loginid = userItem.Name
-				userItem.Passwd = "0000"
-				if typeid == 1 {
-					userItem.Status = user.StatusUse
-				} else {
-					userItem.Status = user.StatusNotuse
-				}
+				userItem.Status = user.StatusNotuse
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
 
