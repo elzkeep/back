@@ -113,48 +113,67 @@ func (c *DownloadController) Giro(ids []int64) {
 		if postname == "" {
 			postname = customer.Billingname
 		}
-		pdf.SetXY(yRatio*100, 2.8*80)
+
+		marginY := -1.4
+		pdf.SetXY(yRatio*80, 2.8*80+marginY)
 		pdf.Cell(nil, address)
 
-		pdf.SetXY(yRatio*100, 2.8*90)
+		pdf.SetXY(yRatio*80, 2.8*90+marginY)
 		if customer.Managername != "" {
 			pdf.Cell(nil, fmt.Sprintf("%v (%v) 귀하", postname, customer.Managername))
 		} else {
 			pdf.Cell(nil, fmt.Sprintf("%v 귀하", postname))
 		}
 
-		pdf.SetXY(yRatio*160, 2.8*100)
+		pdf.SetXY(yRatio*160, 2.8*100+marginY)
 		pdf.Cell(nil, zip)
 
 		pdf.SetFont("noto", "", 9)
 
-		pdf.SetXY(yRatio*19, 2.8*110)
+		pdf.SetXY(yRatio*19, 2.8*110+marginY)
 		pdf.Cell(nil, building.Name)
 
 		if customer.User > 0 {
 			user := userManager.Get(customer.User)
 
 			if user != nil {
-				pdf.SetXY(yRatio*170, 2.8*110)
+				pdf.SetXY(yRatio*170, 2.8*110+marginY)
 				pdf.Cell(nil, fmt.Sprintf("(%v %v)", user.Id, user.Name))
 			}
 		}
 
-		// 좌측
-
 		pdf.SetFont("noto", "", 13)
 
-		pdf.SetXY(yRatio*157, 2.8*225)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+		//pdf.RectFromLowerLeftWithStyle(yRatio*(177-50), 2.8*(225+8)+marginY, 2.8*50, 2.8*8, "DF")
+
+		pdf.SetXY(yRatio*(177-50), 2.8*(225)+marginY)
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 50, H: 2.8 * 8}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
+			Align:  gopdf.Right | gopdf.Top,
+			Border: 0,
+			Float:  gopdf.Right,
+		})
+
+		//pdf.SetXY(yRatio*177, 2.8*225+marginY)
+		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+
+		// 좌측
 
 		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(yRatio*19, 2.8*142)
-		pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+		//pdf.SetXY(yRatio*24, 2.8*143+marginY)
+		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
+
+		//pdf.RectFromLowerLeftWithStyle(yRatio*(24-14), 2.8*(143+4)+marginY, 2.8*27, 2.8*4, "D")
+		pdf.SetXY(yRatio*(24-14), 2.8*(143)+marginY)
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 27, H: 2.8 * 4}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
+			Align:  gopdf.Right | gopdf.Top,
+			Border: 0,
+			Float:  gopdf.Right,
+		})
 
 		pdf.SetFont("noto", "", 8)
 
-		pdf.SetXY(yRatio*48, 2.8*142)
+		pdf.SetXY(yRatio*39, 2.8*143+marginY)
 		pdf.Cell(nil, billdate)
 
 		// 중앙 컨텐츠
@@ -162,48 +181,48 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		contents := strings.Split(my.Content, "\n")
 		for i, content := range contents {
-			pdf.SetXY(yRatio*75, 2.8*float64(140+i*6))
+			pdf.SetXY(yRatio*75, 2.8*float64(140+i*6)+marginY)
 			pdf.Cell(nil, content)
 		}
 
 		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(yRatio*25, 2.8*148)
+		pdf.SetXY(yRatio*25, 2.8*148+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*17, 2.8*152)
+		pdf.SetXY(yRatio*17, 2.8*152.5+marginY)
 		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
 
-		pdf.SetXY(yRatio*44, 2.8*152)
+		pdf.SetXY(yRatio*44, 2.8*152.5+marginY)
 		pdf.Cell(nil, humanize.Comma(int64(vat)))
 
-		pdf.SetXY(yRatio*24, 2.8*157)
+		pdf.SetXY(yRatio*23.5, 2.8*157.5+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", company.Companyno))
 
-		pdf.SetXY(yRatio*12, 2.8*161.5)
+		pdf.SetXY(yRatio*12, 2.8*162+marginY)
 		pdf.Cell(nil, company.Name)
 
-		pdf.SetXY(yRatio*24, 2.8*171)
+		pdf.SetXY(yRatio*23.5, 2.8*171.5+marginY)
 		pdf.Cell(nil, today)
 
 		// 하단
 
-		pdf.SetXY(yRatio*73, 2.8*256)
+		pdf.SetXY(yRatio*73, 2.8*256.5+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*140, 2.8*256)
+		pdf.SetXY(yRatio*140, 2.8*256.5+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", month))
 
-		pdf.SetXY(yRatio*158, 2.8*256)
+		pdf.SetXY(yRatio*156, 2.8*256.5+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Collectday))
 
-		pdf.SetXY(yRatio*73, 2.8*263)
+		pdf.SetXY(yRatio*73, 2.8*263+marginY)
 		pdf.Cell(nil, company.Name)
 
-		pdf.SetXY(yRatio*73, 2.8*270)
+		pdf.SetXY(yRatio*73, 2.8*269.5+marginY)
 		pdf.Cell(nil, company.Ceo)
 
-		pdf.SetXY(yRatio*73, 2.8*277)
+		pdf.SetXY(yRatio*73, 2.8*276+marginY)
 		pdf.Cell(nil, billdate)
 
 		// OCR
@@ -291,7 +310,7 @@ func (c *DownloadController) Giro(ids []int64) {
 		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
 
 		str := fmt.Sprintf("<%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
-		pdf.SetXY(yRatio*68, 2.8*241.5)
+		pdf.SetXY(yRatio*68, 2.8*241.5+marginY)
 		pdf.Cell(nil, str)
 	}
 

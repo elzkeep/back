@@ -463,6 +463,14 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Get("/userlist/initdata", func(c *fiber.Ctx) error {
+			var controller api.UserlistController
+			controller.Init(c)
+			controller.InitData()
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 	}
 
 	{

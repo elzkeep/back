@@ -283,6 +283,14 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userManager.Insert(&userItem)
 				userId = userManager.GetIdentity()
 			} else {
+				userFind.Level = user.LevelNormal
+				userFind.Company = myCompanyId
+				userFind.Name = userName
+				userFind.Status = user.StatusNotuse
+				userFind.Approval = user.ApprovalComplete
+
+				userManager.Update(userFind)
+
 				userId = userFind.Id
 			}
 		}
@@ -306,6 +314,14 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userManager.Insert(&userItem)
 				salesuserId = userManager.GetIdentity()
 			} else {
+				userFind.Level = user.LevelNormal
+				userFind.Company = myCompanyId
+				userFind.Name = userName
+				userFind.Status = user.StatusNotuse
+				userFind.Approval = user.ApprovalComplete
+
+				userManager.Update(userFind)
+
 				salesuserId = userFind.Id
 			}
 		}
@@ -1027,7 +1043,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			joindate := GetCell("J", cell)
 			status := GetCell("H", cell)
 
-			userItem := userManager.GetByCompanyTelName(myCompanyId, tel, name)
+			userItem := userManager.GetByCompanyName(myCompanyId, name)
 
 			if userItem != nil {
 				item = *userItem
