@@ -316,7 +316,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 			} else {
 				userFind.Level = user.LevelNormal
 				userFind.Company = myCompanyId
-				userFind.Name = userName
+				userFind.Name = salesuserName
 				userFind.Status = user.StatusNotuse
 				userFind.Approval = user.ApprovalComplete
 

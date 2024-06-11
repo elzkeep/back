@@ -31,6 +31,10 @@ func (c *UserlistController) InitData() {
 
 		totalusers++
 
+		if v.Status != 1 {
+			continue
+		}
+
 		score += float64(v.Score)
 		totalscore += float64(v.Totalscore)
 	}

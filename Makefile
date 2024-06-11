@@ -26,6 +26,10 @@ build: dummy
 run:
 	buildtool-watch ./	
 
+pdf:
+	go test
+	open ./test.pdf
+
 test: dummy
 	#go test -v ./...
 	go test
