@@ -141,8 +141,10 @@ func (c *ExternalController) Giro(filename []string) {
 			//220000001202401252024012900429030042903025002000343000001242024010151620000000069300 0260
 			acceptdate := line[9:17]
 			insertdate := line[17:25]
-			numberStr := line[51:71]
+			numberStr := line[51:70]
+			log.Println(numberStr)
 			number := global.Atol(numberStr) - 1000000000
+			log.Println(number)
 			price := global.Atoi(line[71:84])
 			typeid := line[84:85]
 			charge := global.Atoi(line[85:])
@@ -157,6 +159,7 @@ func (c *ExternalController) Giro(filename []string) {
 				Charge:     charge,
 				Content:    line,
 			}
+
 			giroManager.Insert(&item)
 
 			billingItem := billingManager.Get(number)
@@ -283,13 +286,15 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userManager.Insert(&userItem)
 				userId = userManager.GetIdentity()
 			} else {
-				userFind.Level = user.LevelNormal
-				userFind.Company = myCompanyId
-				userFind.Name = userName
-				userFind.Status = user.StatusNotuse
-				userFind.Approval = user.ApprovalComplete
+				if userFind.Level != user.LevelAdmin {
+					userFind.Level = user.LevelNormal
+					userFind.Company = myCompanyId
+					userFind.Name = userName
+					userFind.Status = user.StatusNotuse
+					userFind.Approval = user.ApprovalComplete
 
-				userManager.Update(userFind)
+					userManager.Update(userFind)
+				}
 
 				userId = userFind.Id
 			}
@@ -314,13 +319,15 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userManager.Insert(&userItem)
 				salesuserId = userManager.GetIdentity()
 			} else {
-				userFind.Level = user.LevelNormal
-				userFind.Company = myCompanyId
-				userFind.Name = salesuserName
-				userFind.Status = user.StatusNotuse
-				userFind.Approval = user.ApprovalComplete
+				if userFind.Level != user.LevelAdmin {
+					userFind.Level = user.LevelNormal
+					userFind.Company = myCompanyId
+					userFind.Name = salesuserName
+					userFind.Status = user.StatusNotuse
+					userFind.Approval = user.ApprovalComplete
 
-				userManager.Update(userFind)
+					userManager.Update(userFind)
+				}
 
 				salesuserId = userFind.Id
 			}
@@ -913,7 +920,9 @@ func (c *ExternalController) User(filename string) {
 			userManager.Insert(&item)
 			item.Id = userManager.GetIdentity()
 		} else {
-			userManager.Update(&item)
+			if userItem.Level != user.LevelAdmin {
+				userManager.Update(&item)
+			}
 		}
 
 		licensenames := strings.Split(licensename, "\n")
@@ -1093,7 +1102,9 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 				userManager.Insert(&item)
 				item.Id = userManager.GetIdentity()
 			} else {
-				userManager.Update(&item)
+				if userItem.Level != user.LevelAdmin {
+					userManager.Update(&item)
+				}
 			}
 
 			licensename := GetCell("K", cell)
@@ -1267,7 +1278,9 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 					userManager.Insert(&userItem)
 					userId = userManager.GetIdentity()
 				} else {
-					userId = userFind.Id
+					if userFind.Level != user.LevelAdmin {
+						userId = userFind.Id
+					}
 				}
 			}
 

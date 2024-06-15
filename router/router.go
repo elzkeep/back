@@ -266,6 +266,15 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Get("/download/girowork/:ids", func(c *fiber.Ctx) error {
+			ids_ := getArrayCommal(c.Params("ids"))
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.GiroWork(ids_)
+			controller.Close()
+            return nil
+		})
+
 		apiGroup.Get("/download/company", func(c *fiber.Ctx) error {
 			var controller api.DownloadController
 			controller.Init(c)

@@ -46,6 +46,10 @@ func (c *UserlistController) Count() {
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
     }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"="})
+    }
     _address := c.Get("address")
     if _address != "" {
         args = append(args, models.Where{Column:"address", Value:_address, Compare:"="})
@@ -201,6 +205,10 @@ func (c *UserlistController) Index(page int, pagesize int) {
     _tel := c.Get("tel")
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"="})
+    }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"="})
     }
     _address := c.Get("address")
     if _address != "" {
@@ -380,6 +388,10 @@ func (c *UserlistController) Sum() {
     _tel := c.Get("tel")
     if _tel != "" {
         args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _zip := c.Get("zip")
+    if _zip != "" {
+        args = append(args, models.Where{Column:"zip", Value:_zip, Compare:"like"})
     }
     _address := c.Get("address")
     if _address != "" {

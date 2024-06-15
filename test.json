@@ -1,0 +1,65 @@
+{
+    "ratio": {
+        "x": 2.9,
+        "y": 2.8
+    },
+    "margin": {
+        "top": -1.4,
+        "left": 0.0
+    },
+    "items": [
+        {
+            "name": "address",
+            "x": 80.0,
+            "y": 80.0,            
+            "font": "noto",
+            "fontSize": 13.0            
+        },
+        {
+            "name": "to",
+            "x": 80.0,
+            "y": 90.0,            
+            "font": "noto",
+            "fontSize": 13.0            
+        },
+        {
+            "name": "zip",
+            "x": 160.0,
+            "y": 100.0,            
+            "font": "noto",
+            "fontSize": 13.0            
+        },
+        {
+            "name": "name",
+            "x": 19.0,
+            "y": 110.0,            
+            "font": "noto",
+            "fontSize": 9.0            
+        },
+        {
+            "name": "user",
+            "x": 170.0,
+            "y": 110.0,            
+            "font": "noto",
+            "fontSize": 9.0            
+        },
+        {
+            "name": "price",
+            "x": 127.0,
+            "y": 225.0,
+            "width": 48.3,
+            "height": 8.0,
+            "font": "noto",
+            "fontSize": 13.0            
+        },
+        {
+            "name": "price",
+            "x": 10.0,
+            "y": 143.0,
+            "width": 26.07,
+            "height": 4.0,
+            "font": "noto",
+            "fontSize": 10.0            
+        }
+    ]
+}

@@ -22,6 +22,7 @@ type Userlist struct {
     Name                string `json:"name"`         
     Email                string `json:"email"`         
     Tel                string `json:"tel"`         
+    Zip                string `json:"zip"`         
     Address                string `json:"address"`         
     Addressetc                string `json:"addressetc"`         
     Joindate                string `json:"joindate"`         
@@ -109,7 +110,7 @@ func (p *UserlistManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *UserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date, u_totalscore from userlist_vw "
+    str := "select u_id, u_loginid, u_passwd, u_name, u_email, u_tel, u_zip, u_address, u_addressetc, u_joindate, u_careeryear, u_careermonth, u_level, u_score, u_approval, u_educationdate, u_educationinstitution, u_specialeducationdate, u_specialeducationinstitution, u_rejectreason, u_status, u_company, u_department, u_date, u_totalscore from userlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -341,7 +342,9 @@ func (p *UserlistManager) ReadRow(rows *sql.Rows) *Userlist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
+        err = rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Zip, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
+        
+        
         
         
         
@@ -420,12 +423,13 @@ func (p *UserlistManager) ReadRows(rows *sql.Rows) []Userlist {
         var item Userlist
         
     
-        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
+        err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Name, &item.Email, &item.Tel, &item.Zip, &item.Address, &item.Addressetc, &item.Joindate, &item.Careeryear, &item.Careermonth, &item.Level, &item.Score, &item.Approval, &item.Educationdate, &item.Educationinstitution, &item.Specialeducationdate, &item.Specialeducationinstitution, &item.Rejectreason, &item.Status, &item.Company, &item.Department, &item.Date, &item.Totalscore)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         

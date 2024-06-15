@@ -72,9 +72,8 @@ func (c *DownloadController) Giro(ids []int64) {
 	}
 
 	my := companyManager.Get(session.Company)
-	today := global.GetDate(time.Now())
 
-	yRatio := 2.9
+	xRatio := 2.9
 
 	for _, v := range items {
 		building := v.Extra["building"].(models.Building)
@@ -115,56 +114,59 @@ func (c *DownloadController) Giro(ids []int64) {
 		}
 
 		marginY := -1.4
-		pdf.SetXY(yRatio*80, 2.8*80+marginY)
+		pdf.SetXY(xRatio*80, 2.8*80+marginY)
 		pdf.Cell(nil, address)
 
-		pdf.SetXY(yRatio*80, 2.8*90+marginY)
+		pdf.SetXY(xRatio*80, 2.8*90+marginY)
 		if customer.Managername != "" {
 			pdf.Cell(nil, fmt.Sprintf("%v (%v) 귀하", postname, customer.Managername))
 		} else {
 			pdf.Cell(nil, fmt.Sprintf("%v 귀하", postname))
 		}
 
-		pdf.SetXY(yRatio*160, 2.8*100+marginY)
+		pdf.SetXY(xRatio*160, 2.8*100+marginY)
 		pdf.Cell(nil, zip)
 
 		pdf.SetFont("noto", "", 9)
 
-		pdf.SetXY(yRatio*19, 2.8*110+marginY)
+		pdf.SetXY(xRatio*19, 2.8*110+marginY)
 		pdf.Cell(nil, building.Name)
 
 		if customer.User > 0 {
 			user := userManager.Get(customer.User)
 
 			if user != nil {
-				pdf.SetXY(yRatio*170, 2.8*110+marginY)
+				pdf.SetXY(xRatio*170, 2.8*110+marginY)
 				pdf.Cell(nil, fmt.Sprintf("(%v %v)", user.Id, user.Name))
 			}
 		}
 
 		pdf.SetFont("noto", "", 13)
 
-		//pdf.RectFromLowerLeftWithStyle(yRatio*(177-50), 2.8*(225+8)+marginY, 2.8*50, 2.8*8, "DF")
+		//pdf.RectFromLowerLeftWithStyle(xRatio*(177-50), 2.8*(225+8)+marginY, 2.8*50, 2.8*8, "DF")
 
-		pdf.SetXY(yRatio*(177-50), 2.8*(225)+marginY)
+		pdf.SetXY(xRatio*(177-50), 2.8*(225)+marginY)
 		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 50, H: 2.8 * 8}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
 			Align:  gopdf.Right | gopdf.Top,
 			Border: 0,
 			Float:  gopdf.Right,
 		})
 
-		//pdf.SetXY(yRatio*177, 2.8*225+marginY)
+		//pdf.SetXY(xRatio*177, 2.8*225+marginY)
 		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
 		// 좌측
-
+		ym := 0.0
+		if my.Id == 7231 {
+			ym = 90
+		}
 		pdf.SetFont("noto", "", 10)
 
-		//pdf.SetXY(yRatio*24, 2.8*143+marginY)
+		//pdf.SetXY(xRatio*24, 2.8*143+marginY)
 		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
-		//pdf.RectFromLowerLeftWithStyle(yRatio*(24-14), 2.8*(143+4)+marginY, 2.8*27, 2.8*4, "D")
-		pdf.SetXY(yRatio*(24-14), 2.8*(143)+marginY)
+		//pdf.RectFromLowerLeftWithStyle(xRatio*(24-14), 2.8*(143+4)+marginY, 2.8*27, 2.8*4, "D")
+		pdf.SetXY(xRatio*(24-14), 2.8*(143+ym)+marginY)
 		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 27, H: 2.8 * 4}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
 			Align:  gopdf.Right | gopdf.Top,
 			Border: 0,
@@ -173,7 +175,7 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetFont("noto", "", 8)
 
-		pdf.SetXY(yRatio*39, 2.8*143+marginY)
+		pdf.SetXY(xRatio*39, 2.8*(143+ym)+marginY)
 		pdf.Cell(nil, billdate)
 
 		// 중앙 컨텐츠
@@ -181,48 +183,56 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		contents := strings.Split(my.Content, "\n")
 		for i, content := range contents {
-			pdf.SetXY(yRatio*75, 2.8*float64(140+i*6)+marginY)
+			pdf.SetXY(xRatio*75, 2.8*float64(140+i*6)+marginY)
 			pdf.Cell(nil, content)
 		}
 
 		pdf.SetFont("noto", "", 10)
 
-		pdf.SetXY(yRatio*25, 2.8*148+marginY)
+		pdf.SetXY(xRatio*25, 2.8*(148+ym)+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*17, 2.8*152.5+marginY)
+		pdf.SetXY(xRatio*17, 2.8*(152.5+ym)+marginY)
 		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
 
-		pdf.SetXY(yRatio*44, 2.8*152.5+marginY)
+		pdf.SetXY(xRatio*44, 2.8*(152.5+ym)+marginY)
 		pdf.Cell(nil, humanize.Comma(int64(vat)))
 
-		pdf.SetXY(yRatio*23.5, 2.8*157.5+marginY)
+		pdf.SetXY(xRatio*23.5, 2.8*(157.5+ym)+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", company.Companyno))
 
-		pdf.SetXY(yRatio*12, 2.8*162+marginY)
+		pdf.SetXY(xRatio*12, 2.8*(162+ym)+marginY)
 		pdf.Cell(nil, company.Name)
 
-		pdf.SetXY(yRatio*23.5, 2.8*171.5+marginY)
+		pdf.SetXY(xRatio*23.5, 2.8*(171.5+ym)+marginY)
+		today := ""
+		todayInt := customer.Billingdate
+		if todayInt == 0 {
+			today = global.GetDate(time.Now())
+		} else {
+			t := global.GetDate(time.Now())
+			today = fmt.Sprintf("%v%02d", t[:8], todayInt)
+		}
 		pdf.Cell(nil, today)
 
 		// 하단
 
-		pdf.SetXY(yRatio*73, 2.8*256.5+marginY)
+		pdf.SetXY(xRatio*73, 2.8*258+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
-		pdf.SetXY(yRatio*140, 2.8*256.5+marginY)
+		pdf.SetXY(xRatio*140, 2.8*258+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", month))
 
-		pdf.SetXY(yRatio*156, 2.8*256.5+marginY)
+		pdf.SetXY(xRatio*156, 2.8*258+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Collectday))
 
-		pdf.SetXY(yRatio*73, 2.8*263+marginY)
+		pdf.SetXY(xRatio*73, 2.8*264.5+marginY)
 		pdf.Cell(nil, company.Name)
 
-		pdf.SetXY(yRatio*73, 2.8*269.5+marginY)
+		pdf.SetXY(xRatio*73, 2.8*271+marginY)
 		pdf.Cell(nil, company.Ceo)
 
-		pdf.SetXY(yRatio*73, 2.8*276+marginY)
+		pdf.SetXY(xRatio*73, 2.8*277.5+marginY)
 		pdf.Cell(nil, billdate)
 
 		// OCR
@@ -270,17 +280,20 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		sum = 0
 
-		muls = []int{2, 1}
+		var sum2 int64
+		co := companyNo
+
+		muls2 := []int64{2, 1}
 		mulsPos = 0
-		for i := 1; i <= 7; i++ {
-			remain := price % 10
+		for i := 1; i <= 20; i++ {
+			remain := co % 10
 
-			temp := remain * muls[mulsPos]
+			temp := remain * muls2[mulsPos]
 
-			if temp > 10 {
-				sum += temp%10 + 1
+			if temp >= 10 {
+				sum2 += temp%10 + 1
 			} else {
-				sum += temp
+				sum2 += temp
 			}
 
 			mulsPos++
@@ -288,29 +301,29 @@ func (c *DownloadController) Giro(ids []int64) {
 				mulsPos = 0
 			}
 
-			price -= remain
-			price /= 10
+			co -= remain
+			co /= 10
 
-			if price == 0 {
+			if co == 0 {
 				break
 			}
 		}
 
-		digit2 := 0
-		if sum < 10 {
-			digit2 = 10 - sum
+		var digit2 int64
+		if sum2 < 10 {
+			digit2 = 10 - sum2
 		} else {
-			sum = sum % 10
-			if sum > 0 {
-				digit2 = 10 - sum
+			sum2 = sum2 % 10
+			if sum2 > 0 {
+				digit2 = 10 - sum2
 			}
 		}
 
 		strCompanyNo := fmt.Sprintf("%v", companyNo)
 		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
 
-		str := fmt.Sprintf("<%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
-		pdf.SetXY(yRatio*68, 2.8*241.5+marginY)
+		str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
+		pdf.SetXY(xRatio*68, 2.8*242+marginY)
 		pdf.Cell(nil, str)
 	}
 
@@ -321,6 +334,309 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	c.Download(fullFilename, "hello.pdf")
 	os.Remove(fullFilename)
+}
+
+type Setting struct {
+	Ratio struct {
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
+	} `json:"ratio"`
+	Margin struct {
+		Top  float64 `json:"top"`
+		Left float64 `json:"left"`
+	} `json:"margin"`
+	Items []struct {
+		X        float64 `json:"x"`
+		Y        float64 `json:"y"`
+		Width    float64 `json:"width"`
+		Height   float64 `json:"height"`
+		Align    string  `json:"align"`
+		Font     string  `json:"font"`
+		FontSize float64 `json:"fontSize"`
+		Name     string  `json:"name"`
+	} `json:"items"`
+}
+
+func (c *DownloadController) GiroWork(ids []int64) {
+	/*
+		conn := c.NewConnection()
+
+		log.Println("Print==================")
+		log.Println(ids)
+
+		session := c.Session
+
+		companyManager := models.NewCompanyManager(conn)
+		billingManager := models.NewBillingManager(conn)
+		customerManager := models.NewCustomerManager(conn)
+		userManager := models.NewUserManager(conn)
+
+		items := billingManager.Find([]interface{}{
+			models.Where{Column: "id", Value: ids, Compare: "in"},
+		})
+
+		for _, v := range items {
+			v.Giro = billing.GiroComplete
+			billingManager.Update(&v)
+		}
+
+		pdf := gopdf.GoPdf{}
+		pdf.Start(gopdf.Config{PageSize: *gopdf.PageSizeA4})
+
+		err := pdf.AddTTFFont("noto", "./fonts/noto.ttf")
+		if err != nil {
+			log.Println("error")
+			log.Print(err.Error())
+			return
+		}
+
+		err = pdf.AddTTFFont("ocr", "./fonts/OCR-B1.ttf")
+		if err != nil {
+			log.Println("error")
+			log.Print(err.Error())
+			return
+		}
+
+		my := companyManager.Get(session.Company)
+		today := global.GetDate(time.Now())
+
+		setting := Setting{}
+
+		for _, v := range items {
+			building := v.Extra["building"].(models.Building)
+			company := v.Extra["company"].(models.Company)
+
+			customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
+
+			billdate := ""
+			temp := strings.Split(v.Billdate, "-")
+			year := global.Atoi(temp[0])
+			month := global.Atoi(temp[1])
+
+			//lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
+
+			if v.Period == 1 {
+				billdate = fmt.Sprintf("%v/%v", year, month)
+			} else {
+				billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+			}
+
+			vat := int(v.Price / 11)
+			onlyPrice := vat * 10
+
+			pdf.AddPage()
+
+			for _, s := range setting.Items {
+				value := ""
+				switch s.Name {
+				case "address":
+					value = building.Postaddress
+					if value == "" {
+						value = building.Address
+					}
+				case "to":
+					postname := building.Postname
+					if postname == "" {
+						postname = customer.Billingname
+					}
+
+					if customer.Managername != "" {
+						value = fmt.Sprintf("%v (%v) 귀하", postname, customer.Managername)
+					} else {
+						value = fmt.Sprintf("%v 귀하", postname)
+					}
+				case "zip":
+					value = building.Postzip
+					address := building.Postaddress
+					if address == "" {
+						value = building.Zip
+					}
+				case "name":
+					value = building.Name
+				case "user":
+					if customer.User > 0 {
+						user := userManager.Get(customer.User)
+
+						if user != nil {
+							value = fmt.Sprintf("(%v %v)", user.Id, user.Name)
+						}
+					}
+				case "price":
+					value = humanize.Comma(int64(v.Price))
+				}
+
+				pdf.SetFont(s.Font, "", s.FontSize)
+
+				pdf.SetXY(setting.Ratio.X*s.X+setting.Margin.Left, setting.Ratio.Y*s.Y+setting.Margin.Top)
+
+				if s.Align == "right" {
+					pdf.CellWithOption(&gopdf.Rect{W: setting.Ratio.X * s.Width, H: setting.Ratio.Y * s.Height}, value, gopdf.CellOption{
+						Align:  gopdf.Right | gopdf.Top,
+						Border: 0,
+						Float:  gopdf.Right,
+					})
+
+				} else {
+					pdf.Cell(nil, value)
+				}
+			}
+
+			// 좌측
+
+			pdf.SetFont("noto", "", 8)
+
+			pdf.SetXY(xRatio*39, yRatio*143+marginY)
+			pdf.Cell(nil, billdate)
+
+			// 중앙 컨텐츠
+			pdf.SetFont("noto", "", 8)
+
+			contents := strings.Split(my.Content, "\n")
+			for i, content := range contents {
+				pdf.SetXY(xRatio*75, yRatio*float64(140+i*6)+marginY)
+				pdf.Cell(nil, content)
+			}
+
+			pdf.SetFont("noto", "", 10)
+
+			pdf.SetXY(xRatio*25, yRatio*148+marginY)
+			pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
+
+			pdf.SetXY(xRatio*17, yRatio*152.5+marginY)
+			pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
+
+			pdf.SetXY(xRatio*44, yRatio*152.5+marginY)
+			pdf.Cell(nil, humanize.Comma(int64(vat)))
+
+			pdf.SetXY(xRatio*23.5, yRatio*157.5+marginY)
+			pdf.Cell(nil, fmt.Sprintf("%v", company.Companyno))
+
+			pdf.SetXY(xRatio*12, yRatio*162+marginY)
+			pdf.Cell(nil, company.Name)
+
+			pdf.SetXY(xRatio*23.5, yRatio*171.5+marginY)
+			pdf.Cell(nil, today)
+
+			// 하단
+
+			pdf.SetXY(xRatio*73, yRatio*256.5+marginY)
+			pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
+
+			pdf.SetXY(xRatio*140, yRatio*256.5+marginY)
+			pdf.Cell(nil, fmt.Sprintf("%v", month))
+
+			pdf.SetXY(xRatio*156, yRatio*256.5+marginY)
+			pdf.Cell(nil, fmt.Sprintf("%v", customer.Collectday))
+
+			pdf.SetXY(xRatio*73, yRatio*263+marginY)
+			pdf.Cell(nil, company.Name)
+
+			pdf.SetXY(xRatio*73, yRatio*269.5+marginY)
+			pdf.Cell(nil, company.Ceo)
+
+			pdf.SetXY(xRatio*73, yRatio*276+marginY)
+			pdf.Cell(nil, billdate)
+
+			// OCR
+
+			pdf.SetFont("ocr", "", 12)
+
+			price := v.Price
+			sum := 0
+
+			muls := []int{7, 3, 1}
+			mulsPos := 0
+			for i := 1; i <= 7; i++ {
+				remain := price % 10
+
+				sum += remain * muls[mulsPos]
+
+				mulsPos++
+				if mulsPos == 3 {
+					mulsPos = 0
+				}
+
+				price -= remain
+				price /= 10
+
+				if price == 0 {
+					break
+				}
+			}
+
+			digit := 0
+			if sum < 10 {
+				digit = 10 - sum
+			} else {
+				sum = sum % 10
+				if sum > 0 {
+					digit = 10 - sum
+				}
+			}
+
+			strPrice := global.Itoa(v.Price)
+			spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+
+			//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
+			companyNo := 1000000000 + v.Id
+
+			sum = 0
+
+			var sum2 int64
+			co := companyNo
+
+			muls2 := []int64{2, 1}
+			mulsPos = 0
+			for i := 1; i <= 20; i++ {
+				remain := co % 10
+
+				temp := remain * muls2[mulsPos]
+
+				if temp >= 10 {
+					sum2 += temp%10 + 1
+				} else {
+					sum2 += temp
+				}
+
+				mulsPos++
+				if mulsPos == 2 {
+					mulsPos = 0
+				}
+
+				co -= remain
+				co /= 10
+
+				if co == 0 {
+					break
+				}
+			}
+
+			var digit2 int64
+			if sum2 < 10 {
+				digit2 = 10 - sum2
+			} else {
+				sum2 = sum2 % 10
+				if sum2 > 0 {
+					digit2 = 10 - sum2
+				}
+			}
+
+			strCompanyNo := fmt.Sprintf("%v", companyNo)
+			spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+
+			str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
+			pdf.SetXY(xRatio*68, yRatio*241.5+marginY)
+			pdf.Cell(nil, str)
+		}
+
+		fullFilename := global.GetTempFilename()
+		log.Println("fullFilename", fullFilename)
+
+		pdf.WritePdf(fullFilename)
+
+		c.Download(fullFilename, "hello.pdf")
+		os.Remove(fullFilename)
+	*/
 }
 
 func (c *DownloadController) Company() {
