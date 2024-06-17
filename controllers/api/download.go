@@ -96,9 +96,6 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetFont("noto", "", 13)
 
-		vat := int(v.Price / 11)
-		onlyPrice := vat * 10
-
 		pdf.AddPage()
 
 		zip := building.Postzip
@@ -119,9 +116,9 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetXY(xRatio*80, 2.8*90+marginY)
 		if customer.Managername != "" {
-			pdf.Cell(nil, fmt.Sprintf("%v (%v) 귀하", postname, customer.Managername))
+			pdf.Cell(nil, fmt.Sprintf("%v %v (%v) 귀하", company.Name, postname, customer.Managername))
 		} else {
-			pdf.Cell(nil, fmt.Sprintf("%v 귀하", postname))
+			pdf.Cell(nil, fmt.Sprintf("%v %v 귀하", company.Name, postname))
 		}
 
 		pdf.SetXY(xRatio*160, 2.8*100+marginY)
@@ -146,14 +143,11 @@ func (c *DownloadController) Giro(ids []int64) {
 		//pdf.RectFromLowerLeftWithStyle(xRatio*(177-50), 2.8*(225+8)+marginY, 2.8*50, 2.8*8, "DF")
 
 		pdf.SetXY(xRatio*(177-50), 2.8*(225)+marginY)
-		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 50, H: 2.8 * 8}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 50, H: 2.8 * 8}, humanize.Comma(int64(v.Price+v.Vat)), gopdf.CellOption{
 			Align:  gopdf.Right | gopdf.Top,
 			Border: 0,
 			Float:  gopdf.Right,
 		})
-
-		//pdf.SetXY(xRatio*177, 2.8*225+marginY)
-		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
 
 		// 좌측
 		ym := 0.0
@@ -162,12 +156,9 @@ func (c *DownloadController) Giro(ids []int64) {
 		}
 		pdf.SetFont("noto", "", 10)
 
-		//pdf.SetXY(xRatio*24, 2.8*143+marginY)
-		//pdf.Cell(nil, humanize.Comma(int64(v.Price)))
-
 		//pdf.RectFromLowerLeftWithStyle(xRatio*(24-14), 2.8*(143+4)+marginY, 2.8*27, 2.8*4, "D")
 		pdf.SetXY(xRatio*(24-14), 2.8*(143+ym)+marginY)
-		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 27, H: 2.8 * 4}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 27, H: 2.8 * 4}, humanize.Comma(int64(v.Price+v.Vat)), gopdf.CellOption{
 			Align:  gopdf.Right | gopdf.Top,
 			Border: 0,
 			Float:  gopdf.Right,
@@ -193,10 +184,19 @@ func (c *DownloadController) Giro(ids []int64) {
 		pdf.Cell(nil, fmt.Sprintf("%v", customer.Number))
 
 		pdf.SetXY(xRatio*17, 2.8*(152.5+ym)+marginY)
-		pdf.Cell(nil, humanize.Comma(int64(onlyPrice)))
+		pdf.SetXY(xRatio*(17-6), 2.8*(152.5+ym)+marginY)
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 15, H: 2.8 * 4}, humanize.Comma(int64(v.Price)), gopdf.CellOption{
+			Align:  gopdf.Right | gopdf.Top,
+			Border: 0,
+			Float:  gopdf.Right,
+		})
 
-		pdf.SetXY(xRatio*44, 2.8*(152.5+ym)+marginY)
-		pdf.Cell(nil, humanize.Comma(int64(vat)))
+		pdf.SetXY(xRatio*(44-8), 2.8*(152.5+ym)+marginY)
+		pdf.CellWithOption(&gopdf.Rect{W: 2.8 * 15, H: 2.8 * 4}, humanize.Comma(int64(v.Vat)), gopdf.CellOption{
+			Align:  gopdf.Right | gopdf.Top,
+			Border: 0,
+			Float:  gopdf.Right,
+		})
 
 		pdf.SetXY(xRatio*23.5, 2.8*(157.5+ym)+marginY)
 		pdf.Cell(nil, fmt.Sprintf("%v", company.Companyno))
@@ -239,7 +239,7 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetFont("ocr", "", 12)
 
-		price := v.Price
+		price := v.Price + v.Vat
 		sum := 0
 
 		muls := []int{7, 3, 1}
@@ -272,7 +272,7 @@ func (c *DownloadController) Giro(ids []int64) {
 			}
 		}
 
-		strPrice := global.Itoa(v.Price)
+		strPrice := global.Itoa(v.Price + v.Vat)
 		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
 
 		//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)

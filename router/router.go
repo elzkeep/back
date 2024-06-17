@@ -581,6 +581,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/billing/title", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var title_ string
+			if v, flag := results["title"]; flag {
+				title_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateTitle(title_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/billing/price", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -596,6 +615,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BillingController
 			controller.Init(c)
 			controller.UpdatePrice(price_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billing/vat", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var vat_ int
+			if v, flag := results["vat"]; flag {
+				vat_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateVat(vat_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -710,6 +748,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BillingController
 			controller.Init(c)
 			controller.UpdatePeriod(period_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billing/remark", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var remark_ string
+			if v, flag := results["remark"]; flag {
+				remark_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateRemark(remark_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

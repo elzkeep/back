@@ -88,9 +88,18 @@ func (c *BillingController) Count() {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -123,6 +132,10 @@ func (c *BillingController) Count() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
     }
     _company := c.Geti64("company")
     if _company != 0 {
@@ -175,9 +188,18 @@ func (c *BillingController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -210,6 +232,10 @@ func (c *BillingController) Index(page int, pagesize int) {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
     }
     _company := c.Geti64("company")
     if _company != 0 {
@@ -272,6 +298,15 @@ func (c *BillingController) Index(page int, pagesize int) {
 }
 
 // @Put()
+func (c *BillingController) UpdateTitle(title string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdateTitle(title, id)
+}
+// @Put()
 func (c *BillingController) UpdatePrice(price int, id int64) {
     
     
@@ -279,6 +314,15 @@ func (c *BillingController) UpdatePrice(price int, id int64) {
 
 	_manager := models.NewBillingManager(conn)
 	_manager.UpdatePrice(price, id)
+}
+// @Put()
+func (c *BillingController) UpdateVat(vat int, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdateVat(vat, id)
 }
 // @Put()
 func (c *BillingController) UpdateStatus(status int, id int64) {
@@ -335,6 +379,15 @@ func (c *BillingController) UpdatePeriod(period int, id int64) {
 	_manager.UpdatePeriod(period, id)
 }
 // @Put()
+func (c *BillingController) UpdateRemark(remark string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBillingManager(conn)
+	_manager.UpdateRemark(remark, id)
+}
+// @Put()
 func (c *BillingController) UpdateCompany(company int64, id int64) {
     
     
@@ -366,9 +419,18 @@ func (c *BillingController) Sum() {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -401,6 +463,10 @@ func (c *BillingController) Sum() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"like"})
     }
     _company := c.Geti64("company")
     if _company != 0 {

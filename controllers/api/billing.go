@@ -216,7 +216,8 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 				break
 			}
 			item := models.Billing{}
-			item.Price = (priceValue + vatValue) * d.Period
+			item.Price = priceValue * d.Period
+			item.Vat = vatValue * d.Period
 			item.Status = billing.StatusWait
 			item.Giro = billing.GiroWait
 			item.Billdate = today

@@ -18,6 +18,7 @@ type Billinguserlist struct {
             
     Id                int64 `json:"id"`         
     Price                int `json:"price"`         
+    Vat                int `json:"vat"`         
     Status                int `json:"status"`         
     Giro                int `json:"giro"`         
     Billdate                string `json:"billdate"`         
@@ -100,7 +101,7 @@ func (p *BillinguserlistManager) Query(query string, params ...interface{}) (*sq
 func (p *BillinguserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
+    str := "select bi_id, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -216,6 +217,17 @@ func (p *BillinguserlistManager) IncreasePrice(value int, id int64) error {
     return err
 }
 
+func (p *BillinguserlistManager) IncreaseVat(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_vat = bi_vat + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BillinguserlistManager) IncreaseStatus(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -299,7 +311,9 @@ func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        
+        
         
         
         
@@ -356,12 +370,13 @@ func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
         var item Billinguserlist
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
         
         
         

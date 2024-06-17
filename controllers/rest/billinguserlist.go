@@ -29,6 +29,10 @@ func (c *BillinguserlistController) Count() {
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
     }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
+    }
     _status := c.Geti("status")
     if _status != 0 {
         args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
@@ -131,6 +135,10 @@ func (c *BillinguserlistController) Index(page int, pagesize int) {
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
@@ -257,6 +265,10 @@ func (c *BillinguserlistController) Sum() {
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
+    }
+    _vat := c.Geti("vat")
+    if _vat != 0 {
+        args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
     }
     _status := c.Geti("status")
     if _status != 0 {
