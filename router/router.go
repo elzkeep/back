@@ -472,6 +472,34 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Delete("/user", func(c *fiber.Ctx) error {
+			item_ := &models.User{}
+			c.BodyParser(item_)
+			var controller api.UserController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/user/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.User{}
+			c.BodyParser(item_)
+			var controller api.UserController
+			controller.Init(c)
+			if item_ != nil {
+				controller.Deletebatch(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Get("/userlist/initdata", func(c *fiber.Ctx) error {
 			var controller api.UserlistController
 			controller.Init(c)
@@ -3217,6 +3245,16 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Delete("/customer/bycompany", func(c *fiber.Ctx) error {
+			item_ := &models.Customer{}
+			c.BodyParser(item_)
+			var controller rest.CustomerController
+			controller.Init(c)
+			controller.DeleteByCompany(item_.Company)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Post("/customer", func(c *fiber.Ctx) error {
 			item_ := &models.Customer{}
 			c.BodyParser(item_)
@@ -3994,6 +4032,16 @@ func SetRouter(r *fiber.App) {
 			var controller rest.CustomercompanyController
 			controller.Init(c)
 			controller.GetByCompanyCustomer(company_, customer_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/customercompany/bycompany", func(c *fiber.Ctx) error {
+			item_ := &models.Customercompany{}
+			c.BodyParser(item_)
+			var controller rest.CustomercompanyController
+			controller.Init(c)
+			controller.DeleteByCompany(item_.Company)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -7385,34 +7433,6 @@ func SetRouter(r *fiber.App) {
 			controller.Init(c)
 			if item_ != nil {
 				controller.Update(item_)
-			} else {
-			    controller.Result["code"] = "error"
-			}
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Delete("/user", func(c *fiber.Ctx) error {
-			item_ := &models.User{}
-			c.BodyParser(item_)
-			var controller rest.UserController
-			controller.Init(c)
-			if item_ != nil {
-				controller.Delete(item_)
-			} else {
-			    controller.Result["code"] = "error"
-			}
-			controller.Close()
-			return c.JSON(controller.Result)
-		})
-
-		apiGroup.Delete("/user/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.User{}
-			c.BodyParser(item_)
-			var controller rest.UserController
-			controller.Init(c)
-			if item_ != nil {
-				controller.Deletebatch(item_)
 			} else {
 			    controller.Result["code"] = "error"
 			}

@@ -272,3 +272,31 @@ func (c *UserController) Upload(filename string) {
 		pos++
 	}
 }
+
+func (c *UserController) Delete(item *models.User) {
+
+	conn := c.NewConnection()
+
+	manager := models.NewUserManager(conn)
+	old := manager.Get(item.Id)
+	if old.Level == user.LevelAdmin || old.Level == user.LevelRootadmin {
+		return
+	}
+
+	manager.Delete(item.Id)
+}
+
+func (c *UserController) Deletebatch(item *[]models.User) {
+
+	conn := c.NewConnection()
+
+	manager := models.NewUserManager(conn)
+
+	for _, v := range *item {
+		if v.Level == user.LevelAdmin || v.Level == user.LevelRootadmin {
+			continue
+		}
+
+		manager.Delete(v.Id)
+	}
+}

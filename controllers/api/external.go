@@ -179,6 +179,13 @@ func (c *ExternalController) Giro(filename []string) {
 func (c *ExternalController) Index(filenames string, typeid int) {
 	user := c.Session
 
+	conn := c.NewConnection()
+	customerManager := models.NewCustomerManager(conn)
+	customercompanyManager := models.NewCustomercompanyManager(conn)
+
+	customerManager.DeleteByCompany(user.Company)
+	customercompanyManager.DeleteByCompany(user.Company)
+
 	files := strings.Split(filenames, ",")
 
 	for _, v := range files {
@@ -201,6 +208,7 @@ func Thread(filename string, typeid int, myCompanyId int64) {
 
 	cells := f.GetRows(sheet)
 
+	log.Println("len", len(cells))
 	f.Close()
 
 	max := 10
@@ -209,8 +217,10 @@ func Thread(filename string, typeid int, myCompanyId int64) {
 
 	for i := 0; i < max; i++ {
 		wg.Add(1)
-		ExcelProcess(i, max, typeid, myCompanyId, cells)
-		wg.Done()
+		go func(start int) {
+			ExcelProcess(start, max, typeid, myCompanyId, cells)
+			wg.Done()
+		}(i)
 	}
 
 	wg.Wait()
@@ -226,8 +236,40 @@ func GetCell(str string, cells []string) string {
 	return cells[col]
 }
 
+func ExcelProcessCheck(start int, max int, typeid int, myCompanyId int64, cells [][]string, ch chan int) {
+	rows := len(cells)
+
+	log.Println("start", start)
+	pos := start
+	for {
+		if pos < 4 {
+			pos += max
+			continue
+		}
+
+		if pos >= rows {
+			break
+		}
+
+		cell := cells[pos]
+
+		no := GetCell("A", cell)
+
+		if no == "" {
+			break
+		}
+
+		//log.Println("pos", pos)
+		ch <- pos
+
+		pos += max
+	}
+}
+
 func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]string) {
 	rows := len(cells)
+
+	re, _ := regexp.Compile("[0-9][0-9]-[0-9][0-9]-2[0-9]")
 
 	conn := models.NewConnection()
 	defer conn.Close()
@@ -368,6 +410,8 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 
 		if customercompany == nil {
 			customercompanyManager.Insert(&models.Customercompany{Company: myCompanyId, Customer: companyId})
+		} else {
+			//log.Println("already :", companyId, item.Name, item.Companyno)
 		}
 
 		building.Name = GetCell("C", cell)
@@ -399,7 +443,6 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		generator := global.Atoi(GetCell("G", cell))
 
 		sunlight := global.Atoi(GetCell("H", cell))
-		log.Println("SUn", GetCell("H", cell), sunlight)
 
 		basicFacility := models.Facility{}
 		generatorFacility := models.Facility{}
@@ -470,8 +513,21 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		customerItem.Contractvat = global.Atoi(GetCell("AR", cell))
 		customerItem.Contracttype = 1
 		customerItem.Status = typeid
-		customerItem.Contractstartdate = strings.ReplaceAll(GetCell("AE", cell), ".", "-")
-		customerItem.Contractenddate = strings.ReplaceAll(GetCell("AF", cell), ".", "-")
+
+		contractstartdate := GetCell("AE", cell)
+		if re.MatchString(contractstartdate) {
+			customerItem.Contractstartdate = fmt.Sprintf("20%v-%v", contractstartdate[6:], contractstartdate[:5])
+		} else {
+			customerItem.Contractstartdate = strings.ReplaceAll(contractstartdate, ".", "-")
+		}
+
+		contractenddate := GetCell("AF", cell)
+		if re.MatchString(contractenddate) {
+			customerItem.Contractenddate = fmt.Sprintf("20%v-%v", contractenddate[6:], contractenddate[:5])
+		} else {
+			customerItem.Contractenddate = strings.ReplaceAll(contractenddate, ".", "-")
+		}
+
 		customerItem.Remark = GetCell("AJ", cell)
 		customerItem.Type = customer.TypeOutsourcing
 
@@ -516,7 +572,11 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		customerItem.Company = myCompanyId
 
 		customerManager.DeleteByCompanyBuilding(myCompanyId, buildingId)
-		customerManager.Insert(&customerItem)
+		err := customerManager.Insert(&customerItem)
+
+		if err != nil {
+			log.Println(err)
+		}
 
 		pos += max
 	}
@@ -525,6 +585,8 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 	db := models.NewConnection()
 	defer db.Close()
+
+	re, _ := regexp.Compile("[0-9][0-9]-[0-9][0-9]-2[0-9]")
 
 	conn, _ := db.Begin()
 	defer conn.Rollback()
@@ -754,8 +816,21 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 		customerItem.Contractprice = global.Atoi(f.GetCell("AQ", pos))
 		customerItem.Contractvat = global.Atoi(f.GetCell("AR", pos))
 		customerItem.Status = typeid
-		customerItem.Contractstartdate = strings.ReplaceAll(f.GetCell("AE", pos), ".", "-")
-		customerItem.Contractenddate = strings.ReplaceAll(f.GetCell("AF", pos), ".", "-")
+
+		contractstartdate := f.GetCell("AE", pos)
+		if re.MatchString(contractstartdate) {
+			customerItem.Contractstartdate = fmt.Sprintf("20%v-%v", contractstartdate[6:], contractstartdate[:5])
+		} else {
+			customerItem.Contractstartdate = strings.ReplaceAll(contractstartdate, ".", "-")
+		}
+
+		contractenddate := f.GetCell("AF", pos)
+		if re.MatchString(contractenddate) {
+			customerItem.Contractenddate = fmt.Sprintf("20%v-%v", contractenddate[6:], contractenddate[:5])
+		} else {
+			customerItem.Contractenddate = strings.ReplaceAll(contractenddate, ".", "-")
+		}
+
 		customerItem.Remark = f.GetCell("AJ", pos)
 		customerItem.Type = customer.TypeOutsourcing
 
@@ -811,6 +886,8 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 func (c *ExternalController) User(filename string) {
 	session := c.Session
 	company := session.Company
+
+	re, _ := regexp.Compile("[0-9][0-9]-[0-9][0-9]-2[0-9]")
 
 	db := models.NewConnection()
 	defer db.Close()
@@ -868,6 +945,10 @@ func (c *ExternalController) User(filename string) {
 		specialeducationdate := ""
 		specialeducationinstitution := ""
 		joindate := f.GetCell("S", pos)
+		if re.MatchString(joindate) {
+			joindate = fmt.Sprintf("20%v-%v", joindate[6:], joindate[:5])
+		}
+
 		status := f.GetCell("T", pos)
 
 		userItem := userManager.GetByCompanyName(company, name)
@@ -1000,6 +1081,8 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 	conn := models.NewConnection()
 	defer conn.Close()
 
+	re, _ := regexp.Compile("[0-9][0-9]-[0-9][0-9]-2[0-9]")
+
 	companyManager := models.NewCompanyManager(conn)
 	customercompanyManager := models.NewCustomercompanyManager(conn)
 	buildingManager := models.NewBuildingManager(conn)
@@ -1029,13 +1112,13 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 
 			item := models.User{}
 
-			name := GetCell("B", cell)
+			loginid := GetCell("B", cell)
 
-			if name == "" {
+			if loginid == "" {
 				break
 			}
 
-			if name == "로그인아이디" {
+			if loginid == "로그인아이디" {
 				pos++
 				continue
 			}
@@ -1044,12 +1127,18 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			address := GetCell("F", cell)
 			tel := GetCell("E", cell)
 			email := GetCell("D", cell)
+			name := GetCell("C", cell)
 
 			educationdate := ""
 			educationinstitution := ""
 			specialeducationdate := ""
 			specialeducationinstitution := ""
+
 			joindate := GetCell("J", cell)
+			if re.MatchString(joindate) {
+				joindate = fmt.Sprintf("20%v-%v", joindate[6:], joindate[:5])
+			}
+
 			status := GetCell("H", cell)
 
 			userItem := userManager.GetByCompanyName(myCompanyId, name)
@@ -1095,7 +1184,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 
 			if userItem == nil {
 				item.Company = myCompanyId
-				item.Loginid = item.Name
+				item.Loginid = loginid
 				item.Passwd = "0000"
 				item.Score = 60
 
@@ -1308,8 +1397,20 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 				}
 			}
 
-			customerItem.Contractstartdate = strings.ReplaceAll(GetCell("V", cell), ".", "-")
-			customerItem.Contractenddate = strings.ReplaceAll(GetCell("W", cell), ".", "-")
+			contractstartdate := GetCell("V", cell)
+
+			if re.MatchString(contractstartdate) {
+				customerItem.Contractstartdate = fmt.Sprintf("20%v-%v", contractstartdate[6:], contractstartdate[:5])
+			} else {
+				customerItem.Contractstartdate = strings.ReplaceAll(contractstartdate, ".", "-")
+			}
+
+			contractenddate := GetCell("W", cell)
+			if re.MatchString(contractenddate) {
+				customerItem.Contractenddate = fmt.Sprintf("20%v-%v", contractenddate[6:], contractenddate[:5])
+			} else {
+				customerItem.Contractenddate = strings.ReplaceAll(contractenddate, ".", "-")
+			}
 
 			building.District = GetCell("X", cell)
 
@@ -1318,7 +1419,13 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 
 			customerItem.Periodic = GetCell("AA", cell)
 
-			customerItem.Lastdate = strings.ReplaceAll(GetCell("AB", cell), ".", "-")
+			lastdate := GetCell("AB", cell)
+
+			if re.MatchString(lastdate) {
+				customerItem.Lastdate = fmt.Sprintf("20%v-%v", lastdate[6:], lastdate[:5])
+			} else {
+				customerItem.Lastdate = strings.ReplaceAll(lastdate, ".", "-")
+			}
 
 			building.Company = companyId
 

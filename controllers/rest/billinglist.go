@@ -25,6 +25,11 @@ func (c *BillinglistController) Count() {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
@@ -64,6 +69,10 @@ func (c *BillinglistController) Count() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
     }
     _company := c.Geti64("company")
     if _company != 0 {
@@ -136,6 +145,11 @@ func (c *BillinglistController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
@@ -175,6 +189,10 @@ func (c *BillinglistController) Index(page int, pagesize int) {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"="})
     }
     _company := c.Geti64("company")
     if _company != 0 {
@@ -270,6 +288,11 @@ func (c *BillinglistController) Sum() {
 
     var args []interface{}
     
+    _title := c.Get("title")
+    if _title != "" {
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
+        
+    }
     _price := c.Geti("price")
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
@@ -309,6 +332,10 @@ func (c *BillinglistController) Sum() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _remark := c.Get("remark")
+    if _remark != "" {
+        args = append(args, models.Where{Column:"remark", Value:_remark, Compare:"like"})
     }
     _company := c.Geti64("company")
     if _company != 0 {

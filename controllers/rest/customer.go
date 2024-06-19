@@ -58,6 +58,17 @@ func (c *CustomerController) DeleteByCompanyBuilding(company int64 ,building int
     
 }
 
+// @Delete()
+func (c *CustomerController) DeleteByCompany(company int64) {
+    
+    conn := c.NewConnection()
+
+	_manager := models.NewCustomerManager(conn)
+    
+    _manager.DeleteByCompany(company)
+    
+}
+
 
 func (c *CustomerController) Insert(item *models.Customer) {
     

@@ -65,3 +65,26 @@ desc license_bt
 /
 
 select * from company_tb
+
+/
+
+select * from company_tb where c_name like '%동양%'
+
+/
+
+select * from customercompany_tb where cc_company = 1436;
+
+/
+
+delete from  customercompany_tb where cc_company = 9683;
+
+/
+
+desc customer_tb
+
+/
+
+delete from customer_tb where cu_company = 9683;
+
+/
+

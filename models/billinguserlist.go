@@ -17,6 +17,7 @@ import (
 type Billinguserlist struct {
             
     Id                int64 `json:"id"`         
+    Title                string `json:"title"`         
     Price                int `json:"price"`         
     Vat                int `json:"vat"`         
     Status                int `json:"status"`         
@@ -25,6 +26,7 @@ type Billinguserlist struct {
     Month                string `json:"month"`         
     Endmonth                string `json:"endmonth"`         
     Period                int `json:"period"`         
+    Remark                string `json:"remark"`         
     Company                int64 `json:"company"`         
     Building                int64 `json:"building"`         
     Date                string `json:"date"`         
@@ -101,7 +103,7 @@ func (p *BillinguserlistManager) Query(query string, params ...interface{}) (*sq
 func (p *BillinguserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
+    str := "select bi_id, bi_title, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_remark, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -311,7 +313,9 @@ func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        
+        
         
         
         
@@ -325,6 +329,8 @@ func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
+        
         
         
         
@@ -370,7 +376,7 @@ func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
         var item Billinguserlist
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -381,9 +387,11 @@ func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
         
         
         
+        
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
         
         
         

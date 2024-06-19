@@ -605,5 +605,16 @@ func (p *CustomercompanyManager) GetByCompanyCustomer(company int64, customer in
     }
 }
 
+func (p *CustomercompanyManager) DeleteByCompany(company int64) error {
+     if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from customercompany_tb where cc_company = ?"
+    _, err := p.Exec(query, company)
+
+    return err
+}
+
 
 
