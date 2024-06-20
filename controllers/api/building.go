@@ -23,7 +23,9 @@ func CalculateScore(conn *sql.Tx, id int64) {
 
 	for _, v := range items {
 		if v.Category == 10 {
-			total += float64(global.Atoi(v.Value2))
+			if v.Value1 == "true" {
+				total += float64(global.Atoi(v.Value2))
+			}
 		}
 
 		if v.Category == 20 {
@@ -82,7 +84,9 @@ func CalculateScore(conn *sql.Tx, id int64) {
 			}
 
 			if v.Category == 10 {
-				totals[typeid] += float64(global.Atoi(v.Value2))
+				if v.Value1 == "true" {
+					totals[typeid] += float64(global.Atoi(v.Value2))
+				}
 			}
 
 			if v.Category == 20 {
@@ -189,7 +193,9 @@ func CalculateScore2(conn *sql.DB, id int64) {
 
 	for _, v := range items {
 		if v.Category == 10 {
-			total += float64(global.Atoi(v.Value2))
+			if v.Value1 == "true" {
+				total += float64(global.Atoi(v.Value2))
+			}
 		}
 
 		if v.Category == 20 {
@@ -248,7 +254,9 @@ func CalculateScore2(conn *sql.DB, id int64) {
 			}
 
 			if v.Category == 10 {
-				totals[typeid] += float64(global.Atoi(v.Value2))
+				if v.Value1 == "true" {
+					totals[typeid] += float64(global.Atoi(v.Value2))
+				}
 			}
 
 			if v.Category == 20 {
