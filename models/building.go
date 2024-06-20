@@ -26,8 +26,15 @@ type Building struct {
     Addressetc                string `json:"addressetc"`         
     Postzip                string `json:"postzip"`         
     Postaddress                string `json:"postaddress"`         
+    Postaddressetc                string `json:"postaddressetc"`         
     Postname                string `json:"postname"`         
     Posttel                string `json:"posttel"`         
+    Cmsnumber                string `json:"cmsnumber"`         
+    Cmsbank                string `json:"cmsbank"`         
+    Cmsaccountno                string `json:"cmsaccountno"`         
+    Cmsconfirm                string `json:"cmsconfirm"`         
+    Cmsstartdate                string `json:"cmsstartdate"`         
+    Cmsenddate                string `json:"cmsenddate"`         
     Contractvolumn                Double `json:"contractvolumn"`         
     Receivevolumn                Double `json:"receivevolumn"`         
     Generatevolumn                Double `json:"generatevolumn"`         
@@ -118,7 +125,7 @@ func (p *BuildingManager) Query(query string, params ...interface{}) (*sql.Rows,
 func (p *BuildingManager) GetQuery() string {
     ret := ""
 
-    str := "select b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postname, b_posttel, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date from building_tb "
+    str := "select b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postaddressetc, b_postname, b_posttel, b_cmsnumber, b_cmsbank, b_cmsaccountno, b_cmsconfirm, b_cmsstartdate, b_cmsenddate, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date from building_tb "
 
     if p.Index == "" {
         ret = str
@@ -184,11 +191,11 @@ func (p *BuildingManager) Insert(item *Building) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into building_tb (b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postname, b_posttel, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postname, item.Posttel, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into building_tb (b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postaddressetc, b_postname, b_posttel, b_cmsnumber, b_cmsbank, b_cmsaccountno, b_cmsconfirm, b_cmsstartdate, b_cmsenddate, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postaddressetc, item.Postname, item.Posttel, item.Cmsnumber, item.Cmsbank, item.Cmsaccountno, item.Cmsconfirm, item.Cmsstartdate, item.Cmsenddate, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date)
     } else {
-        query = "insert into building_tb (b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postname, b_posttel, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postname, item.Posttel, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date)
+        query = "insert into building_tb (b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postaddressetc, b_postname, b_posttel, b_cmsnumber, b_cmsbank, b_cmsaccountno, b_cmsconfirm, b_cmsstartdate, b_cmsenddate, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postaddressetc, item.Postname, item.Posttel, item.Cmsnumber, item.Cmsbank, item.Cmsaccountno, item.Cmsconfirm, item.Cmsstartdate, item.Cmsenddate, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date)
     }
     
     if err == nil {
@@ -267,8 +274,8 @@ func (p *BuildingManager) Update(item *Building) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update building_tb set b_name = ?, b_companyno = ?, b_ceo = ?, b_zip = ?, b_address = ?, b_addressetc = ?, b_postzip = ?, b_postaddress = ?, b_postname = ?, b_posttel = ?, b_contractvolumn = ?, b_receivevolumn = ?, b_generatevolumn = ?, b_sunlightvolumn = ?, b_volttype = ?, b_weight = ?, b_totalweight = ?, b_checkcount = ?, b_receivevolt = ?, b_generatevolt = ?, b_periodic = ?, b_businesscondition = ?, b_businessitem = ?, b_usage = ?, b_district = ?, b_check = ?, b_checkpost = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
-	_, err := p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postname, item.Posttel, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date, item.Id)
+	query := "update building_tb set b_name = ?, b_companyno = ?, b_ceo = ?, b_zip = ?, b_address = ?, b_addressetc = ?, b_postzip = ?, b_postaddress = ?, b_postaddressetc = ?, b_postname = ?, b_posttel = ?, b_cmsnumber = ?, b_cmsbank = ?, b_cmsaccountno = ?, b_cmsconfirm = ?, b_cmsstartdate = ?, b_cmsenddate = ?, b_contractvolumn = ?, b_receivevolumn = ?, b_generatevolumn = ?, b_sunlightvolumn = ?, b_volttype = ?, b_weight = ?, b_totalweight = ?, b_checkcount = ?, b_receivevolt = ?, b_generatevolt = ?, b_periodic = ?, b_businesscondition = ?, b_businessitem = ?, b_usage = ?, b_district = ?, b_check = ?, b_checkpost = ?, b_score = ?, b_status = ?, b_company = ?, b_date = ? where b_id = ?"
+	_, err := p.Exec(query , item.Name, item.Companyno, item.Ceo, item.Zip, item.Address, item.Addressetc, item.Postzip, item.Postaddress, item.Postaddressetc, item.Postname, item.Posttel, item.Cmsnumber, item.Cmsbank, item.Cmsaccountno, item.Cmsconfirm, item.Cmsstartdate, item.Cmsenddate, item.Contractvolumn, item.Receivevolumn, item.Generatevolumn, item.Sunlightvolumn, item.Volttype, item.Weight, item.Totalweight, item.Checkcount, item.Receivevolt, item.Generatevolt, item.Periodic, item.Businesscondition, item.Businessitem, item.Usage, item.District, item.Check, item.Checkpost, item.Score, item.Status, item.Company, item.Date, item.Id)
     
         
     return err
@@ -363,6 +370,17 @@ func (p *BuildingManager) UpdatePostaddress(value string, id int64) error {
     return err
 }
 
+func (p *BuildingManager) UpdatePostaddressetc(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_postaddressetc = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BuildingManager) UpdatePostname(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -380,6 +398,72 @@ func (p *BuildingManager) UpdatePosttel(value string, id int64) error {
     }
 
 	query := "update building_tb set b_posttel = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsnumber(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsnumber = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsbank(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsbank = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsaccountno(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsaccountno = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsconfirm(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsconfirm = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsstartdate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsstartdate = ? where b_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BuildingManager) UpdateCmsenddate(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update building_tb set b_cmsenddate = ? where b_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -811,7 +895,21 @@ func (p *BuildingManager) ReadRow(rows *sql.Rows) *Building {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Zip, &item.Address, &item.Addressetc, &item.Postzip, &item.Postaddress, &item.Postname, &item.Posttel, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Totalweight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Businesscondition, &item.Businessitem, &item.Usage, &item.District, &item.Check, &item.Checkpost, &item.Score, &item.Status, &item.Company, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Zip, &item.Address, &item.Addressetc, &item.Postzip, &item.Postaddress, &item.Postaddressetc, &item.Postname, &item.Posttel, &item.Cmsnumber, &item.Cmsbank, &item.Cmsaccountno, &item.Cmsconfirm, &item.Cmsstartdate, &item.Cmsenddate, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Totalweight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Businesscondition, &item.Businessitem, &item.Usage, &item.District, &item.Check, &item.Checkpost, &item.Score, &item.Status, &item.Company, &item.Date)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -900,12 +998,19 @@ func (p *BuildingManager) ReadRows(rows *sql.Rows) []Building {
         var item Building
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Zip, &item.Address, &item.Addressetc, &item.Postzip, &item.Postaddress, &item.Postname, &item.Posttel, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Totalweight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Businesscondition, &item.Businessitem, &item.Usage, &item.District, &item.Check, &item.Checkpost, &item.Score, &item.Status, &item.Company, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Companyno, &item.Ceo, &item.Zip, &item.Address, &item.Addressetc, &item.Postzip, &item.Postaddress, &item.Postaddressetc, &item.Postname, &item.Posttel, &item.Cmsnumber, &item.Cmsbank, &item.Cmsaccountno, &item.Cmsconfirm, &item.Cmsstartdate, &item.Cmsenddate, &item.Contractvolumn, &item.Receivevolumn, &item.Generatevolumn, &item.Sunlightvolumn, &item.Volttype, &item.Weight, &item.Totalweight, &item.Checkcount, &item.Receivevolt, &item.Generatevolt, &item.Periodic, &item.Businesscondition, &item.Businessitem, &item.Usage, &item.District, &item.Check, &item.Checkpost, &item.Score, &item.Status, &item.Company, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
+        
+        
+        
+        
+        
         
         
         

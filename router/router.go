@@ -1365,6 +1365,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/building/postaddressetc", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var postaddressetc_ string
+			if v, flag := results["postaddressetc"]; flag {
+				postaddressetc_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdatePostaddressetc(postaddressetc_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/building/postname", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -1399,6 +1418,120 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BuildingController
 			controller.Init(c)
 			controller.UpdatePosttel(posttel_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsnumber", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsnumber_ string
+			if v, flag := results["cmsnumber"]; flag {
+				cmsnumber_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsnumber(cmsnumber_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsbank", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsbank_ string
+			if v, flag := results["cmsbank"]; flag {
+				cmsbank_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsbank(cmsbank_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsaccountno", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsaccountno_ string
+			if v, flag := results["cmsaccountno"]; flag {
+				cmsaccountno_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsaccountno(cmsaccountno_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsconfirm", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsconfirm_ string
+			if v, flag := results["cmsconfirm"]; flag {
+				cmsconfirm_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsconfirm(cmsconfirm_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsstartdate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsstartdate_ string
+			if v, flag := results["cmsstartdate"]; flag {
+				cmsstartdate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsstartdate(cmsstartdate_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/building/cmsenddate", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var cmsenddate_ string
+			if v, flag := results["cmsenddate"]; flag {
+				cmsenddate_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BuildingController
+			controller.Init(c)
+			controller.UpdateCmsenddate(cmsenddate_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

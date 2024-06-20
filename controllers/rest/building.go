@@ -138,6 +138,10 @@ func (c *BuildingController) Count() {
     if _postaddress != "" {
         args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"="})
     }
+    _postaddressetc := c.Get("postaddressetc")
+    if _postaddressetc != "" {
+        args = append(args, models.Where{Column:"postaddressetc", Value:_postaddressetc, Compare:"="})
+    }
     _postname := c.Get("postname")
     if _postname != "" {
         args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"="})
@@ -145,6 +149,30 @@ func (c *BuildingController) Count() {
     _posttel := c.Get("posttel")
     if _posttel != "" {
         args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"="})
+    }
+    _cmsnumber := c.Get("cmsnumber")
+    if _cmsnumber != "" {
+        args = append(args, models.Where{Column:"cmsnumber", Value:_cmsnumber, Compare:"="})
+    }
+    _cmsbank := c.Get("cmsbank")
+    if _cmsbank != "" {
+        args = append(args, models.Where{Column:"cmsbank", Value:_cmsbank, Compare:"="})
+    }
+    _cmsaccountno := c.Get("cmsaccountno")
+    if _cmsaccountno != "" {
+        args = append(args, models.Where{Column:"cmsaccountno", Value:_cmsaccountno, Compare:"="})
+    }
+    _cmsconfirm := c.Get("cmsconfirm")
+    if _cmsconfirm != "" {
+        args = append(args, models.Where{Column:"cmsconfirm", Value:_cmsconfirm, Compare:"="})
+    }
+    _cmsstartdate := c.Get("cmsstartdate")
+    if _cmsstartdate != "" {
+        args = append(args, models.Where{Column:"cmsstartdate", Value:_cmsstartdate, Compare:"="})
+    }
+    _cmsenddate := c.Get("cmsenddate")
+    if _cmsenddate != "" {
+        args = append(args, models.Where{Column:"cmsenddate", Value:_cmsenddate, Compare:"="})
     }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
@@ -302,6 +330,10 @@ func (c *BuildingController) Index(page int, pagesize int) {
     if _postaddress != "" {
         args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"="})
     }
+    _postaddressetc := c.Get("postaddressetc")
+    if _postaddressetc != "" {
+        args = append(args, models.Where{Column:"postaddressetc", Value:_postaddressetc, Compare:"="})
+    }
     _postname := c.Get("postname")
     if _postname != "" {
         args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"="})
@@ -309,6 +341,30 @@ func (c *BuildingController) Index(page int, pagesize int) {
     _posttel := c.Get("posttel")
     if _posttel != "" {
         args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"="})
+    }
+    _cmsnumber := c.Get("cmsnumber")
+    if _cmsnumber != "" {
+        args = append(args, models.Where{Column:"cmsnumber", Value:_cmsnumber, Compare:"="})
+    }
+    _cmsbank := c.Get("cmsbank")
+    if _cmsbank != "" {
+        args = append(args, models.Where{Column:"cmsbank", Value:_cmsbank, Compare:"="})
+    }
+    _cmsaccountno := c.Get("cmsaccountno")
+    if _cmsaccountno != "" {
+        args = append(args, models.Where{Column:"cmsaccountno", Value:_cmsaccountno, Compare:"="})
+    }
+    _cmsconfirm := c.Get("cmsconfirm")
+    if _cmsconfirm != "" {
+        args = append(args, models.Where{Column:"cmsconfirm", Value:_cmsconfirm, Compare:"="})
+    }
+    _cmsstartdate := c.Get("cmsstartdate")
+    if _cmsstartdate != "" {
+        args = append(args, models.Where{Column:"cmsstartdate", Value:_cmsstartdate, Compare:"="})
+    }
+    _cmsenddate := c.Get("cmsenddate")
+    if _cmsenddate != "" {
+        args = append(args, models.Where{Column:"cmsenddate", Value:_cmsenddate, Compare:"="})
     }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
@@ -515,6 +571,15 @@ func (c *BuildingController) UpdatePostaddress(postaddress string, id int64) {
 	_manager.UpdatePostaddress(postaddress, id)
 }
 // @Put()
+func (c *BuildingController) UpdatePostaddressetc(postaddressetc string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdatePostaddressetc(postaddressetc, id)
+}
+// @Put()
 func (c *BuildingController) UpdatePostname(postname string, id int64) {
     
     
@@ -531,6 +596,60 @@ func (c *BuildingController) UpdatePosttel(posttel string, id int64) {
 
 	_manager := models.NewBuildingManager(conn)
 	_manager.UpdatePosttel(posttel, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsnumber(cmsnumber string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsnumber(cmsnumber, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsbank(cmsbank string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsbank(cmsbank, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsaccountno(cmsaccountno string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsaccountno(cmsaccountno, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsconfirm(cmsconfirm string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsconfirm(cmsconfirm, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsstartdate(cmsstartdate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsstartdate(cmsstartdate, id)
+}
+// @Put()
+func (c *BuildingController) UpdateCmsenddate(cmsenddate string, id int64) {
+    
+    
+	conn := c.NewConnection()
+
+	_manager := models.NewBuildingManager(conn)
+	_manager.UpdateCmsenddate(cmsenddate, id)
 }
 // @Put()
 func (c *BuildingController) UpdateContractvolumn(contractvolumn models.Double, id int64) {
@@ -759,6 +878,10 @@ func (c *BuildingController) Sum() {
     if _postaddress != "" {
         args = append(args, models.Where{Column:"postaddress", Value:_postaddress, Compare:"like"})
     }
+    _postaddressetc := c.Get("postaddressetc")
+    if _postaddressetc != "" {
+        args = append(args, models.Where{Column:"postaddressetc", Value:_postaddressetc, Compare:"like"})
+    }
     _postname := c.Get("postname")
     if _postname != "" {
         args = append(args, models.Where{Column:"postname", Value:_postname, Compare:"like"})
@@ -766,6 +889,30 @@ func (c *BuildingController) Sum() {
     _posttel := c.Get("posttel")
     if _posttel != "" {
         args = append(args, models.Where{Column:"posttel", Value:_posttel, Compare:"like"})
+    }
+    _cmsnumber := c.Get("cmsnumber")
+    if _cmsnumber != "" {
+        args = append(args, models.Where{Column:"cmsnumber", Value:_cmsnumber, Compare:"like"})
+    }
+    _cmsbank := c.Get("cmsbank")
+    if _cmsbank != "" {
+        args = append(args, models.Where{Column:"cmsbank", Value:_cmsbank, Compare:"like"})
+    }
+    _cmsaccountno := c.Get("cmsaccountno")
+    if _cmsaccountno != "" {
+        args = append(args, models.Where{Column:"cmsaccountno", Value:_cmsaccountno, Compare:"like"})
+    }
+    _cmsconfirm := c.Get("cmsconfirm")
+    if _cmsconfirm != "" {
+        args = append(args, models.Where{Column:"cmsconfirm", Value:_cmsconfirm, Compare:"like"})
+    }
+    _cmsstartdate := c.Get("cmsstartdate")
+    if _cmsstartdate != "" {
+        args = append(args, models.Where{Column:"cmsstartdate", Value:_cmsstartdate, Compare:"like"})
+    }
+    _cmsenddate := c.Get("cmsenddate")
+    if _cmsenddate != "" {
+        args = append(args, models.Where{Column:"cmsenddate", Value:_cmsenddate, Compare:"like"})
     }
     _contractvolumn := c.Geti("contractvolumn")
     if _contractvolumn != 0 {
