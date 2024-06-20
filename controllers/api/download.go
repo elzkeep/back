@@ -787,7 +787,7 @@ func (c *DownloadController) All(category int) {
 
 			"(관리)담당자", "(관리)담당자 연락처", "(관리)담당자 Email",
 			"(계약)담당자", "(계약)담당자 연락처", "(계약)책임자 Email",
-			"우편수령지 우편번호", "우편수령지", "우편수령지 수신자", "우편수령지 전화번호", "Fax No.",
+			"우편수령지 우편번호", "우편수령지", "우편수령지 상세주소", "우편수령지 수신자", "우편수령지 전화번호", "Fax No.",
 			"대행수수료", "부가세", "계산서 발행일", "청구방법", "수금일", "특이사항"}
 		width := []int{10, 30, 15, 50, 40, 40, 20, 30,
 			30, 20, 15, 12, 50, 40,
@@ -797,7 +797,7 @@ func (c *DownloadController) All(category int) {
 
 			20, 20, 50,
 			20, 20, 50,
-			20, 50, 15, 20, 20,
+			20, 50, 50, 15, 20, 20,
 			15, 15, 20, 15, 20, 50}
 		align := []string{"L", "L", "L", "L", "L", "L", "L", "L",
 			"L", "L", "L", "L", "L", "L",
@@ -807,7 +807,7 @@ func (c *DownloadController) All(category int) {
 
 			"L", "L", "L",
 			"L", "L", "L",
-			"L", "L", "L", "L", "L",
+			"L", "L", "L", "L", "L", "L",
 			"R", "R", "C", "C", "C", "L"}
 		excel.NewSheet("고객 현황", header, width, align)
 		excel.SetHeight(24)
@@ -891,6 +891,7 @@ func (c *DownloadController) All(category int) {
 
 				excel.Cell(building.Postzip)
 				excel.Cell(building.Postaddress)
+				excel.Cell(building.Postaddressetc)
 				excel.Cell(building.Postname)
 				excel.Cell(building.Posttel)
 

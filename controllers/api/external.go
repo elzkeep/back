@@ -472,6 +472,13 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		building.Postname = GetCell("AN", cell)
 		building.Posttel = GetCell("AO", cell)
 
+		building.Cmsnumber = GetCell("AW", cell)
+		building.Cmsbank = GetCell("AX", cell)
+		building.Cmsaccountno = GetCell("AY", cell)
+		building.Cmsconfirm = GetCell("AZ", cell)
+		building.Cmsstartdate = GetCell("BA", cell)
+		building.Cmsenddate = GetCell("BB", cell)
+
 		var buildingId int64 = 0
 
 		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
@@ -1431,8 +1438,9 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 
 			building.Postzip = GetCell("AI", cell)
 			building.Postaddress = GetCell("AJ", cell)
-			building.Postname = GetCell("AK", cell)
-			building.Posttel = GetCell("AL", cell)
+			building.Postaddress = GetCell("AK", cell)
+			building.Postname = GetCell("AL", cell)
+			building.Posttel = GetCell("AM", cell)
 
 			var buildingId int64 = 0
 
@@ -1455,23 +1463,32 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			customerItem.Billingtel = GetCell("AG", cell)
 			customerItem.Billingemail = GetCell("AH", cell)
 
-			customerItem.Fax = GetCell("AM", cell)
+			customerItem.Fax = GetCell("AN", cell)
 			customerItem.Status = 1
 
-			customerItem.Contractprice = global.Atoi(GetCell("AN", cell))
-			customerItem.Contractvat = global.Atoi(GetCell("AO", cell))
+			customerItem.Contractprice = global.Atoi(GetCell("AO", cell))
+			customerItem.Contractvat = global.Atoi(GetCell("AP", cell))
 
 			customerItem.Type = customer.TypeOutsourcing
 
-			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(GetCell("AP", cell), "일", "")))
+			customerItem.Billingdate = global.Atoi(strings.TrimSpace(strings.ReplaceAll(GetCell("AQ", cell), "일", "")))
 
-			if GetCell("AQ", cell) == "지로" {
+			billingtype := GetCell("AR", cell)
+			if billingtype == "지로" {
 				customerItem.Billingtype = 1
+			} else if billingtype == "계산서" || billingtype == "세금계산서" || billingtype == "세금 계산서" || billingtype == "이체" || billingtype == "계좌이체" || billingtype == "계좌 이체" {
+				customerItem.Billingtype = 2
+			} else if billingtype == "카드" {
+				customerItem.Billingtype = 3
+			} else if billingtype == "CMS" || billingtype == "자동이체" || billingtype == "자동 이체" {
+				customerItem.Billingtype = 4
+			} else if billingtype == "소매 매출" || billingtype == "소매매출" {
+				customerItem.Billingtype = 5
 			} else {
 				customerItem.Billingtype = 2
 			}
 
-			str := GetCell("AR", cell)
+			str := GetCell("AS", cell)
 
 			r, _ := regexp.Compile("[0-9]+")
 			collectday := r.FindString(str)
@@ -1488,7 +1505,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 				customerItem.Collectday = global.Atoi(collectday)
 			}
 
-			customerItem.Remark = GetCell("AS", cell)
+			customerItem.Remark = GetCell("AT", cell)
 
 			customerItem.Building = buildingId
 			customerItem.User = userId
