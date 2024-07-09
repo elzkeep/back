@@ -111,7 +111,7 @@ type Pair struct {
 }
 
 // @POST()
-func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64, price []int, vat []int) {
+func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64, price []int, vat []int, remark []string) {
 	session := c.Session
 
 	conn := c.NewConnection()
@@ -124,9 +124,6 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		models.Where{Column: "building", Value: ids, Compare: "in"},
 	})
 
-	log.Println("-----------------------------------")
-	log.Println("durationtype:", durationtype, durationmonth)
-	log.Println(customers)
 	now := time.Now()
 
 	months := make([]Pair, 0)
@@ -181,6 +178,7 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 	log.Println(ids)
 	log.Println(price)
 	log.Println(vat)
+	log.Println(remark)
 
 	for _, d := range months {
 		yearmonth := fmt.Sprintf("%04d-%02d", d.Year, d.Month)
@@ -190,22 +188,10 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 		log.Println(ed.Year(), ed.Month())
 		endmonth := fmt.Sprintf("%04d-%02d", ed.Year(), ed.Month())
 		for _, v := range customers {
-			/*
-				cnt := billingManager.Count([]interface{}{
-					models.Where{Column: "company", Value: session.Company, Compare: "="},
-					models.Where{Column: "building", Value: v.Building, Compare: "="},
-					models.Where{Column: "month", Value: yearmonth, Compare: "="},
-					models.Where{Column: "period", Value: d.Period, Compare: "="},
-				})
-
-
-					if cnt > 0 {
-						continue
-					}
-			*/
-
 			priceValue := 0
 			vatValue := 0
+			remarkValue := ""
+
 			for i, id := range ids {
 				if id != v.Building {
 					continue
@@ -213,45 +199,39 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 
 				priceValue = price[i]
 				vatValue = vat[i]
+				remarkValue = remark[i]
 				break
 			}
-			item := models.Billing{}
-			item.Price = priceValue * d.Period
-			item.Vat = vatValue * d.Period
-			item.Status = billing.StatusWait
-			item.Giro = billing.GiroWait
-			item.Billdate = today
-			item.Month = yearmonth
-			item.Endmonth = endmonth
-			item.Company = session.Company
-			item.Building = v.Building
-			item.Period = d.Period
+
+			title := ""
+			if d.Period == 1 {
+				title = fmt.Sprintf("%v년 %v월분", d.Year, d.Month)
+			} else {
+				if d.Year == ed.Year() {
+					title = fmt.Sprintf("%v년 %v월~%v월분", d.Year, d.Month, int(ed.Month()))
+				} else {
+					title = fmt.Sprintf("%v년 %v월 ~ %v년 %v월분", d.Year, d.Month, ed.Year(), int(ed.Month()))
+				}
+			}
+
+			item := models.Billing{
+				Title:        title,
+				Price:        priceValue * d.Period,
+				Vat:          vatValue * d.Period,
+				Remark:       remarkValue,
+				Status:       billing.StatusWait,
+				Giro:         billing.GiroWait,
+				Billdate:     today,
+				Month:        yearmonth,
+				Endmonth:     endmonth,
+				Company:      session.Company,
+				Building:     v.Building,
+				Period:       d.Period,
+				Billingtype:  v.Billingtype,
+				Depositprice: 0,
+			}
 
 			billingManager.Insert(&item)
 		}
-	}
-}
-
-// @Put()
-func (c *BillingController) Process(item *models.Billing) {
-	user := c.Session
-
-	conn := c.NewConnection()
-
-	manager := models.NewBillingManager(conn)
-	billinghistoryManager := models.NewBillinghistoryManager(conn)
-
-	manager.Update(item)
-
-	billinghistoryManager.DeleteByBilling(item.Id)
-
-	var billinghistory models.Billinghistory
-	billinghistory.Price = item.Price
-	billinghistory.Company = user.Company
-	billinghistory.Building = item.Building
-	billinghistory.Billing = item.Id
-
-	if item.Status == billing.StatusComplete {
-		billinghistoryManager.Insert(&billinghistory)
 	}
 }

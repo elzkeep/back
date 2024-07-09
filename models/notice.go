@@ -479,16 +479,23 @@ func (p *NoticeManager) Find(args []interface{}) []Notice {
         case Where:
             item := v
 
+            if strings.Contains(item.Column, "_") {
+                query += " and " + item.Column
+            } else {
+                query += " and n_" + item.Column
+            }
+            
             if item.Compare == "in" {
-                query += " and n_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and n_" + item.Column + " between ? and ?"
+                query += " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and n_" + item.Column + " " + item.Compare + " ?"
+                query += " " + item.Compare + " ?"
+
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {

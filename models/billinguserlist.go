@@ -19,6 +19,7 @@ type Billinguserlist struct {
     Id                int64 `json:"id"`         
     Title                string `json:"title"`         
     Price                int `json:"price"`         
+    Depositprice                int `json:"depositprice"`         
     Vat                int `json:"vat"`         
     Status                int `json:"status"`         
     Giro                int `json:"giro"`         
@@ -26,6 +27,7 @@ type Billinguserlist struct {
     Month                string `json:"month"`         
     Endmonth                string `json:"endmonth"`         
     Period                int `json:"period"`         
+    Billingtype                int `json:"billingtype"`         
     Remark                string `json:"remark"`         
     Company                int64 `json:"company"`         
     Building                int64 `json:"building"`         
@@ -103,7 +105,7 @@ func (p *BillinguserlistManager) Query(query string, params ...interface{}) (*sq
 func (p *BillinguserlistManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_title, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_remark, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
+    str := "select bi_id, bi_title, bi_price, bi_depositprice, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_billingtype, bi_remark, bi_company, bi_building, bi_date, bi_buildingname, bi_billingname, bi_billingtel, bi_billingemail from billinguserlist_vw "
 
     if p.Index == "" {
         ret = str
@@ -219,6 +221,17 @@ func (p *BillinguserlistManager) IncreasePrice(value int, id int64) error {
     return err
 }
 
+func (p *BillinguserlistManager) IncreaseDepositprice(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_depositprice = bi_depositprice + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BillinguserlistManager) IncreaseVat(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -258,6 +271,17 @@ func (p *BillinguserlistManager) IncreasePeriod(value int, id int64) error {
     }
 
 	query := "update billinguserlist_vw set bi_period = bi_period + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinguserlistManager) IncreaseBillingtype(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinguserlist_vw set bi_billingtype = bi_billingtype + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -313,7 +337,9 @@ func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err = rows.Scan(&item.Id, &item.Title, &item.Price, &item.Depositprice, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Billingtype, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        
+        
         
         
         
@@ -329,6 +355,8 @@ func (p *BillinguserlistManager) ReadRow(rows *sql.Rows) *Billinguserlist {
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
+        
         
         
         
@@ -376,7 +404,7 @@ func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
         var item Billinguserlist
         
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
+        err := rows.Scan(&item.Id, &item.Title, &item.Price, &item.Depositprice, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Billingtype, &item.Remark, &item.Company, &item.Building, &item.Date, &item.Buildingname, &item.Billingname, &item.Billingtel, &item.Billingemail)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -388,9 +416,11 @@ func (p *BillinguserlistManager) ReadRows(rows *sql.Rows) []Billinguserlist {
         
         
         
+        
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
         
         
         
@@ -539,16 +569,23 @@ func (p *BillinguserlistManager) Find(args []interface{}) []Billinguserlist {
         case Where:
             item := v
 
+            if strings.Contains(item.Column, "_") {
+                query += " and " + item.Column
+            } else {
+                query += " and bi_" + item.Column
+            }
+            
             if item.Compare == "in" {
-                query += " and bi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " " + item.Compare + " ?"
+
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {

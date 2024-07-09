@@ -2,6 +2,7 @@ package router
 
 import (
     "encoding/json"
+    "net/url"
     "strconv"
     "strings"
 	"zkeep/controllers/api"
@@ -92,19 +93,46 @@ func SetRouter(r *fiber.App) {
 			if v, flag := results["vat"]; flag {
 				vat_= getArrayCommai(v.(string))
 			}
+			var remark_ []string
+			if v, flag := results["remark"]; flag {
+			    strs := strings.Split(v.(string), ",")
+			    for i, str := range strs {
+			        d, _ := url.QueryUnescape(str)
+			        strs[i] = d
+			    }
+				remark_ = strs
+			}
 			var controller api.BillingController
 			controller.Init(c)
-			controller.Make(durationtype_, base_, year_, month_, durationmonth_, ids_, price_, vat_)
+			controller.Make(durationtype_, base_, year_, month_, durationmonth_, ids_, price_, vat_, remark_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
 
-		apiGroup.Put("/billing/process", func(c *fiber.Ctx) error {
-			item_ := &models.Billing{}
+		apiGroup.Post("/billinghistory/deposit", func(c *fiber.Ctx) error {
+			item_ := &models.Billinghistory{}
 			c.BodyParser(item_)
-			var controller api.BillingController
+			var controller api.BillinghistoryController
 			controller.Init(c)
-			controller.Process(item_)
+			controller.Deposit(item_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/billinghistory/depositdelete", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var item_ *[]models.Billinghistory
+			item__ref := &item_
+			c.BodyParser(item__ref)
+			var controller api.BillinghistoryController
+			controller.Init(c)
+			controller.Depositdelete(id_, item_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -330,9 +358,10 @@ func SetRouter(r *fiber.App) {
 			json.Unmarshal(jsonData, &results)
 			var filename_ []string
 			if v, flag := results["filename"]; flag {
-			    strs := make([]string, 0)
-			    for _, str := range v.([]interface{}) {
-			        strs = append(strs, str.(string))
+			    strs := strings.Split(v.(string), ",")
+			    for i, str := range strs {
+			        d, _ := url.QueryUnescape(str)
+			        strs[i] = d
 			    }
 				filename_ = strs
 			}
@@ -647,6 +676,25 @@ func SetRouter(r *fiber.App) {
 			return c.JSON(controller.Result)
 		})
 
+		apiGroup.Put("/billing/depositprice", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var depositprice_ int
+			if v, flag := results["depositprice"]; flag {
+				depositprice_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateDepositprice(depositprice_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
 		apiGroup.Put("/billing/vat", func(c *fiber.Ctx) error {
 			var results map[string]interface{}
 			jsonData := c.Body()
@@ -776,6 +824,25 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BillingController
 			controller.Init(c)
 			controller.UpdatePeriod(period_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billing/billingtype", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var billingtype_ int
+			if v, flag := results["billingtype"]; flag {
+				billingtype_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillingController
+			controller.Init(c)
+			controller.UpdateBillingtype(billingtype_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})
@@ -967,6 +1034,44 @@ func SetRouter(r *fiber.App) {
 			var controller rest.BillinghistoryController
 			controller.Init(c)
 			controller.UpdatePrice(price_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/type", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var type_ int
+			if v, flag := results["type"]; flag {
+				type_ = int(v.(float64))
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdateType(type_, id_)
+			controller.Close()
+			return c.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/billinghistory/remark", func(c *fiber.Ctx) error {
+			var results map[string]interface{}
+			jsonData := c.Body()
+			json.Unmarshal(jsonData, &results)
+			var remark_ string
+			if v, flag := results["remark"]; flag {
+				remark_ = v.(string)
+			}
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller rest.BillinghistoryController
+			controller.Init(c)
+			controller.UpdateRemark(remark_, id_)
 			controller.Close()
 			return c.JSON(controller.Result)
 		})

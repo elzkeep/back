@@ -3,6 +3,8 @@ package models
 import (
     //"zkeep/config"
     
+    "zkeep/models/billinghistory"
+    
     "database/sql"
     "errors"
     "fmt"
@@ -19,6 +21,8 @@ type Billinghistory struct {
             
     Id                int64 `json:"id"`         
     Price                int `json:"price"`         
+    Type                billinghistory.Type `json:"type"`         
+    Remark                string `json:"remark"`         
     Company                int64 `json:"company"`         
     Building                int64 `json:"building"`         
     Billing                int64 `json:"billing"`         
@@ -92,7 +96,7 @@ func (p *BillinghistoryManager) Query(query string, params ...interface{}) (*sql
 func (p *BillinghistoryManager) GetQuery() string {
     ret := ""
 
-    str := "select bh_id, bh_price, bh_company, bh_building, bh_billing, bh_date from billinghistory_tb "
+    str := "select bh_id, bh_price, bh_type, bh_remark, bh_company, bh_building, bh_billing, bh_date from billinghistory_tb "
 
     if p.Index == "" {
         ret = str
@@ -158,11 +162,11 @@ func (p *BillinghistoryManager) Insert(item *Billinghistory) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into billinghistory_tb (bh_id, bh_price, bh_company, bh_building, bh_billing, bh_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Price, item.Company, item.Building, item.Billing, item.Date)
+        query = "insert into billinghistory_tb (bh_id, bh_price, bh_type, bh_remark, bh_company, bh_building, bh_billing, bh_date) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Price, item.Type, item.Remark, item.Company, item.Building, item.Billing, item.Date)
     } else {
-        query = "insert into billinghistory_tb (bh_price, bh_company, bh_building, bh_billing, bh_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Price, item.Company, item.Building, item.Billing, item.Date)
+        query = "insert into billinghistory_tb (bh_price, bh_type, bh_remark, bh_company, bh_building, bh_billing, bh_date) values (?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Price, item.Type, item.Remark, item.Company, item.Building, item.Billing, item.Date)
     }
     
     if err == nil {
@@ -241,8 +245,8 @@ func (p *BillinghistoryManager) Update(item *Billinghistory) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update billinghistory_tb set bh_price = ?, bh_company = ?, bh_building = ?, bh_billing = ?, bh_date = ? where bh_id = ?"
-	_, err := p.Exec(query , item.Price, item.Company, item.Building, item.Billing, item.Date, item.Id)
+	query := "update billinghistory_tb set bh_price = ?, bh_type = ?, bh_remark = ?, bh_company = ?, bh_building = ?, bh_billing = ?, bh_date = ? where bh_id = ?"
+	_, err := p.Exec(query , item.Price, item.Type, item.Remark, item.Company, item.Building, item.Billing, item.Date, item.Id)
     
         
     return err
@@ -255,6 +259,28 @@ func (p *BillinghistoryManager) UpdatePrice(value int, id int64) error {
     }
 
 	query := "update billinghistory_tb set bh_price = ? where bh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinghistoryManager) UpdateType(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinghistory_tb set bh_type = ? where bh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillinghistoryManager) UpdateRemark(value string, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billinghistory_tb set bh_remark = ? where bh_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -356,6 +382,7 @@ func (p *BillinghistoryManager) GetIdentity() int64 {
 
 func (p *Billinghistory) InitExtra() {
     p.Extra = map[string]interface{}{
+            "type":     billinghistory.GetType(p.Type),
 
     }
 }
@@ -367,7 +394,11 @@ func (p *BillinghistoryManager) ReadRow(rows *sql.Rows) *Billinghistory {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Price, &item.Company, &item.Building, &item.Billing, &item.Date)
+        err = rows.Scan(&item.Id, &item.Price, &item.Type, &item.Remark, &item.Company, &item.Building, &item.Billing, &item.Date)
+        
+        
+        
+        
         
         
         
@@ -404,12 +435,14 @@ func (p *BillinghistoryManager) ReadRows(rows *sql.Rows) []Billinghistory {
         var item Billinghistory
         
     
-        err := rows.Scan(&item.Id, &item.Price, &item.Company, &item.Building, &item.Billing, &item.Date)
+        err := rows.Scan(&item.Id, &item.Price, &item.Type, &item.Remark, &item.Company, &item.Building, &item.Billing, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
         }
 
+        
+        
         
         
         
@@ -553,16 +586,23 @@ func (p *BillinghistoryManager) Find(args []interface{}) []Billinghistory {
         case Where:
             item := v
 
+            if strings.Contains(item.Column, "_") {
+                query += " and " + item.Column
+            } else {
+                query += " and bh_" + item.Column
+            }
+            
             if item.Compare == "in" {
-                query += " and bh_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bh_" + item.Column + " between ? and ?"
+                query += " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bh_" + item.Column + " " + item.Compare + " ?"
+                query += " " + item.Compare + " ?"
+
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {

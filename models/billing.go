@@ -22,6 +22,7 @@ type Billing struct {
     Id                int64 `json:"id"`         
     Title                string `json:"title"`         
     Price                int `json:"price"`         
+    Depositprice                int `json:"depositprice"`         
     Vat                int `json:"vat"`         
     Status                billing.Status `json:"status"`         
     Giro                billing.Giro `json:"giro"`         
@@ -29,6 +30,7 @@ type Billing struct {
     Month                string `json:"month"`         
     Endmonth                string `json:"endmonth"`         
     Period                int `json:"period"`         
+    Billingtype                int `json:"billingtype"`         
     Remark                string `json:"remark"`         
     Company                int64 `json:"company"`         
     Building                int64 `json:"building"`         
@@ -102,7 +104,7 @@ func (p *BillingManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *BillingManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_title, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_remark, bi_company, bi_building, bi_date, b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postaddressetc, b_postname, b_posttel, b_cmsnumber, b_cmsbank, b_cmsaccountno, b_cmsconfirm, b_cmsstartdate, b_cmsenddate, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_tel, c_email, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_giro, c_egirologinid, c_egiropasswd, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from billing_tb, building_tb, company_tb "
+    str := "select bi_id, bi_title, bi_price, bi_depositprice, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_billingtype, bi_remark, bi_company, bi_building, bi_date, b_id, b_name, b_companyno, b_ceo, b_zip, b_address, b_addressetc, b_postzip, b_postaddress, b_postaddressetc, b_postname, b_posttel, b_cmsnumber, b_cmsbank, b_cmsaccountno, b_cmsconfirm, b_cmsstartdate, b_cmsenddate, b_contractvolumn, b_receivevolumn, b_generatevolumn, b_sunlightvolumn, b_volttype, b_weight, b_totalweight, b_checkcount, b_receivevolt, b_generatevolt, b_periodic, b_businesscondition, b_businessitem, b_usage, b_district, b_check, b_checkpost, b_score, b_status, b_company, b_date, c_id, c_name, c_companyno, c_ceo, c_tel, c_email, c_address, c_addressetc, c_type, c_billingname, c_billingtel, c_billingemail, c_bankname, c_bankno, c_businesscondition, c_businessitem, c_giro, c_egirologinid, c_egiropasswd, c_content, c_x1, c_y1, c_x2, c_y2, c_x3, c_y3, c_x4, c_y4, c_x5, c_y5, c_x6, c_y6, c_x7, c_y7, c_x8, c_y8, c_x9, c_y9, c_x10, c_y10, c_x11, c_y11, c_x12, c_y12, c_x13, c_y13, c_status, c_date from billing_tb, building_tb, company_tb "
 
     if p.Index == "" {
         ret = str
@@ -179,11 +181,11 @@ func (p *BillingManager) Insert(item *Billing) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into billing_tb (bi_id, bi_title, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_remark, bi_company, bi_building, bi_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Id, item.Title, item.Price, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Remark, item.Company, item.Building, item.Date)
+        query = "insert into billing_tb (bi_id, bi_title, bi_price, bi_depositprice, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_billingtype, bi_remark, bi_company, bi_building, bi_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Id, item.Title, item.Price, item.Depositprice, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Billingtype, item.Remark, item.Company, item.Building, item.Date)
     } else {
-        query = "insert into billing_tb (bi_title, bi_price, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_remark, bi_company, bi_building, bi_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query , item.Title, item.Price, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Remark, item.Company, item.Building, item.Date)
+        query = "insert into billing_tb (bi_title, bi_price, bi_depositprice, bi_vat, bi_status, bi_giro, bi_billdate, bi_month, bi_endmonth, bi_period, bi_billingtype, bi_remark, bi_company, bi_building, bi_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query , item.Title, item.Price, item.Depositprice, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Billingtype, item.Remark, item.Company, item.Building, item.Date)
     }
     
     if err == nil {
@@ -265,8 +267,8 @@ func (p *BillingManager) Update(item *Billing) error {
        item.Date = "1000-01-01 00:00:00"
     }
 
-	query := "update billing_tb set bi_title = ?, bi_price = ?, bi_vat = ?, bi_status = ?, bi_giro = ?, bi_billdate = ?, bi_month = ?, bi_endmonth = ?, bi_period = ?, bi_remark = ?, bi_company = ?, bi_building = ?, bi_date = ? where bi_id = ?"
-	_, err := p.Exec(query , item.Title, item.Price, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Remark, item.Company, item.Building, item.Date, item.Id)
+	query := "update billing_tb set bi_title = ?, bi_price = ?, bi_depositprice = ?, bi_vat = ?, bi_status = ?, bi_giro = ?, bi_billdate = ?, bi_month = ?, bi_endmonth = ?, bi_period = ?, bi_billingtype = ?, bi_remark = ?, bi_company = ?, bi_building = ?, bi_date = ? where bi_id = ?"
+	_, err := p.Exec(query , item.Title, item.Price, item.Depositprice, item.Vat, item.Status, item.Giro, item.Billdate, item.Month, item.Endmonth, item.Period, item.Billingtype, item.Remark, item.Company, item.Building, item.Date, item.Id)
     
         
     return err
@@ -290,6 +292,17 @@ func (p *BillingManager) UpdatePrice(value int, id int64) error {
     }
 
 	query := "update billing_tb set bi_price = ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillingManager) UpdateDepositprice(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billing_tb set bi_depositprice = ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -372,6 +385,17 @@ func (p *BillingManager) UpdatePeriod(value int, id int64) error {
     return err
 }
 
+func (p *BillingManager) UpdateBillingtype(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billing_tb set bi_billingtype = ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BillingManager) UpdateRemark(value string, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -418,6 +442,17 @@ func (p *BillingManager) IncreasePrice(value int, id int64) error {
     return err
 }
 
+func (p *BillingManager) IncreaseDepositprice(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billing_tb set bi_depositprice = bi_depositprice + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
 func (p *BillingManager) IncreaseVat(value int, id int64) error {
     if p.Conn == nil && p.Tx == nil {
         return errors.New("Connection Error")
@@ -435,6 +470,17 @@ func (p *BillingManager) IncreasePeriod(value int, id int64) error {
     }
 
 	query := "update billing_tb set bi_period = bi_period + ? where bi_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    return err
+}
+
+func (p *BillingManager) IncreaseBillingtype(value int, id int64) error {
+    if p.Conn == nil && p.Tx == nil {
+        return errors.New("Connection Error")
+    }
+
+	query := "update billing_tb set bi_billingtype = bi_billingtype + ? where bi_id = ?"
 	_, err := p.Exec(query, value, id)
 
     return err
@@ -494,7 +540,9 @@ func (p *BillingManager) ReadRow(rows *sql.Rows) *Billing {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Zip, &_building.Address, &_building.Addressetc, &_building.Postzip, &_building.Postaddress, &_building.Postaddressetc, &_building.Postname, &_building.Posttel, &_building.Cmsnumber, &_building.Cmsbank, &_building.Cmsaccountno, &_building.Cmsconfirm, &_building.Cmsstartdate, &_building.Cmsenddate, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Totalweight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Businesscondition, &_building.Businessitem, &_building.Usage, &_building.District, &_building.Check, &_building.Checkpost, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Price, &item.Depositprice, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Billingtype, &item.Remark, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Zip, &_building.Address, &_building.Addressetc, &_building.Postzip, &_building.Postaddress, &_building.Postaddressetc, &_building.Postname, &_building.Posttel, &_building.Cmsnumber, &_building.Cmsbank, &_building.Cmsaccountno, &_building.Cmsconfirm, &_building.Cmsstartdate, &_building.Cmsenddate, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Totalweight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Businesscondition, &_building.Businessitem, &_building.Usage, &_building.District, &_building.Check, &_building.Checkpost, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
+        
+        
         
         
         
@@ -510,6 +558,8 @@ func (p *BillingManager) ReadRow(rows *sql.Rows) *Billing {
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
+        
         
         
         
@@ -555,7 +605,7 @@ func (p *BillingManager) ReadRows(rows *sql.Rows) []Billing {
             var _company Company
             
     
-        err := rows.Scan(&item.Id, &item.Title, &item.Price, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Remark, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Zip, &_building.Address, &_building.Addressetc, &_building.Postzip, &_building.Postaddress, &_building.Postaddressetc, &_building.Postname, &_building.Posttel, &_building.Cmsnumber, &_building.Cmsbank, &_building.Cmsaccountno, &_building.Cmsconfirm, &_building.Cmsstartdate, &_building.Cmsenddate, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Totalweight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Businesscondition, &_building.Businessitem, &_building.Usage, &_building.District, &_building.Check, &_building.Checkpost, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
+        err := rows.Scan(&item.Id, &item.Title, &item.Price, &item.Depositprice, &item.Vat, &item.Status, &item.Giro, &item.Billdate, &item.Month, &item.Endmonth, &item.Period, &item.Billingtype, &item.Remark, &item.Company, &item.Building, &item.Date, &_building.Id, &_building.Name, &_building.Companyno, &_building.Ceo, &_building.Zip, &_building.Address, &_building.Addressetc, &_building.Postzip, &_building.Postaddress, &_building.Postaddressetc, &_building.Postname, &_building.Posttel, &_building.Cmsnumber, &_building.Cmsbank, &_building.Cmsaccountno, &_building.Cmsconfirm, &_building.Cmsstartdate, &_building.Cmsenddate, &_building.Contractvolumn, &_building.Receivevolumn, &_building.Generatevolumn, &_building.Sunlightvolumn, &_building.Volttype, &_building.Weight, &_building.Totalweight, &_building.Checkcount, &_building.Receivevolt, &_building.Generatevolt, &_building.Periodic, &_building.Businesscondition, &_building.Businessitem, &_building.Usage, &_building.District, &_building.Check, &_building.Checkpost, &_building.Score, &_building.Status, &_building.Company, &_building.Date, &_company.Id, &_company.Name, &_company.Companyno, &_company.Ceo, &_company.Tel, &_company.Email, &_company.Address, &_company.Addressetc, &_company.Type, &_company.Billingname, &_company.Billingtel, &_company.Billingemail, &_company.Bankname, &_company.Bankno, &_company.Businesscondition, &_company.Businessitem, &_company.Giro, &_company.Egirologinid, &_company.Egiropasswd, &_company.Content, &_company.X1, &_company.Y1, &_company.X2, &_company.Y2, &_company.X3, &_company.Y3, &_company.X4, &_company.Y4, &_company.X5, &_company.Y5, &_company.X6, &_company.Y6, &_company.X7, &_company.Y7, &_company.X8, &_company.Y8, &_company.X9, &_company.Y9, &_company.X10, &_company.Y10, &_company.X11, &_company.Y11, &_company.X12, &_company.Y12, &_company.X13, &_company.Y13, &_company.Status, &_company.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break
@@ -567,9 +617,11 @@ func (p *BillingManager) ReadRows(rows *sql.Rows) []Billing {
         
         
         
+        
         if item.Billdate == "0000-00-00" || item.Billdate == "1000-01-01" {
             item.Billdate = ""
         }
+        
         
         
         
@@ -722,16 +774,23 @@ func (p *BillingManager) Find(args []interface{}) []Billing {
         case Where:
             item := v
 
+            if strings.Contains(item.Column, "_") {
+                query += " and " + item.Column
+            } else {
+                query += " and bi_" + item.Column
+            }
+            
             if item.Compare == "in" {
-                query += " and bi_" + item.Column + " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+                query += " in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
             } else if item.Compare == "between" {
-                query += " and bi_" + item.Column + " between ? and ?"
+                query += " between ? and ?"
 
                 s := item.Value.([2]string)
                 params = append(params, s[0])
                 params = append(params, s[1])
             } else {
-                query += " and bi_" + item.Column + " " + item.Compare + " ?"
+                query += " " + item.Compare + " ?"
+
                 if item.Compare == "like" {
                     params = append(params, "%" + item.Value.(string) + "%")
                 } else {

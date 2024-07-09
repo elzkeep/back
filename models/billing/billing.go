@@ -7,10 +7,11 @@ const (
     _ Status  = iota
 
     StatusWait
+    StatusPart
     StatusComplete
 )
 
-var Statuss = []string{ "", "입금대기", "입금완료" }
+var Statuss = []string{ "", "입금대기", "부분입금", "입금완료" }
 
 type Giro int
 

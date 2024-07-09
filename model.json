@@ -169,7 +169,7 @@
       "map": [
         {
           "name": "status",
-          "data": ["", "wait:입금대기", "complete:입금완료"]
+          "data": ["", "wait:입금대기", "part:부분입금", "complete:입금완료"]
         },
         {
           "name": "giro",
@@ -304,6 +304,12 @@
       "name": "billinghistory",
       "method": [
         "DeleteByBilling"        
+      ],
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "account:이체", "giro:지로", "cash:현금", "card:카드", "cms:CMS", "etc:기타"]
+        }        
       ]
     },
     {
@@ -320,6 +326,6 @@
           "type": "like"
         }
       ]
-    }    
+    }        
   ]   
 }

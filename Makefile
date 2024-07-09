@@ -24,7 +24,10 @@ build: dummy
 	go build -o bin/main main.go
 
 run:
-	buildtool-watch ./	
+	buildtool-watch ./
+
+frontrun:
+	cd ../front && make run
 
 pdf:
 	go test

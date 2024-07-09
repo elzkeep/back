@@ -34,6 +34,10 @@ func (c *BillinglistController) Count() {
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
     }
+    _depositprice := c.Geti("depositprice")
+    if _depositprice != 0 {
+        args = append(args, models.Where{Column:"depositprice", Value:_depositprice, Compare:"="})    
+    }
     _vat := c.Geti("vat")
     if _vat != 0 {
         args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
@@ -69,6 +73,10 @@ func (c *BillinglistController) Count() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _billingtype := c.Geti("billingtype")
+    if _billingtype != 0 {
+        args = append(args, models.Where{Column:"billingtype", Value:_billingtype, Compare:"="})    
     }
     _remark := c.Get("remark")
     if _remark != "" {
@@ -154,6 +162,10 @@ func (c *BillinglistController) Index(page int, pagesize int) {
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
     }
+    _depositprice := c.Geti("depositprice")
+    if _depositprice != 0 {
+        args = append(args, models.Where{Column:"depositprice", Value:_depositprice, Compare:"="})    
+    }
     _vat := c.Geti("vat")
     if _vat != 0 {
         args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
@@ -189,6 +201,10 @@ func (c *BillinglistController) Index(page int, pagesize int) {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _billingtype := c.Geti("billingtype")
+    if _billingtype != 0 {
+        args = append(args, models.Where{Column:"billingtype", Value:_billingtype, Compare:"="})    
     }
     _remark := c.Get("remark")
     if _remark != "" {
@@ -297,6 +313,10 @@ func (c *BillinglistController) Sum() {
     if _price != 0 {
         args = append(args, models.Where{Column:"price", Value:_price, Compare:"="})    
     }
+    _depositprice := c.Geti("depositprice")
+    if _depositprice != 0 {
+        args = append(args, models.Where{Column:"depositprice", Value:_depositprice, Compare:"="})    
+    }
     _vat := c.Geti("vat")
     if _vat != 0 {
         args = append(args, models.Where{Column:"vat", Value:_vat, Compare:"="})    
@@ -332,6 +352,10 @@ func (c *BillinglistController) Sum() {
     _period := c.Geti("period")
     if _period != 0 {
         args = append(args, models.Where{Column:"period", Value:_period, Compare:"="})    
+    }
+    _billingtype := c.Geti("billingtype")
+    if _billingtype != 0 {
+        args = append(args, models.Where{Column:"billingtype", Value:_billingtype, Compare:"="})    
     }
     _remark := c.Get("remark")
     if _remark != "" {

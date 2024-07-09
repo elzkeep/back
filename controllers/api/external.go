@@ -14,6 +14,7 @@ import (
 	"zkeep/global"
 	"zkeep/models"
 	"zkeep/models/billing"
+	"zkeep/models/billinghistory"
 	"zkeep/models/company"
 	"zkeep/models/customer"
 	"zkeep/models/user"
@@ -117,6 +118,7 @@ func (c *ExternalController) Giro(filename []string) {
 	conn := c.NewConnection()
 
 	billingManager := models.NewBillingManager(conn)
+	billinghistoryManager := models.NewBillinghistoryManager(conn)
 	giroManager := models.NewGiroManager(conn)
 
 	for _, v := range filename {
@@ -171,6 +173,14 @@ func (c *ExternalController) Giro(filename []string) {
 
 				billingItem.Status = billing.StatusComplete
 				billingManager.Update(billingItem)
+
+				item := models.Billinghistory{}
+				item.Price = price
+				item.Type = billinghistory.TypeGiro
+				item.Company = session.Company
+				item.Building = billingItem.Building
+				item.Billing = billingItem.Id
+				billinghistoryManager.Insert(&item)
 			}
 		}
 	}
