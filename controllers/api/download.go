@@ -62,11 +62,6 @@ func (c *DownloadController) Giro(ids []int64) {
 		return
 	}
 
-	for _, v := range items {
-		v.Giro = billing.GiroComplete
-		billingManager.Update(&v)
-	}
-
 	pdf := gopdf.GoPdf{}
 	pdf.Start(gopdf.Config{PageSize: *gopdf.PageSizeA4})
 
@@ -85,26 +80,32 @@ func (c *DownloadController) Giro(ids []int64) {
 	}
 
 	my := companyManager.Get(session.Company)
+	if my == nil {
+		c.Error("company not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
+	}
 
 	xRatio := 2.9
+
+	// PDF에 실제로 출력된 청구만 지로 발행 완료 처리
+	rendered := make([]models.Billing, 0)
 
 	for _, v := range items {
 		building := v.Extra["building"].(models.Building)
 		company := v.Extra["company"].(models.Company)
 
 		customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
+		if customer == nil {
+			log.Println("giro customer not found", v.Id, building.Id)
+			continue
+		}
 
-		billdate := ""
-		temp := strings.Split(v.Billdate, "-")
-		year := global.Atoi(temp[0])
-		month := global.Atoi(temp[1])
+		billdate := giroPeriod(v)
 
-		//lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-
-		if v.Period == 1 {
-			billdate = fmt.Sprintf("%v/%v", year, month)
-		} else {
-			billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+		month := 0
+		if temp := strings.Split(v.Billdate, "-"); len(temp) >= 2 {
+			month = global.Atoi(temp[1])
 		}
 
 		pdf.SetFont("noto", "", 13)
@@ -257,7 +258,7 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		muls := []int{7, 3, 1}
 		mulsPos := 0
-		for i := 1; i <= 7; i++ {
+		for price > 0 {
 			remain := price % 10
 
 			sum += remain * muls[mulsPos]
@@ -267,26 +268,14 @@ func (c *DownloadController) Giro(ids []int64) {
 				mulsPos = 0
 			}
 
-			price -= remain
 			price /= 10
-
-			if price == 0 {
-				break
-			}
 		}
 
-		digit := 0
-		if sum < 10 {
-			digit = 10 - sum
-		} else {
-			sum = sum % 10
-			if sum > 0 {
-				digit = 10 - sum
-			}
-		}
+		// 합계의 일의 자리를 10에서 뺀 값 (0이면 0)
+		digit := (10 - sum%10) % 10
 
 		strPrice := global.Itoa(v.Price + v.Vat)
-		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+		spaces := repeatSpace(10 - (len(strPrice) + 1))
 
 		//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 		companyNo := 1000000000 + v.Id
@@ -333,20 +322,95 @@ func (c *DownloadController) Giro(ids []int64) {
 		}
 
 		strCompanyNo := fmt.Sprintf("%v", companyNo)
-		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+		spaces2 := repeatSpace(20 - (len(strCompanyNo) + 1))
 
 		str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
 		pdf.SetXY(xRatio*68, 2.8*242+marginY)
 		pdf.Cell(nil, str)
+
+		rendered = append(rendered, v)
+	}
+
+	if len(rendered) == 0 {
+		c.Error("customer not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
 	}
 
 	fullFilename := global.GetTempFilename()
 	log.Println("fullFilename", fullFilename)
 
-	pdf.WritePdf(fullFilename)
+	if err := pdf.WritePdf(fullFilename); err != nil {
+		log.Println(err)
+		os.Remove(fullFilename)
+		c.Error("pdf error")
+		c.Context.Status(500).JSON(c.Result)
+		return
+	}
 
-	c.Download(fullFilename, "hello.pdf")
+	for _, v := range rendered {
+		v.Giro = billing.GiroComplete
+		billingManager.Update(&v)
+	}
+
+	c.Download(fullFilename, "giro.pdf")
 	os.Remove(fullFilename)
+}
+
+func repeatSpace(count int) string {
+	if count < 0 {
+		count = 0
+	}
+
+	return strings.Repeat(" ", count)
+}
+
+func parseYearMonth(str string) (int, int, bool) {
+	temp := strings.Split(str, "-")
+	if len(temp) < 2 {
+		return 0, 0, false
+	}
+
+	year := global.Atoi(temp[0])
+	month := global.Atoi(temp[1])
+	if year <= 0 || month < 1 || month > 12 {
+		return 0, 0, false
+	}
+
+	return year, month, true
+}
+
+// 지로 청구 기간 표시: "2024/3", "2024/3~5", 해를 넘기면 "2024/11~2025/2"
+func giroPeriod(v models.Billing) string {
+	year, month, ok := parseYearMonth(v.Month)
+	if !ok {
+		year, month, ok = parseYearMonth(v.Billdate)
+		if !ok {
+			return ""
+		}
+	}
+
+	endYear, endMonth, ok := parseYearMonth(v.Endmonth)
+	if !ok {
+		period := v.Period
+		if period < 1 {
+			period = 1
+		}
+
+		t := time.Date(year, time.Month(month+period-1), 1, 0, 0, 0, 0, time.Local)
+		endYear = t.Year()
+		endMonth = int(t.Month())
+	}
+
+	if endYear == year && endMonth == month {
+		return fmt.Sprintf("%v/%v", year, month)
+	}
+
+	if endYear == year {
+		return fmt.Sprintf("%v/%v~%v", year, month, endMonth)
+	}
+
+	return fmt.Sprintf("%v/%v~%v/%v", year, month, endYear, endMonth)
 }
 
 type Setting struct {
