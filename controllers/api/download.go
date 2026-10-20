@@ -40,6 +40,12 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	session := c.Session
 
+	if session == nil || len(ids) == 0 {
+		c.Error("invalid request")
+		c.Context.Status(400).JSON(c.Result)
+		return
+	}
+
 	companyManager := models.NewCompanyManager(conn)
 	billingManager := models.NewBillingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
@@ -47,7 +53,14 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	items := billingManager.Find([]interface{}{
 		models.Where{Column: "id", Value: ids, Compare: "in"},
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
 	})
+
+	if len(items) == 0 {
+		c.Error("billing not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
+	}
 
 	for _, v := range items {
 		v.Giro = billing.GiroComplete

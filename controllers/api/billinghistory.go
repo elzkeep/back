@@ -15,6 +15,11 @@ type BillinghistoryController struct {
 func (c *BillinghistoryController) Deposit(item *models.Billinghistory) {
 	session := c.Session
 
+	if session == nil || item == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	db := c.NewConnection()
 
 	conn, _ := db.Begin()
@@ -23,10 +28,16 @@ func (c *BillinghistoryController) Deposit(item *models.Billinghistory) {
 	billinghistoryManager := models.NewBillinghistoryManager(conn)
 	billingManager := models.NewBillingManager(conn)
 
+	billingItem := billingManager.Get(item.Billing)
+	if billingItem == nil || billingItem.Company != session.Company {
+		c.Error("billing not found")
+		return
+	}
+
 	item.Company = session.Company
+	item.Building = billingItem.Building
 	billinghistoryManager.Insert(item)
 
-	billingItem := billingManager.Get(item.Billing)
 	billingItem.Depositprice += item.Price
 	if billingItem.Depositprice == billingItem.Price+billingItem.Vat {
 		billingItem.Status = billing.StatusComplete
@@ -41,6 +52,13 @@ func (c *BillinghistoryController) Deposit(item *models.Billinghistory) {
 
 // @Post()
 func (c *BillinghistoryController) Depositdelete(id int64, item *[]models.Billinghistory) {
+	session := c.Session
+
+	if session == nil || item == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	db := c.NewConnection()
 
 	conn, _ := db.Begin()
@@ -49,8 +67,20 @@ func (c *BillinghistoryController) Depositdelete(id int64, item *[]models.Billin
 	billinghistoryManager := models.NewBillinghistoryManager(conn)
 	billingManager := models.NewBillingManager(conn)
 
+	billingItem := billingManager.Get(id)
+	if billingItem == nil || billingItem.Company != session.Company {
+		c.Error("billing not found")
+		return
+	}
+
 	log.Println(item)
 	for _, v := range *item {
+		history := billinghistoryManager.Get(v.Id)
+		if history == nil || history.Billing != id {
+			c.Error("billinghistory not found")
+			return
+		}
+
 		billinghistoryManager.Delete(v.Id)
 	}
 
@@ -65,7 +95,6 @@ func (c *BillinghistoryController) Depositdelete(id int64, item *[]models.Billin
 
 	log.Println("total", total)
 
-	billingItem := billingManager.Get(id)
 	billingItem.Depositprice = total
 	if billingItem.Depositprice == 0 {
 		billingItem.Status = billing.StatusWait
