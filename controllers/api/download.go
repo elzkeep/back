@@ -962,7 +962,7 @@ func (c *DownloadController) All(category int) {
 				excel.Cell(fmt.Sprintf("%v", v.Score))
 				excel.Cell(v.Joindate)
 
-				licenses := licenseManager.FindByUser(session.Id)
+				licenses := licenseManager.FindByUser(v.Id)
 				if len(licenses) == 0 {
 					excel.Cell("")
 					excel.Cell("")

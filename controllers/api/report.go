@@ -15,6 +15,12 @@ type ReportController struct {
 
 func (c *ReportController) Search(page int, pagesize int) {
 	log.Println("Search")
+
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	manager := models.NewReportManager(conn)
@@ -61,7 +67,7 @@ func (c *ReportController) Search(page int, pagesize int) {
 	if _user != 0 {
 		args = append(args, models.Where{Column: "user", Value: _user, Compare: "="})
 	}
-	_company := c.Geti64("company")
+	_company := c.TenantCompany(c.Geti64("company"))
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}
@@ -117,6 +123,15 @@ func (c *ReportController) Search(page int, pagesize int) {
 }
 
 func (c *ReportController) Insert(item *models.Report) {
+	if c.Session == nil || item == nil {
+		c.Error("invalid request")
+		return
+	}
+
+	// 전체관리자 외에는 본인 회사로만 등록
+	if !c.IsRootadmin() {
+		item.Company = c.Session.Company
+	}
 
 	conn := c.NewConnection()
 

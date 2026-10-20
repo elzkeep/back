@@ -18,9 +18,14 @@ type CustomerController struct {
 }
 
 func (c *CustomerController) Index(page int, pagesize int) {
-	conn := c.NewConnection()
-
 	session := c.Session
+
+	if session == nil {
+		c.Error("invalid request")
+		return
+	}
+
+	conn := c.NewConnection()
 
 	manager := models.NewCustomerManager(conn)
 	userManager := models.NewUserManager(conn)
@@ -169,7 +174,7 @@ func (c *CustomerController) Index(page int, pagesize int) {
 	if _user != 0 {
 		args = append(args, models.Where{Column: "user", Value: _user, Compare: "="})
 	}
-	_company := c.Geti64("company")
+	_company := c.TenantCompany(c.Geti64("company"))
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}
@@ -274,12 +279,18 @@ func (c *CustomerController) Upload(filename string) {
 
 	user := c.Session
 
+	if user == nil || !controllers.IsSafeFilename(filename) {
+		c.Error("invalid request")
+		return
+	}
+
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
 	if f == nil {
 		log.Println("not found file")
 		return
 	}
+	defer f.Close()
 
 	sheet := "Sheet1"
 	f.SetSheet(sheet)
@@ -310,10 +321,12 @@ func (c *CustomerController) Upload(filename string) {
 			item.Id = companyManager.GetIdentity()
 		}
 
-		customercompany := &models.Customercompany{}
-		customercompany.Company = user.Company
-		customercompany.Customer = item.Id
-		customercompanyManager.Insert(customercompany)
+		if customercompanyManager.GetByCompanyCustomer(user.Company, item.Id) == nil {
+			customercompany := &models.Customercompany{}
+			customercompany.Company = user.Company
+			customercompany.Customer = item.Id
+			customercompanyManager.Insert(customercompany)
+		}
 
 		buildingName := f.GetCell("D", pos)
 		building := buildingManager.GetByCompanyName(item.Id, buildingName)
@@ -330,16 +343,18 @@ func (c *CustomerController) Upload(filename string) {
 				building.Ceo = item.Ceo
 			}
 			building.Address = f.GetCell("G", pos)
+			building.Company = item.Id
 
 			buildingManager.Insert(building)
 
 			building.Id = buildingManager.GetIdentity()
 		}
 
-		customer := customerManager.GetByCompanyBuilding(item.Id, building.Id)
+		// 고객(계약) 정보는 관리 업체(세션 회사) 기준으로 등록
+		customer := customerManager.GetByCompanyBuilding(user.Company, building.Id)
 		if customer == nil {
 			customer = &models.Customer{}
-			customer.Company = item.Id
+			customer.Company = user.Company
 			customer.Building = building.Id
 		}
 
@@ -389,11 +404,16 @@ func (c *CustomerController) Upload(filename string) {
 }
 
 func (c *CustomerController) MaxNumber(id int64) {
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	customerManager := models.NewCustomerManager(conn)
 	items := customerManager.Find([]interface{}{
-		models.Where{Column: "company", Value: id, Compare: "="},
+		models.Where{Column: "company", Value: c.TenantCompany(id), Compare: "="},
 		models.Ordering("cu_number desc"),
 		models.Limit(1),
 	})

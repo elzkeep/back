@@ -19,6 +19,12 @@ type UserController struct {
 func (c *UserController) Search() {
 
 	log.Println("search")
+
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
@@ -28,10 +34,6 @@ func (c *UserController) Search() {
 	_loginid := c.Get("loginid")
 	if _loginid != "" {
 		args = append(args, models.Where{Column: "loginid", Value: _loginid, Compare: "like"})
-	}
-	_passwd := c.Get("passwd")
-	if _passwd != "" {
-		args = append(args, models.Where{Column: "passwd", Value: _passwd, Compare: "like"})
 	}
 	_name := c.Get("name")
 	if _name != "" {
@@ -87,7 +89,7 @@ func (c *UserController) Search() {
 	if _status != 0 {
 		args = append(args, models.Where{Column: "status", Value: _status, Compare: "="})
 	}
-	_company := c.Geti64("company")
+	_company := c.TenantCompany(c.Geti64("company"))
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}
@@ -150,12 +152,18 @@ func (c *UserController) Upload(filename string) {
 
 	session := c.Session
 
+	if session == nil || !controllers.IsSafeFilename(filename) {
+		c.Error("invalid request")
+		return
+	}
+
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
 	if f == nil {
 		log.Println("not found file")
 		return
 	}
+	defer f.Close()
 
 	sheet := "Sheet1"
 	f.SetSheet(sheet)
@@ -245,7 +253,7 @@ func (c *UserController) Upload(filename string) {
 			userItem.Department = department.Id
 			userItem.Approval = user.ApprovalComplete
 
-			userManager.Insert(userItem)
+			userManager.Update(userItem)
 		} else {
 			user := models.User{
 				Name:       name,
@@ -274,13 +282,39 @@ func (c *UserController) Upload(filename string) {
 	}
 }
 
+// 삭제 가능한 사용자인지 DB에 저장된 값으로 확인 (클라이언트가 보낸 level은 신뢰하지 않음)
+func (c *UserController) deletable(old *models.User) bool {
+	if old == nil {
+		return false
+	}
+
+	if !c.IsRootadmin() && old.Company != c.Session.Company {
+		return false
+	}
+
+	if old.Level == user.LevelAdmin || old.Level == user.LevelRootadmin {
+		return false
+	}
+
+	return true
+}
+
 func (c *UserController) Delete(item *models.User) {
+	if c.Session == nil || item == nil {
+		c.Error("invalid request")
+		return
+	}
 
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
 	old := manager.Get(item.Id)
-	if old.Level == user.LevelAdmin || old.Level == user.LevelRootadmin {
+	if old == nil || (!c.IsRootadmin() && old.Company != c.Session.Company) {
+		c.Error("user not found")
+		return
+	}
+
+	if !c.deletable(old) {
 		return
 	}
 
@@ -288,13 +322,17 @@ func (c *UserController) Delete(item *models.User) {
 }
 
 func (c *UserController) Deletebatch(item *[]models.User) {
+	if c.Session == nil || item == nil {
+		c.Error("invalid request")
+		return
+	}
 
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
 
 	for _, v := range *item {
-		if v.Level == user.LevelAdmin || v.Level == user.LevelRootadmin {
+		if !c.deletable(manager.Get(v.Id)) {
 			continue
 		}
 

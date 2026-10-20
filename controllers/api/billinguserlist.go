@@ -12,6 +12,10 @@ type BillinguserlistController struct {
 }
 
 func (c *BillinguserlistController) Excel(company int64, startdate string, enddate string, users []int64) {
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
 
 	conn := c.NewConnection()
 
@@ -44,6 +48,10 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 		args = append(args, models.Where{Column: "billdate", Value: _endbilldate, Compare: "<="})
 	}
 	_company := c.Geti64("company")
+	if _company == 0 {
+		_company = company
+	}
+	_company = c.TenantCompany(_company)
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}
@@ -88,9 +96,8 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 		args = append(args, models.Where{Column: "username", Value: _username, Compare: "like"})
 	}
 
-	if len(users) > 0 {
-		args = append(args, models.Where{Column: "user", Value: users, Compare: "in"})
-	}
+	// users 필터는 적용하지 않음: billinguserlist_vw/모델에 bi_user 컬럼이 없어 SQL 오류가 발생함
+	// (빈 값일 때도 라우터가 [0]을 넘겨 항상 오류였음)
 
 	page := 0
 	pagesize := 0
