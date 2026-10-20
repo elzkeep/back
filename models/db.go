@@ -2,8 +2,10 @@ package models
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"zkeep/config"
-	
+
 	"database/sql"
 	"time"
 
@@ -50,7 +52,34 @@ func Paging(page int, pagesize int) PagingType {
 }
 
 func Ordering(order string) OrderingType {
-	return OrderingType{Order: order}
+	return OrderingType{Order: SafeOrder(order)}
+}
+
+var orderPattern = regexp.MustCompile(`^[A-Za-z0-9_.]+([ \t]+(?i:asc|desc))?$`)
+
+// 정렬 문자열은 SQL에 그대로 붙으므로 "컬럼[ asc|desc], ..." 형식만 허용하고
+// 그 외에는 무시(기본 정렬)함
+func SafeOrder(order string) string {
+	if strings.TrimSpace(order) == "" {
+		return ""
+	}
+
+	for _, v := range strings.Split(order, ",") {
+		if !orderPattern.MatchString(strings.TrimSpace(v)) {
+			log.Println("invalid order :", order)
+			return ""
+		}
+	}
+
+	return order
+}
+
+// Custom 조건은 바인딩 파라미터를 지원하지 않으므로, 작은따옴표 문자열 안에 넣을 값은 반드시 이스케이프
+func EscapeString(str string) string {
+	str = strings.ReplaceAll(str, "\\", "\\\\")
+	str = strings.ReplaceAll(str, "'", "''")
+
+	return str
 }
 
 func Limit(limit int) LimitType {

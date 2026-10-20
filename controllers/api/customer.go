@@ -43,11 +43,12 @@ func (c *CustomerController) Index(page int, pagesize int) {
 			ids := strings.Join(userIds, ", ")
 			args = append(args, models.Custom{Query: fmt.Sprintf("(cu_user in (%v) or cu_salesuser in (%v))", ids, ids)})
 		} else {
-			_, err := strconv.Atoi(_name)
+			name := models.EscapeString(_name)
+			number, err := strconv.Atoi(_name)
 			if err != nil {
-				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%')", _name, _name)})
+				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%')", name, name)})
 			} else {
-				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%' or cu_number = %v)", _name, _name, _name)})
+				args = append(args, models.Custom{Query: fmt.Sprintf("(b_name like '%%%v%%' or c_name like '%%%v%%' or cu_number = %v)", name, name, number)})
 			}
 		}
 	}

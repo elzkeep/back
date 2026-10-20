@@ -35,7 +35,8 @@ func (c *UserController) Search() {
 	}
 	_name := c.Get("name")
 	if _name != "" {
-		query := fmt.Sprintf("(u_loginid like '%%%v%%' or u_name like '%%%v%%' or u_email like '%%%v%%')", _name, _name, _name)
+		name := models.EscapeString(_name)
+		query := fmt.Sprintf("(u_loginid like '%%%v%%' or u_name like '%%%v%%' or u_email like '%%%v%%')", name, name, name)
 		args = append(args, models.Custom{Query: query})
 	}
 	_email := c.Get("email")

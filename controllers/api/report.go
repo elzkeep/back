@@ -23,7 +23,8 @@ func (c *ReportController) Search(page int, pagesize int) {
 
 	_search := c.Get("search")
 	if _search != "" {
-		args = append(args, models.Custom{Query: fmt.Sprintf("(r_title like '%%%v%%' or b_name like '%%%v%%' or c_address like '%%%v%%')", _search, _search, _search)})
+		search := models.EscapeString(_search)
+		args = append(args, models.Custom{Query: fmt.Sprintf("(r_title like '%%%v%%' or b_name like '%%%v%%' or c_address like '%%%v%%')", search, search, search)})
 	}
 
 	_title := c.Get("title")
