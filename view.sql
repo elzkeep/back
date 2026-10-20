@@ -7,7 +7,13 @@ from billing_tb, building_tb, company_tb where bi_building = b_id and b_company 
 
 drop view billinguserlist_vw;
 create view billinguserlist_vw as
-select billing_tb.*, b_name as bi_buildingname, c_billingname as bi_billingname, c_billingtel as bi_billingtel, c_billingemail as bi_billingemail from billing_tb, building_tb, company_tb, customer_tb where bi_building = b_id and b_company = c_id and bi_building = cu_building;
+select billing_tb.*, b_name as bi_buildingname, c_billingname as bi_billingname, c_billingtel as bi_billingtel, c_billingemail as bi_billingemail,
+ifnull(cu_user, 0) as bi_user, ifnull(u_name, '') as bi_username
+from billing_tb
+join building_tb on bi_building = b_id
+join company_tb on b_company = c_id
+left join customer_tb on cu_id = (select max(cu_id) from customer_tb where cu_company = bi_company and cu_building = bi_building)
+left join user_tb on cu_user = u_id;
 
 drop view userlist_vw;
 create view userlist_vw as select *, ifnull((select sum(b_score) from building_tb, customer_tb where b_id = cu_building and cu_user = u_id and cu_status = 1), 0) as u_totalscore from user_tb;

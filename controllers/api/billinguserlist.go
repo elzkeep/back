@@ -96,8 +96,10 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 		args = append(args, models.Where{Column: "username", Value: _username, Compare: "like"})
 	}
 
-	// users 필터는 적용하지 않음: billinguserlist_vw/모델에 bi_user 컬럼이 없어 SQL 오류가 발생함
-	// (빈 값일 때도 라우터가 [0]을 넘겨 항상 오류였음)
+	// 빈 값일 때 라우터가 [0]을 넘기므로 0은 제외
+	if ids := validIds(users); len(ids) > 0 {
+		args = append(args, models.Where{Column: "user", Value: ids, Compare: "in"})
+	}
 
 	page := 0
 	pagesize := 0
@@ -136,4 +138,15 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 
 	total := manager.Count(args)
 	c.Set("total", total)
+}
+
+func validIds(ids []int64) []int64 {
+	var items []int64
+	for _, v := range ids {
+		if v > 0 {
+			items = append(items, v)
+		}
+	}
+
+	return items
 }
