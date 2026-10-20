@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"path"
 	"strings"
 	"zkeep/config"
 	"zkeep/global"
@@ -121,6 +122,15 @@ func Http() {
 	*/
 
 	router.SetRouter(app)
+
+	// SPA 화면 경로 새로고침 시 index.html 반환
+	app.Get("/*", func(c *fiber.Ctx) error {
+		if strings.HasPrefix(c.Path(), "/api/") {
+			return c.SendStatus(fiber.StatusNotFound)
+		}
+
+		return c.SendFile(path.Join(config.DocumentRoot, "index.html"))
+	})
 
 	log.Fatal(app.Listen(":" + config.Port))
 }

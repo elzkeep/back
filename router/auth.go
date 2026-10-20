@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 	"zkeep/models"
 	"zkeep/models/user"
@@ -18,7 +20,16 @@ type AuthTokenClaims struct {
 	jwt.StandardClaims             // 표준 토큰 Claims
 }
 
-var _secretCode string = "WkaQHd100%"
+var _secretCode string = jwtSecret()
+
+// JWT_SECRET 환경변수가 있으면 사용, 없으면 기존 키 유지 (발급된 토큰 호환)
+func jwtSecret() string {
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		return v
+	}
+
+	return "WkaQHd100%"
+}
 
 var JwtAuthRequired = func(c *fiber.Ctx) error {
 	var token string
@@ -47,6 +58,11 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 
 	path := c.Path()
 	u, _ := url.Parse(path)
+
+	// API 외 경로(정적 파일, SPA 화면)는 인증 대상이 아님
+	if !strings.HasPrefix(u.Path, "/api/") && u.Path != "/api" {
+		return c.Next()
+	}
 
 	if c.Method() == "GET" && u.Path == "/api/user" {
 		return c.Next()
@@ -98,7 +114,10 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 
 	log.Println("Jwt header is broken")
 
-	return nil
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		"code":    "error",
+		"message": "unauthorized",
+	})
 }
 
 func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{} {
@@ -127,6 +146,9 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 			"message": "status error",
 		}
 	}
+
+	// 토큰 payload는 누구나 디코딩할 수 있으므로 비밀번호를 넣지 않음
+	item.Passwd = ""
 
 	at := AuthTokenClaims{
 		User: *item,
