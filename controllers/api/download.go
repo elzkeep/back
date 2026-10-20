@@ -806,6 +806,75 @@ func (c *DownloadController) User() {
 	os.Remove(fullFilename)
 }
 
+func (c *DownloadController) Statistics() {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	args := []interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+	}
+
+	startdate := c.Get("startdate")
+	enddate := c.Get("enddate")
+	if startdate != "" && enddate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: [2]string{startdate, enddate}, Compare: "between"})
+	} else if startdate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: startdate, Compare: ">="})
+	} else if enddate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: enddate, Compare: "<="})
+	}
+
+	var users []int64
+	for _, v := range strings.Split(c.Get("users"), ",") {
+		if id := global.Atol(strings.TrimSpace(v)); id > 0 {
+			users = append(users, id)
+		}
+	}
+	if len(users) > 0 {
+		args = append(args, models.Where{Column: "user", Value: users, Compare: "in"})
+	}
+
+	args = append(args, models.Ordering("bi_billdate"))
+
+	billinguserlistManager := models.NewBillinguserlistManager(conn)
+	items := billinguserlistManager.Find(args)
+
+	header := []string{"번호", "기간", "건물명", "금액", "담당자"}
+	width := []int{15, 30, 80, 30, 30}
+	align := []string{"C", "C", "L", "R", "L"}
+	excel := global.NewExcel("매출 현황", "", 12, header, width, align)
+	excel.SetHeight(30)
+
+	total := 0
+	for i, v := range items {
+		billdate := v.Billdate
+		if len(billdate) > 10 {
+			billdate = billdate[:10]
+		}
+
+		excel.CellInt(i + 1)
+		excel.Cell(billdate)
+		excel.Cell(v.Buildingname)
+		excel.CellInt(v.Price)
+		excel.Cell(v.Username)
+
+		total += v.Price
+	}
+
+	excel.Cell("합계")
+	excel.Cell("")
+	excel.Cell(fmt.Sprintf("%v건", len(items)))
+	excel.CellInt(total)
+	excel.Cell("")
+
+	fullFilename := excel.Save("")
+	log.Println("filename", fullFilename)
+
+	c.Download(fullFilename, "statistics.xlsx")
+	os.Remove(fullFilename)
+}
+
 func (c *DownloadController) CompanyExample() {
 	c.Download("./doc/company.xlsx", "company.xlsx")
 }

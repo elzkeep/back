@@ -319,6 +319,14 @@ func SetRouter(r *fiber.App) {
             return nil
 		})
 
+		apiGroup.Get("/download/statistics", func(c *fiber.Ctx) error {
+			var controller api.DownloadController
+			controller.Init(c)
+			controller.Statistics()
+			controller.Close()
+            return nil
+		})
+
 		apiGroup.Get("/download/companyexample", func(c *fiber.Ctx) error {
 			var controller api.DownloadController
 			controller.Init(c)
