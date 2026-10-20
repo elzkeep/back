@@ -16,6 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/websocket/v2"
 )
 
@@ -49,6 +50,9 @@ func Http() {
 			return nil
 		},
 	})
+
+	// 한 요청의 panic으로 서버 전체가 종료되지 않도록 복구
+	app.Use(recover.New())
 
 	sites := strings.Join(config.Cors, ", ")
 	if sites != "" {
@@ -96,13 +100,8 @@ func Http() {
 
 			room := global.Atol(id)
 
-			chat.Clients[id] = kws.UUID
+			chat.Join(id, room, kws.UUID)
 			log.Println("Join root : ", id, "user = ", kws.UUID)
-			if _, exists := chat.Rooms[room]; !exists {
-				chat.Rooms[room] = make(map[string]string)
-			}
-			chat.Rooms[room][kws.UUID] = kws.UUID
-			log.Println(kws.UUID)
 
 		}))
 	}
