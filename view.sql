@@ -19,9 +19,9 @@ select
 0 as bi_id,
 date_format(bi_billdate, '%Y') as bi_duration,
 count(bi_id) as bi_total,
-count(bi_id)* bi_price as bi_totalprice,
+sum(bi_price) as bi_totalprice,
 now() as bi_date
-from billing_tb where bi_status = 2
+from billing_tb where bi_status = 3
 group by date_format(bi_billdate, '%Y');
 
 
@@ -32,9 +32,9 @@ select
 date_format(bi_billdate, '%Y') as bi_year,
 date_format(bi_billdate, '%Y-%m') as bi_duration,
 count(bi_id) as bi_total,
-count(bi_id)* bi_price as bi_totalprice,
+sum(bi_price) as bi_totalprice,
 now() as bi_date
-from billing_tb where bi_status = 2
+from billing_tb where bi_status = 3
 group by date_format(bi_billdate, '%Y'), date_format(bi_billdate, '%Y-%m');
 
 drop view statisticsday_vw;
@@ -44,9 +44,9 @@ select
 date_format(bi_billdate, '%Y-%m') as bi_month,
 date_format(bi_billdate, '%Y-%m-%d') as bi_duration,
 count(bi_id) as bi_total,
-count(bi_id)* bi_price as bi_totalprice,
+sum(bi_price) as bi_totalprice,
 now() as bi_date
-from billing_tb where bi_status = 2
+from billing_tb where bi_status = 3
 group by date_format(bi_billdate, '%Y-%m'), date_format(bi_billdate, '%Y-%m-%d');
 
 drop view calendarcompanylist_vw;
