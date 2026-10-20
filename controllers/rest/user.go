@@ -155,6 +155,15 @@ func (c *UserController) Update(item *models.User) {
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
+
+	// 응답에서 비밀번호를 제외하므로, 비어 있으면 기존 비밀번호 유지 (수동 수정)
+	if item.Passwd == "" {
+		old := manager.Get(item.Id)
+		if old != nil {
+			item.Passwd = old.Passwd
+		}
+	}
+
 	manager.Update(item)
 }
 
