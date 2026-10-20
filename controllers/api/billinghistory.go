@@ -20,9 +20,19 @@ func (c *BillinghistoryController) Deposit(item *models.Billinghistory) {
 		return
 	}
 
+	if item.Price <= 0 {
+		c.Error("invalid price")
+		return
+	}
+
 	db := c.NewConnection()
 
-	conn, _ := db.Begin()
+	conn, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		c.Error("database error")
+		return
+	}
 	defer conn.Rollback()
 
 	billinghistoryManager := models.NewBillinghistoryManager(conn)
@@ -39,7 +49,7 @@ func (c *BillinghistoryController) Deposit(item *models.Billinghistory) {
 	billinghistoryManager.Insert(item)
 
 	billingItem.Depositprice += item.Price
-	if billingItem.Depositprice == billingItem.Price+billingItem.Vat {
+	if billingItem.Depositprice >= billingItem.Price+billingItem.Vat {
 		billingItem.Status = billing.StatusComplete
 	} else {
 		billingItem.Status = billing.StatusPart
@@ -98,7 +108,7 @@ func (c *BillinghistoryController) Depositdelete(id int64, item *[]models.Billin
 	billingItem.Depositprice = total
 	if billingItem.Depositprice == 0 {
 		billingItem.Status = billing.StatusWait
-	} else if billingItem.Depositprice == billingItem.Price+billingItem.Vat {
+	} else if billingItem.Depositprice >= billingItem.Price+billingItem.Vat {
 		billingItem.Status = billing.StatusComplete
 	} else {
 		billingItem.Status = billing.StatusPart
