@@ -111,20 +111,35 @@ type ExternalController struct {
 	controllers.Controller
 }
 
+// e지로 수납 파일에서 사용하는 최소 행 길이 (수수료 시작 위치)
+const giroLineMinLength = 85
+
 // @POST()
 func (c *ExternalController) Giro(filename []string) {
 	session := c.Session
 
-	conn := c.NewConnection()
+	if session == nil {
+		c.Error("invalid request")
+		return
+	}
 
-	billingManager := models.NewBillingManager(conn)
-	billinghistoryManager := models.NewBillinghistoryManager(conn)
-	giroManager := models.NewGiroManager(conn)
+	db := c.NewConnection()
+
+	inserted := 0
+	duplicated := 0
+	skipped := 0
 
 	for _, v := range filename {
+		if v == "" || v == "." || v == ".." || path.Base(v) != v {
+			log.Println("invalid giro filename", v)
+			skipped++
+			continue
+		}
+
 		fullFilename := path.Join(config.UploadPath, v)
 		data, err := os.Open(fullFilename)
 		if err != nil {
+			skipped++
 			continue
 		}
 		scanner := bufio.NewScanner(data)
@@ -137,9 +152,34 @@ func (c *ExternalController) Giro(filename []string) {
 
 		data.Close()
 
+		conn, err := db.Begin()
+		if err != nil {
+			log.Println(err)
+			skipped++
+			continue
+		}
+
+		billingManager := models.NewBillingManager(conn)
+		billinghistoryManager := models.NewBillinghistoryManager(conn)
+		giroManager := models.NewGiroManager(conn)
+
 		for i := 1; i < len(txtlines)-1; i++ {
 			line := txtlines[i]
 			log.Println(i, line)
+
+			if len(line) < giroLineMinLength {
+				skipped++
+				continue
+			}
+
+			// 같은 수납 내역이 이미 등록된 경우 중복 처리하지 않음
+			if giroManager.Count([]interface{}{
+				models.Where{Column: "content", Value: line, Compare: "="},
+			}) > 0 {
+				duplicated++
+				continue
+			}
+
 			//220000001202401252024012900429030042903025002000343000001242024010151620000000069300 0260
 			acceptdate := line[9:17]
 			insertdate := line[17:25]
@@ -152,6 +192,12 @@ func (c *ExternalController) Giro(filename []string) {
 			charge := global.Atoi(line[85:])
 			log.Println(acceptdate, insertdate, number, price, typeid, charge)
 
+			billingItem := billingManager.Get(number)
+			if billingItem != nil && billingItem.Company != session.Company {
+				skipped++
+				continue
+			}
+
 			item := models.Giro{
 				Acceptdate: acceptdate,
 				Insertdate: insertdate,
@@ -163,27 +209,40 @@ func (c *ExternalController) Giro(filename []string) {
 			}
 
 			giroManager.Insert(&item)
+			inserted++
 
-			billingItem := billingManager.Get(number)
-
-			if billingItem != nil && billingItem.Id == number {
-				if billingItem.Company != session.Company {
-					continue
-				}
-
-				billingItem.Status = billing.StatusComplete
-				billingManager.Update(billingItem)
-
-				item := models.Billinghistory{}
-				item.Price = price
-				item.Type = billinghistory.TypeGiro
-				item.Company = session.Company
-				item.Building = billingItem.Building
-				item.Billing = billingItem.Id
-				billinghistoryManager.Insert(&item)
+			if billingItem == nil {
+				continue
 			}
+
+			billingItem.Depositprice += price
+			if billingItem.Depositprice >= billingItem.Price+billingItem.Vat {
+				billingItem.Status = billing.StatusComplete
+			} else if billingItem.Depositprice > 0 {
+				billingItem.Status = billing.StatusPart
+			} else {
+				billingItem.Status = billing.StatusWait
+			}
+			billingManager.Update(billingItem)
+
+			history := models.Billinghistory{}
+			history.Price = price
+			history.Type = billinghistory.TypeGiro
+			history.Company = session.Company
+			history.Building = billingItem.Building
+			history.Billing = billingItem.Id
+			billinghistoryManager.Insert(&history)
+		}
+
+		if err := conn.Commit(); err != nil {
+			log.Println(err)
+			conn.Rollback()
 		}
 	}
+
+	c.Set("inserted", inserted)
+	c.Set("duplicated", duplicated)
+	c.Set("skipped", skipped)
 }
 
 func (c *ExternalController) Index(filenames string, typeid int) {
