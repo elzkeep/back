@@ -248,6 +248,32 @@ func (c *ExternalController) Giro(filename []string) {
 func (c *ExternalController) Index(filenames string, typeid int) {
 	user := c.Session
 
+	if user == nil {
+		c.Error("invalid request")
+		return
+	}
+
+	files := strings.Split(filenames, ",")
+
+	// 기존 고객 정보를 삭제하기 전에 모든 파일을 먼저 열고 읽어서 검증
+	// (등록은 여러 goroutine/연결로 처리되어 하나의 트랜잭션으로 묶을 수 없음)
+	sheets := make([][][]string, 0)
+	for _, v := range files {
+		if !controllers.IsSafeFilename(v) {
+			c.Error("invalid filename")
+			return
+		}
+
+		cells, err := ReadExcelRows(v)
+		if err != nil {
+			log.Println(err)
+			c.Error("file error")
+			return
+		}
+
+		sheets = append(sheets, cells)
+	}
+
 	conn := c.NewConnection()
 	customerManager := models.NewCustomerManager(conn)
 	customercompanyManager := models.NewCustomercompanyManager(conn)
@@ -255,31 +281,50 @@ func (c *ExternalController) Index(filenames string, typeid int) {
 	customerManager.DeleteByCompany(user.Company)
 	customercompanyManager.DeleteByCompany(user.Company)
 
-	files := strings.Split(filenames, ",")
-
-	for _, v := range files {
-		Thread(v, typeid, user.Company)
+	for _, cells := range sheets {
+		ExcelRows(cells, typeid, user.Company)
 	}
 }
 
-func Thread(filename string, typeid int, myCompanyId int64) {
+// 첫 번째 시트의 모든 행을 읽음. 데이터 행(5행부터)이 없으면 오류
+func ReadExcelRows(filename string) ([][]string, error) {
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
 	if f == nil {
-		log.Println("not found file")
+		return nil, fmt.Errorf("not found file : %v", filename)
+	}
+	defer f.Close()
+
+	list := f.File.GetSheetList()
+	if len(list) == 0 {
+		return nil, fmt.Errorf("no sheet : %v", filename)
+	}
+
+	cells, err := f.File.GetRows(list[0])
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("len", len(cells))
+
+	if len(cells) <= 4 {
+		return nil, fmt.Errorf("no data : %v", filename)
+	}
+
+	return cells, nil
+}
+
+func Thread(filename string, typeid int, myCompanyId int64) {
+	cells, err := ReadExcelRows(filename)
+	if err != nil {
+		log.Println(err)
 		return
 	}
 
-	list := f.File.GetSheetList()
+	ExcelRows(cells, typeid, myCompanyId)
+}
 
-	sheet := list[0]
-	f.SetSheet(sheet)
-
-	cells := f.GetRows(sheet)
-
-	log.Println("len", len(cells))
-	f.Close()
-
+func ExcelRows(cells [][]string, typeid int, myCompanyId int64) {
 	max := 10
 
 	wg := new(sync.WaitGroup)
@@ -961,6 +1006,12 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 
 func (c *ExternalController) User(filename string) {
 	session := c.Session
+
+	if session == nil || !controllers.IsSafeFilename(filename) {
+		c.Error("invalid request")
+		return
+	}
+
 	company := session.Company
 
 	re, _ := regexp.Compile("[0-9][0-9]-[0-9][0-9]-2[0-9]")
@@ -968,7 +1019,12 @@ func (c *ExternalController) User(filename string) {
 	db := models.NewConnection()
 	defer db.Close()
 
-	conn, _ := db.Begin()
+	conn, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		c.Error("database error")
+		return
+	}
 	defer conn.Rollback()
 
 	userManager := models.NewUserManager(conn)
@@ -982,8 +1038,13 @@ func (c *ExternalController) User(filename string) {
 		log.Println("not found file")
 		return
 	}
+	defer f.Close()
 
 	list := f.File.GetSheetList()
+	if len(list) == 0 {
+		c.Error("file error")
+		return
+	}
 
 	sheet := list[0]
 	f.SetSheet(sheet)
@@ -1116,6 +1177,11 @@ func (c *ExternalController) User(filename string) {
 
 func (c *ExternalController) All(category int, filename string) {
 	session := c.Session
+
+	if session == nil || !controllers.IsSafeFilename(filename) {
+		c.Error("invalid request")
+		return
+	}
 
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
