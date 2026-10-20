@@ -776,7 +776,7 @@ func (c *DownloadController) User() {
 		str := ""
 		for _, v2 := range departments {
 			if v.Department == v2.Id {
-				str = v.Name
+				str = v2.Name
 				break
 			}
 		}
