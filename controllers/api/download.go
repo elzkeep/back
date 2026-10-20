@@ -253,73 +253,14 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetFont("ocr", "", 12)
 
-		price := v.Price + v.Vat
-		sum := 0
-
-		muls := []int{7, 3, 1}
-		mulsPos := 0
-		for price > 0 {
-			remain := price % 10
-
-			sum += remain * muls[mulsPos]
-
-			mulsPos++
-			if mulsPos == 3 {
-				mulsPos = 0
-			}
-
-			price /= 10
-		}
-
-		// 합계의 일의 자리를 10에서 뺀 값 (0이면 0)
-		digit := (10 - sum%10) % 10
+		digit := giroPriceDigit(v.Price + v.Vat)
 
 		strPrice := global.Itoa(v.Price + v.Vat)
 		spaces := repeatSpace(10 - (len(strPrice) + 1))
 
 		//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 		companyNo := 1000000000 + v.Id
-
-		sum = 0
-
-		var sum2 int64
-		co := companyNo
-
-		muls2 := []int64{2, 1}
-		mulsPos = 0
-		for i := 1; i <= 20; i++ {
-			remain := co % 10
-
-			temp := remain * muls2[mulsPos]
-
-			if temp >= 10 {
-				sum2 += temp%10 + 1
-			} else {
-				sum2 += temp
-			}
-
-			mulsPos++
-			if mulsPos == 2 {
-				mulsPos = 0
-			}
-
-			co -= remain
-			co /= 10
-
-			if co == 0 {
-				break
-			}
-		}
-
-		var digit2 int64
-		if sum2 < 10 {
-			digit2 = 10 - sum2
-		} else {
-			sum2 = sum2 % 10
-			if sum2 > 0 {
-				digit2 = 10 - sum2
-			}
-		}
+		digit2 := giroNumberDigit(companyNo)
 
 		strCompanyNo := fmt.Sprintf("%v", companyNo)
 		spaces2 := repeatSpace(20 - (len(strCompanyNo) + 1))
@@ -355,6 +296,31 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	c.Download(fullFilename, "giro.pdf")
 	os.Remove(fullFilename)
+}
+
+// 금액 검증번호: 일의 자리부터 7,3,1 가중치를 곱한 합계의 일의 자리를 10에서 뺀 값 (0이면 0)
+func giroPriceDigit(price int) int {
+	muls := []int{7, 3, 1}
+	sum := 0
+	for i := 0; price > 0; i++ {
+		sum += (price % 10) * muls[i%3]
+		price /= 10
+	}
+
+	return (10 - sum%10) % 10
+}
+
+// 조회번호 검증번호: 일의 자리부터 2,1 가중치(두 자리면 각 자리 합)를 적용한 Luhn 방식
+func giroNumberDigit(no int64) int64 {
+	muls := []int64{2, 1}
+	var sum int64
+	for i := 0; no > 0; i++ {
+		temp := (no % 10) * muls[i%2]
+		sum += temp/10 + temp%10
+		no /= 10
+	}
+
+	return (10 - sum%10) % 10
 }
 
 func repeatSpace(count int) string {
@@ -485,17 +451,11 @@ func (c *DownloadController) GiroWork(ids []int64) {
 
 			customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
 
-			billdate := ""
-			temp := strings.Split(v.Billdate, "-")
-			year := global.Atoi(temp[0])
-			month := global.Atoi(temp[1])
+			billdate := giroPeriod(v)
 
-			//lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-
-			if v.Period == 1 {
-				billdate = fmt.Sprintf("%v/%v", year, month)
-			} else {
-				billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+			month := 0
+			if temp := strings.Split(v.Billdate, "-"); len(temp) >= 2 {
+				month = global.Atoi(temp[1])
 			}
 
 			vat := int(v.Price / 11)
@@ -618,88 +578,17 @@ func (c *DownloadController) GiroWork(ids []int64) {
 
 			pdf.SetFont("ocr", "", 12)
 
-			price := v.Price
-			sum := 0
-
-			muls := []int{7, 3, 1}
-			mulsPos := 0
-			for i := 1; i <= 7; i++ {
-				remain := price % 10
-
-				sum += remain * muls[mulsPos]
-
-				mulsPos++
-				if mulsPos == 3 {
-					mulsPos = 0
-				}
-
-				price -= remain
-				price /= 10
-
-				if price == 0 {
-					break
-				}
-			}
-
-			digit := 0
-			if sum < 10 {
-				digit = 10 - sum
-			} else {
-				sum = sum % 10
-				if sum > 0 {
-					digit = 10 - sum
-				}
-			}
+			digit := giroPriceDigit(v.Price)
 
 			strPrice := global.Itoa(v.Price)
-			spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+			spaces := repeatSpace(10 - (len(strPrice) + 1))
 
 			//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 			companyNo := 1000000000 + v.Id
-
-			sum = 0
-
-			var sum2 int64
-			co := companyNo
-
-			muls2 := []int64{2, 1}
-			mulsPos = 0
-			for i := 1; i <= 20; i++ {
-				remain := co % 10
-
-				temp := remain * muls2[mulsPos]
-
-				if temp >= 10 {
-					sum2 += temp%10 + 1
-				} else {
-					sum2 += temp
-				}
-
-				mulsPos++
-				if mulsPos == 2 {
-					mulsPos = 0
-				}
-
-				co -= remain
-				co /= 10
-
-				if co == 0 {
-					break
-				}
-			}
-
-			var digit2 int64
-			if sum2 < 10 {
-				digit2 = 10 - sum2
-			} else {
-				sum2 = sum2 % 10
-				if sum2 > 0 {
-					digit2 = 10 - sum2
-				}
-			}
+			digit2 := giroNumberDigit(companyNo)
 
 			strCompanyNo := fmt.Sprintf("%v", companyNo)
-			spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+			spaces2 := repeatSpace(20 - (len(strCompanyNo) + 1))
 
 			str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
 			pdf.SetXY(xRatio*68, yRatio*241.5+marginY)
