@@ -72,7 +72,8 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	if u.Path == "/api/webquestion" {
+	// 비로그인 사용자는 등록(POST)만 허용
+	if c.Method() == "POST" && u.Path == "/api/webquestion" {
 		return c.Next()
 	}
 
@@ -80,7 +81,8 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	if u.Path == "/api/webjoin" {
+	// 비로그인 사용자는 등록(POST)만 허용
+	if c.Method() == "POST" && u.Path == "/api/webjoin" {
 		return c.Next()
 	}
 
@@ -122,6 +124,13 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 
 func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{} {
 	conn := models.NewConnection()
+	if conn == nil {
+		return map[string]interface{}{
+			"code":    "error",
+			"message": "database error",
+		}
+	}
+	defer conn.Close()
 
 	manager := models.NewUserManager(conn)
 	item := manager.GetByLoginid(loginid)

@@ -31,6 +31,13 @@ func TestJwtAuthRequired(t *testing.T) {
 		{"POST", "/api/billinghistory/deposit", 401},
 		{"GET", "/api/webnotice", 200},
 		{"POST", "/api/user/findid", 200},
+		{"POST", "/api/webjoin", 200},
+		{"GET", "/api/webjoin", 401},
+		{"PUT", "/api/webjoin", 401},
+		{"DELETE", "/api/webjoin", 401},
+		{"POST", "/api/webquestion", 200},
+		{"GET", "/api/webquestion", 401},
+		{"DELETE", "/api/webquestion", 401},
 	}
 
 	for _, v := range cases {
