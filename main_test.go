@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"os"
 	"testing"
 	"zkeep/controllers/api"
 	//"zkeep/global/pdf"
@@ -50,6 +51,11 @@ func TestExcel(t *testing.T) {
 	*/
 }
 
+// 실제 DB와 엑셀 파일이 필요한 통합 테스트: ZKEEP_INTEGRATION=1 일 때만 실행
 func TestExternal(t *testing.T) {
+	if os.Getenv("ZKEEP_INTEGRATION") != "1" {
+		t.Skip("set ZKEEP_INTEGRATION=1 to run")
+	}
+
 	api.Thread("./1.xlsx", 1, 9683)
 }
