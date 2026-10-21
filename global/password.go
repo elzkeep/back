@@ -3,7 +3,9 @@ package global
 // 비밀번호 저장 — bcrypt. 예전 계정은 평문으로 저장돼 있어 로그인할 때 평문 비교로 맞으면 해시로 바꿔 저장한다(router/auth.go).
 
 import (
+	"crypto/rand"
 	"crypto/subtle"
+	"encoding/hex"
 	"strings"
 	"sync"
 
@@ -66,13 +68,18 @@ func CheckPassword(stored string, input string) (ok bool, upgrade bool) {
 	return false, false
 }
 
-var defaultPasswordOnce sync.Once
-var defaultPasswordHash string
+var lockedPasswordOnce sync.Once
+var lockedPasswordHash string
 
-// DefaultPasswordHash 는 엑셀 일괄등록으로 만든 계정의 초기 비밀번호("0000") 해시 (한 번만 계산)
-func DefaultPasswordHash() string {
-	defaultPasswordOnce.Do(func() {
-		defaultPasswordHash = HashPassword("0000")
+// LockedPasswordHash 는 비밀번호를 알 수 없는 계정용 해시 (외부 엑셀 연동으로 만든 계정).
+// 아무도 모르는 임의 값의 해시라 관리자가 비밀번호를 지정하기 전에는 로그인할 수 없다 (한 번만 계산)
+func LockedPasswordHash() string {
+	lockedPasswordOnce.Do(func() {
+		buf := make([]byte, 32)
+		if _, err := rand.Read(buf); err != nil {
+			panic(err)
+		}
+		lockedPasswordHash = HashPassword(hex.EncodeToString(buf))
 	})
-	return defaultPasswordHash
+	return lockedPasswordHash
 }
