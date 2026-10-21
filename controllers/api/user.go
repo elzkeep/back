@@ -191,7 +191,7 @@ func (c *UserController) Upload(filename string) {
 
 		// 새 계정은 K열 초기비밀번호가 있어야 등록 (기존 계정의 비밀번호는 바꾸지 않음)
 		passwd := strings.TrimSpace(f.GetCell("K", pos))
-		if userItem == nil && passwd == "" {
+		if userItem == nil && (passwd == "" || len(passwd) > 72) {
 			skipped = append(skipped, name)
 			pos++
 			continue
@@ -290,7 +290,7 @@ func (c *UserController) Upload(filename string) {
 		pos++
 	}
 
-	// 초기비밀번호가 없어 등록하지 않은 이름
+	// 초기비밀번호가 없거나 너무 길어(bcrypt 72바이트 제한) 등록하지 않은 이름
 	c.Set("skipped", skipped)
 }
 
