@@ -23,37 +23,40 @@ drop view statisticsyear_vw;
 create view statisticsyear_vw as
 select
 0 as bi_id,
+bi_company,
 date_format(bi_billdate, '%Y') as bi_duration,
 count(bi_id) as bi_total,
 sum(bi_price) as bi_totalprice,
 now() as bi_date
 from billing_tb where bi_status = 3
-group by date_format(bi_billdate, '%Y');
+group by bi_company, date_format(bi_billdate, '%Y');
 
 
 drop view statisticsmonth_vw;
 create view statisticsmonth_vw as
 select
 0 as bi_id,
+bi_company,
 date_format(bi_billdate, '%Y') as bi_year,
 date_format(bi_billdate, '%Y-%m') as bi_duration,
 count(bi_id) as bi_total,
 sum(bi_price) as bi_totalprice,
 now() as bi_date
 from billing_tb where bi_status = 3
-group by date_format(bi_billdate, '%Y'), date_format(bi_billdate, '%Y-%m');
+group by bi_company, date_format(bi_billdate, '%Y'), date_format(bi_billdate, '%Y-%m');
 
 drop view statisticsday_vw;
 create view statisticsday_vw as
 select
 0 as bi_id,
+bi_company,
 date_format(bi_billdate, '%Y-%m') as bi_month,
 date_format(bi_billdate, '%Y-%m-%d') as bi_duration,
 count(bi_id) as bi_total,
 sum(bi_price) as bi_totalprice,
 now() as bi_date
 from billing_tb where bi_status = 3
-group by date_format(bi_billdate, '%Y-%m'), date_format(bi_billdate, '%Y-%m-%d');
+group by bi_company, date_format(bi_billdate, '%Y-%m'), date_format(bi_billdate, '%Y-%m-%d');
 
 drop view calendarcompanylist_vw;
 create view calendarcompanylist_vw as
@@ -70,7 +73,7 @@ cu_company, c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_type, c
 
 drop view companylist_vw;
 create view companylist_vw as 
-select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company, count(*) as c_buildingcount, sum(cu_contractprice + cu_contractvat) as c_contractprice from company_tb, customercompany_tb, building_tb, customer_tb where c_id = cc_customer and c_id = b_company and b_id = cu_building
+select c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company as c_company, count(*) as c_buildingcount, sum(cu_contractprice + cu_contractvat) as c_contractprice from company_tb, customercompany_tb, building_tb, customer_tb where c_id = cc_customer and c_id = b_company and b_id = cu_building and cu_company = cc_company
 group by c_id, c_name, c_companyno, c_ceo, c_address, c_addressetc, c_tel, c_email, c_date, cc_company;
 
 

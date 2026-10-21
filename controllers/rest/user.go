@@ -118,8 +118,13 @@ func (c *UserController) GetByCompanyTelName(company int64 ,tel string ,name str
 }
 
 
+// 전체관리자 레벨은 전체관리자만 줄 수 있다 (router/tenant.go 검사의 이중 방어, 수동 수정)
+func (c *UserController) canSetLevel(level user.Level) bool {
+	return level < user.LevelRootadmin || c.IsRootadmin()
+}
+
 func (c *UserController) Insert(item *models.User) {
-	if item == nil || strings.TrimSpace(item.Passwd) == "" {
+	if item == nil || strings.TrimSpace(item.Passwd) == "" || !c.canSetLevel(item.Level) {
 		c.Error("invalid request")
 		return
 	}
@@ -148,13 +153,19 @@ func (c *UserController) Insertbatch(item *[]models.User) {
 	manager := models.NewUserManager(conn)
 
     for i := 0; i < rows; i++ {
+        if !c.canSetLevel((*item)[i].Level) {
+            continue
+        }
 	    manager.Insert(&((*item)[i]))
     }
 }
 
 func (c *UserController) Update(item *models.User) {
-    
-    
+	if item == nil || !c.canSetLevel(item.Level) {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
@@ -639,8 +650,11 @@ func (c *UserController) UpdateCareermonth(careermonth int, id int64) {
 }
 // @Put()
 func (c *UserController) UpdateLevel(level int, id int64) {
-    
-    
+	if !c.canSetLevel(user.Level(level)) {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)

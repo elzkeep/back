@@ -17,6 +17,7 @@ import (
 type Statisticsyear struct {
             
     Id                int64 `json:"id"`         
+    Company                int64 `json:"company"`         
     Duration                string `json:"duration"`         
     Total                int64 `json:"total"`         
     Totalprice                int64 `json:"totalprice"`         
@@ -90,7 +91,7 @@ func (p *StatisticsyearManager) Query(query string, params ...interface{}) (*sql
 func (p *StatisticsyearManager) GetQuery() string {
     ret := ""
 
-    str := "select bi_id, bi_duration, bi_total, bi_totalprice, bi_date from statisticsyear_vw "
+    str := "select bi_id, bi_company, bi_duration, bi_total, bi_totalprice, bi_date from statisticsyear_vw "
 
     if p.Index == "" {
         ret = str
@@ -245,7 +246,7 @@ func (p *StatisticsyearManager) ReadRow(rows *sql.Rows) *Statisticsyear {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
+        err = rows.Scan(&item.Id, &item.Company, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
         
         
         
@@ -280,7 +281,7 @@ func (p *StatisticsyearManager) ReadRows(rows *sql.Rows) []Statisticsyear {
         var item Statisticsyear
         
     
-        err := rows.Scan(&item.Id, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
+        err := rows.Scan(&item.Id, &item.Company, &item.Duration, &item.Total, &item.Totalprice, &item.Date)
         if err != nil {
            log.Printf("ReadRows error : %v\n", err)
            break

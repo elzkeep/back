@@ -6,6 +6,7 @@ import (
 	"zkeep/config"
 	"zkeep/global"
 	"zkeep/models"
+	companymodel "zkeep/models/company"
 	usermodel "zkeep/models/user"
 
 	"database/sql"
@@ -321,6 +322,12 @@ func (c *Controller) Paging(page int, totalRows int, pageSize int) {
 	c.Set("currentBlock", currentBlock)
 }
 
+var allowedUploadExt = map[string]bool{
+	".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true, ".heic": true, ".heif": true, ".bmp": true,
+	".pdf": true, ".xlsx": true, ".xls": true, ".csv": true, ".hwp": true, ".hwpx": true,
+	".doc": true, ".docx": true, ".ppt": true, ".pptx": true, ".txt": true, ".zip": true, ".dwg": true, ".dxf": true,
+}
+
 func (c *Controller) GetUpload(uploadPath string, name string) (string, string) {
 	log.Println("controller getupload")
 	file, err := c.Context.FormFile(name)
@@ -348,6 +355,12 @@ func (c *Controller) GetUpload(uploadPath string, name string) (string, string) 
 		if uploadPath == "." {
 			uploadPath = ""
 		}
+	}
+
+	// /webdata 는 같은 출처에서 정적으로 서빙되므로 html·svg·js 같은 실행 가능한 형식은 받지 않는다
+	if !allowedUploadExt[strings.ToLower(filepath.Ext(file.Filename))] {
+		log.Println("upload extension not allowed :", file.Filename)
+		return "", ""
 	}
 
 	t := time.Now()
@@ -383,6 +396,31 @@ func (c *Controller) TenantCompany(requested int64) int64 {
 	}
 
 	return c.Session.Company
+}
+
+// 엑셀 일괄 등록에서 사업자번호·이름으로 찾은 기존 업체를 재사용해도 되는지 — 다른 점검업체(테넌트)는 재사용하지 않는다
+func ReusableCompany(item *models.Company) bool {
+	return item != nil && item.Type != companymodel.TypeWork
+}
+
+// 기존 건물을 재사용해도 되는지 — 다른 업체가 계약(customer) 중인 건물은 재사용하지 않는다 (설비·점수를 덮어쓰게 됨)
+func ReusableBuilding(item *models.Building, tenant int64) bool {
+	if item == nil {
+		return false
+	}
+
+	conn := models.NewConnection()
+	if conn == nil {
+		return false
+	}
+	defer conn.Close()
+
+	var n int
+	if err := conn.QueryRow("select count(*) from customer_tb where cu_building = ? and cu_company <> ?", item.Id, tenant).Scan(&n); err != nil {
+		return false
+	}
+
+	return n == 0
 }
 
 // 클라이언트가 보낸 업로드 파일명은 UploadPath 바로 아래의 파일명만 허용

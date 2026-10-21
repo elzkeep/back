@@ -502,7 +502,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		if item.Companyno == "" {
 			companyFind := companyManager.GetByName(item.Name)
 
-			if companyFind == nil {
+			if !controllers.ReusableCompany(companyFind) {
 				companyManager.Insert(&item)
 				companyId = companyManager.GetIdentity()
 			} else {
@@ -512,7 +512,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		} else {
 			companyFind := companyManager.GetByCompanyno(item.Companyno)
 
-			if companyFind == nil {
+			if !controllers.ReusableCompany(companyFind) {
 				companyManager.Insert(&item)
 				companyId = companyManager.GetIdentity()
 			} else {
@@ -596,7 +596,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 		var buildingId int64 = 0
 
 		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
-		if buildingFind == nil {
+		if !controllers.ReusableBuilding(buildingFind, myCompanyId) {
 			buildingManager.Insert(&building)
 			buildingId = buildingManager.GetIdentity()
 		} else {
@@ -820,7 +820,7 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 		if item.Companyno == "" {
 			companyFind := companyManager.GetByName(item.Name)
 
-			if companyFind == nil {
+			if !controllers.ReusableCompany(companyFind) {
 				companyManager.Insert(&item)
 				companyId = companyManager.GetIdentity()
 			} else {
@@ -830,7 +830,7 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 		} else {
 			companyFind := companyManager.GetByCompanyno(item.Companyno)
 
-			if companyFind == nil {
+			if !controllers.ReusableCompany(companyFind) {
 				companyManager.Insert(&item)
 				companyId = companyManager.GetIdentity()
 			} else {
@@ -901,7 +901,7 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 		var buildingId int64 = 0
 
 		buildingFind := buildingManager.GetByCompanyName(companyId, building.Name)
-		if buildingFind == nil {
+		if !controllers.ReusableBuilding(buildingFind, myCompanyId) {
 			buildingManager.Insert(&building)
 			buildingId = buildingManager.GetIdentity()
 		} else {
@@ -1432,7 +1432,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			if item.Companyno == "" {
 				companyFind := companyManager.GetByName(item.Name)
 
-				if companyFind == nil {
+				if !controllers.ReusableCompany(companyFind) {
 					companyManager.Insert(&item)
 					companyId = companyManager.GetIdentity()
 				} else {
@@ -1442,7 +1442,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			} else {
 				companyFind := companyManager.GetByCompanyno(item.Companyno)
 
-				if companyFind == nil {
+				if !controllers.ReusableCompany(companyFind) {
 					companyManager.Insert(&item)
 					companyId = companyManager.GetIdentity()
 				} else {
@@ -1458,7 +1458,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 
 			buildingName := GetCell("I", cell)
 			building := buildingManager.GetByCompanyName(companyId, buildingName)
-			if building == nil {
+			if !controllers.ReusableBuilding(building, myCompanyId) {
 				building = &models.Building{}
 			}
 

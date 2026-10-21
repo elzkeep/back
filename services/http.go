@@ -120,6 +120,10 @@ func Http() {
 		})
 	*/
 
+	// 응답 비밀번호 제거·수정 시 보존 → 회원가입(공개) → 인증·업체 분리가 걸린 API 순
+	app.Use(router.SanitizeResponse)
+	app.Use(router.KeepSecretsOnUpdate)
+	router.SetSignupRouter(app)
 	router.SetRouter(app)
 
 	// SPA 화면 경로 새로고침 시 index.html 반환

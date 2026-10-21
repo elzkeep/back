@@ -25,6 +25,11 @@ func (c *StatisticsyearController) Count() {
 
     var args []interface{}
     
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
+    
     _duration := c.Get("duration")
     if _duration != "" {
         args = append(args, models.Where{Column:"duration", Value:_duration, Compare:"="})
@@ -79,6 +84,11 @@ func (c *StatisticsyearController) Index(page int, pagesize int) {
 	manager := models.NewStatisticsyearManager(conn)
 
     var args []interface{}
+    
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
     
     _duration := c.Get("duration")
     if _duration != "" {
@@ -157,6 +167,11 @@ func (c *StatisticsyearController) Sum() {
 	manager := models.NewStatisticsyearManager(conn)
 
     var args []interface{}
+    
+    _company := c.Geti64("company")
+    if _company != 0 {
+        args = append(args, models.Where{Column:"company", Value:_company, Compare:"="})    
+    }
     
     _duration := c.Get("duration")
     if _duration != "" {

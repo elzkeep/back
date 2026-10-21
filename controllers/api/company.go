@@ -8,6 +8,7 @@ import (
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
+	companymodel "zkeep/models/company"
 )
 
 type CompanyController struct {
@@ -155,8 +156,9 @@ func (c *CompanyController) Upload(filename string) {
 		companyno := f.GetCell("B", pos)
 
 		item := companyManager.GetByCompanyno(companyno)
-		if item == nil {
+		if !controllers.ReusableCompany(item) {
 			item = &models.Company{}
+			item.Type = companymodel.TypeBuilding
 			item.Companyno = companyno
 			item.Name = name
 			item.Ceo = f.GetCell("C", pos)
