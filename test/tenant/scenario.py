@@ -183,4 +183,15 @@ check('탈퇴 후 로그인 불가', login('a_user','pw-a-user-2') is None)
 check('탈퇴 계정 개인정보 삭제', sql("select concat(u_name,'|',u_email,'|',u_status) from user_tb where u_id=2")=='탈퇴회원||2')
 s,j=req('GET','/api/customer',AU); check('탈퇴 계정 기존 토큰 거부', s==401, s)
 s,j=req('POST','/api/account/withdraw',body={'passwd':'x'}); check('탈퇴: 비로그인 거부', s==401, s)
+s,j=req('POST','/api/account/withdraw',A,{'passwd':'x'*300}); check('탈퇴: 너무 긴 비밀번호 거부', j.get('code')=='error', j)
+# 같은 업체 관리자 둘이 동시에 탈퇴해도 관리자가 0명이 되지 않는다
+sql("set session sql_mode=''; insert into user_tb (u_loginid,u_passwd,u_name,u_level,u_approval,u_status,u_company,u_date) values ('a_admin2','pw-a-admin2','A관리자2',3,3,1,1,now())")
+A2=login('a_admin2','pw-a-admin2')
+import threading
+res={}
+def go(name,tok,pw): res[name]=req('POST','/api/account/withdraw',tok,{'passwd':pw})[1]
+t1=threading.Thread(target=go,args=('a1',A,'pw-a-admin')); t2=threading.Thread(target=go,args=('a2',A2,'pw-a-admin2'))
+t1.start(); t2.start(); t1.join(); t2.join()
+oks=[k for k,v in res.items() if v.get('code')=='ok']
+check('동시 탈퇴: 관리자 한 명만 탈퇴되고 한 명은 남는다', len(oks)==1 and sql("select count(*) from user_tb where u_company=1 and u_level=3 and u_status=1")=='1', (res, sql("select count(*) from user_tb where u_company=1 and u_level=3 and u_status=1")))
 print('FAILS', fails)

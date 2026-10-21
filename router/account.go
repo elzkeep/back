@@ -15,7 +15,7 @@ import (
 )
 
 func SetAccountRouter(r *fiber.App) {
-	r.Post("/api/account/withdraw", accountWithdraw)
+	r.Post("/api/account/withdraw", signupBody, accountWithdraw)
 }
 
 // POST /api/account/withdraw {passwd} — 본인 확인 후 탈퇴
@@ -28,8 +28,12 @@ func accountWithdraw(c *fiber.Ctx) error {
 	var req struct {
 		Passwd string `json:"passwd"`
 	}
-	if err := c.BodyParser(&req); err != nil || req.Passwd == "" {
+	if err := c.BodyParser(&req); err != nil || req.Passwd == "" || len(req.Passwd) > global.MaxPasswordInput {
 		return signupError(c, "비밀번호를 입력하세요")
+	}
+
+	if session.Level == user.LevelRootadmin {
+		return signupError(c, "전체관리자 계정은 탈퇴할 수 없습니다")
 	}
 
 	conn := sharedDB()
@@ -45,27 +49,50 @@ func accountWithdraw(c *fiber.Ctx) error {
 		return signupError(c, "비밀번호가 맞지 않습니다")
 	}
 
-	if session.Level == user.LevelRootadmin {
-		return signupError(c, "전체관리자 계정은 탈퇴할 수 없습니다")
+	// 「마지막 관리자」 확인과 탈퇴 처리를 한 트랜잭션에서 — 같은 업체 관리자 행을 잠가
+	// 관리자 둘이 동시에 탈퇴해 직원만 남는(관리자 0명) 경우를 막는다
+	tx, err := conn.Begin()
+	if err != nil {
+		return serverError(c)
 	}
+	defer tx.Rollback()
 
-	// 업체의 마지막 관리자가 다른 직원을 남기고 나가면 업체를 관리할 사람이 없어진다
 	if session.Level == user.LevelAdmin {
-		var admins, others int
-		conn.QueryRow("select count(*) from user_tb where u_company = ? and u_level = ? and u_status = ? and u_id <> ?", session.Company, int(user.LevelAdmin), int(user.StatusUse), session.Id).Scan(&admins)
-		conn.QueryRow("select count(*) from user_tb where u_company = ? and u_status = ? and u_id <> ?", session.Company, int(user.StatusUse), session.Id).Scan(&others)
+		rows, err := tx.Query("select u_id from user_tb where u_company = ? and u_level = ? and u_status = ? for update", session.Company, int(user.LevelAdmin), int(user.StatusUse))
+		if err != nil {
+			return serverError(c)
+		}
+		admins := 0
+		for rows.Next() {
+			var id int64
+			if rows.Scan(&id) == nil && id != session.Id {
+				admins++
+			}
+		}
+		rows.Close()
+
+		var others int
+		if err := tx.QueryRow("select count(*) from user_tb where u_company = ? and u_status = ? and u_id <> ?", session.Company, int(user.StatusUse), session.Id).Scan(&others); err != nil {
+			return serverError(c)
+		}
 		if admins == 0 && others > 0 {
 			return signupError(c, "다른 직원에게 관리자 권한을 넘긴 뒤 탈퇴하세요")
 		}
 	}
 
 	loginid := fmt.Sprintf("withdrawn_%v_%v", session.Id, time.Now().Unix())
-	_, err := conn.Exec(`update user_tb set u_loginid = ?, u_passwd = '', u_name = '탈퇴회원', u_email = '', u_tel = '',
-		u_zip = '', u_address = '', u_addressetc = '', u_status = ? where u_id = ?`, loginid, int(user.StatusNotuse), session.Id)
-	if err != nil {
+	if _, err := tx.Exec(`update user_tb set u_loginid = ?, u_passwd = '', u_name = '탈퇴회원', u_email = '', u_tel = '',
+		u_zip = '', u_address = '', u_addressetc = '', u_educationdate = '1000-01-01', u_educationinstitution = '',
+		u_specialeducationdate = '1000-01-01', u_specialeducationinstitution = '', u_rejectreason = '', u_status = ?
+		where u_id = ?`, loginid, int(user.StatusNotuse), session.Id); err != nil {
 		return serverError(c)
 	}
-	conn.Exec("delete from license_tb where l_user = ?", session.Id)
+	if _, err := tx.Exec("delete from license_tb where l_user = ?", session.Id); err != nil {
+		return serverError(c)
+	}
+	if err := tx.Commit(); err != nil {
+		return serverError(c)
+	}
 
 	return c.JSON(fiber.Map{"code": "ok"})
 }
