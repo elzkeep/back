@@ -27,3 +27,15 @@ func TestPassword(t *testing.T) {
 		t.Error("too long input must be rejected")
 	}
 }
+
+func TestLockedPassword(t *testing.T) {
+	hash := LockedPasswordHash()
+	if !IsPasswordHash(hash) || LockedPasswordHash() != hash {
+		t.Fatal("locked hash")
+	}
+	for _, v := range []string{"", "0000"} {
+		if ok, _ := CheckPassword(hash, v); ok {
+			t.Errorf("locked password accepted %q", v)
+		}
+	}
+}

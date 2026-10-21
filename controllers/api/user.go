@@ -168,6 +168,8 @@ func (c *UserController) Upload(filename string) {
 	sheet := "Sheet1"
 	f.SetSheet(sheet)
 
+	skipped := make([]string, 0)
+
 	pos := 1
 	for {
 		name := f.GetCell("C", pos)
@@ -184,6 +186,16 @@ func (c *UserController) Upload(filename string) {
 			pos++
 			continue
 		}
+
+		userItem := userManager.GetByCompanyName(session.Company, name)
+
+		// 새 계정은 K열 초기비밀번호가 있어야 등록 (기존 계정의 비밀번호는 바꾸지 않음)
+		passwd := strings.TrimSpace(f.GetCell("K", pos))
+		if userItem == nil && passwd == "" {
+			skipped = append(skipped, name)
+			pos++
+			continue
+		}
 		department := departmentManager.GetByCompanyName(session.Company, departmentName)
 		if department == nil {
 			department = &models.Department{
@@ -196,8 +208,6 @@ func (c *UserController) Upload(filename string) {
 
 			department.Id = departmentManager.GetIdentity()
 		}
-
-		userItem := userManager.GetByCompanyName(session.Company, name)
 
 		loginid := f.GetCell("B", pos)
 		email := f.GetCell("D", pos)
@@ -258,7 +268,7 @@ func (c *UserController) Upload(filename string) {
 			user := models.User{
 				Name:       name,
 				Loginid:    loginid,
-				Passwd:     global.DefaultPasswordHash(),
+				Passwd:     global.HashPassword(passwd),
 				Email:      email,
 				Tel:        tel,
 				Address:    address,
@@ -271,7 +281,6 @@ func (c *UserController) Upload(filename string) {
 				Date:       date,
 			}
 
-			log.Println(user)
 			err := userManager.Insert(&user)
 			if err != nil {
 				log.Println(err)
@@ -280,6 +289,9 @@ func (c *UserController) Upload(filename string) {
 
 		pos++
 	}
+
+	// 초기비밀번호가 없어 등록하지 않은 이름
+	c.Set("skipped", skipped)
 }
 
 // 삭제 가능한 사용자인지 DB에 저장된 값으로 확인 (클라이언트가 보낸 level은 신뢰하지 않음)
