@@ -63,12 +63,14 @@ func SetSignupRouter(r *fiber.App) {
 	r.Post("/api/signup/user", signupCreateUser)
 }
 
-// POST /api/signup/check {loginid, email, companyno} → 각 값의 사용 여부(true = 이미 있음)만 돌려준다
+// POST /api/signup/check {loginid, email, companyno, except} → 각 값의 사용 여부(true = 이미 있음)만 돌려준다.
+// except 는 사용자 수정 화면에서 자기 자신을 빼고 검사할 사용자 id
 func signupCheck(c *fiber.Ctx) error {
 	var req struct {
 		Loginid   string `json:"loginid"`
 		Email     string `json:"email"`
 		Companyno string `json:"companyno"`
+		Except    int64  `json:"except"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return signupError(c, "잘못된 요청입니다")
@@ -85,7 +87,7 @@ func signupCheck(c *fiber.Ctx) error {
 			return false
 		}
 		var n int
-		if err := conn.QueryRow(query, value).Scan(&n); err != nil {
+		if err := conn.QueryRow(query, value, req.Except).Scan(&n); err != nil {
 			return false
 		}
 		return n > 0
@@ -93,9 +95,9 @@ func signupCheck(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"code":      "ok",
-		"loginid":   exists("select count(*) from user_tb where u_loginid = ?", req.Loginid),
-		"email":     exists("select count(*) from user_tb where u_email = ?", req.Email),
-		"companyno": exists("select count(*) from company_tb where c_companyno = ?", req.Companyno),
+		"loginid":   exists("select count(*) from user_tb where u_loginid = ? and u_id <> ?", req.Loginid),
+		"email":     exists("select count(*) from user_tb where u_email = ? and u_id <> ?", req.Email),
+		"companyno": exists("select count(*) from company_tb where c_companyno = ? and c_id <> ?", req.Companyno),
 	})
 }
 
