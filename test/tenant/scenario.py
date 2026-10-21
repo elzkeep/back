@@ -158,4 +158,12 @@ import base64
 tok=login('a_admin','pw-a-admin'); payload=json.loads(base64.urlsafe_b64decode(tok.split('.')[1]+'=='))
 import time as _t
 check('토큰 유효기간 30일', 29*86400 < payload['exp']-_t.time() <= 30*86400+60, payload['exp']-_t.time())
+
+# 9-2. 비밀번호 해시는 인증 뒤, 권한 있는 쓰기만
+s,j=req('PUT','/api/user/passwd',AU,{'id':2,'passwd':'pw-a-user-2'})
+check('일반 직원 자기 비밀번호 변경 → 해시·로그인', sql("select left(u_passwd,4) from user_tb where u_id=2")=='$2a$' and login('a_user','pw-a-user-2') is not None)
+s,j=req('POST','/api/user/batch',A,[{'loginid':'bulk%d'%i,'passwd':'p','name':'x','level':1} for i in range(201)])
+check('일괄 등록 200건 초과 거부(413)', s==413, s)
+s,j=req('POST','/api/user/batch',body=[{'loginid':'anon%d'%i,'passwd':'p'} for i in range(5)])
+check('비로그인 일괄 등록 401 (해시 전에 거부)', s==401, s)
 print('FAILS', fails)

@@ -10,10 +10,12 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync"
 	"zkeep/global"
 	"zkeep/models"
+	"zkeep/models/user"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -29,6 +31,9 @@ func sharedDB() *sql.DB {
 
 	return guardDB
 }
+
+// errStop: 미들웨어가 응답을 이미 썼으니 다음 단계로 가지 말라는 표시 (호출한 쪽이 nil 로 바꿔 돌려준다)
+var errStop = errors.New("stop")
 
 var secretKeys = map[string]bool{"passwd": true, "egiropasswd": true}
 
@@ -109,18 +114,32 @@ func KeepSecretsOnUpdate(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-// HashPasswordOnWrite 는 사용자 생성·수정 요청의 passwd 를 bcrypt 해시로 바꾼다 (빈 값은 그대로 — 수정 시 기존 유지)
-func HashPasswordOnWrite(c *fiber.Ctx) error {
+// 사용자 생성·수정 요청의 passwd 를 bcrypt 해시로 바꾼다 (빈 값은 그대로 — 수정 시 기존 유지).
+// bcrypt 는 비싸서(건당 수십 ms) 인증이 끝난 뒤(JwtAuthRequired), 그 쓰기를 할 수 있는 사용자에게만 한다:
+// 전체관리자·업체관리자, 또는 자기 정보 수정(PUT /api/user, /api/user/passwd). 일괄 등록은 maxPasswordBatch 건까지
+const maxPasswordBatch = 200
+
+func isPasswordWrite(c *fiber.Ctx) bool {
 	path := c.Path()
 	method := c.Method()
-	if !((method == fiber.MethodPost && (path == "/api/user" || path == "/api/user/batch")) ||
-		(method == fiber.MethodPut && (path == "/api/user" || path == "/api/user/passwd"))) {
-		return c.Next()
+	return (method == fiber.MethodPost && (path == "/api/user" || path == "/api/user/batch")) ||
+		(method == fiber.MethodPut && (path == "/api/user" || path == "/api/user/passwd"))
+}
+
+// hashUserPasswords 는 처리했으면 nil, 요청을 멈춰야 하면 응답을 쓰고 errStop 을 돌려준다
+func hashUserPasswords(c *fiber.Ctx, session *models.User) error {
+	if !isPasswordWrite(c) {
+		return nil
+	}
+
+	// 업체관리자 미만은 자기 정보 수정만 가능하다 (나머지는 tenantGuard 가 거부) — 거부될 요청은 해시하지 않는다
+	if session.Level < user.LevelAdmin && c.Method() != fiber.MethodPut {
+		return nil
 	}
 
 	var body interface{}
 	if json.Unmarshal(c.Body(), &body) != nil {
-		return c.Next()
+		return nil
 	}
 
 	hashOne := func(obj map[string]interface{}) bool {
@@ -139,26 +158,38 @@ func HashPasswordOnWrite(c *fiber.Ctx) error {
 		return true
 	}
 
+	failed := func() error {
+		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "password error"})
+		return errStop
+	}
+
 	switch t := body.(type) {
 	case map[string]interface{}:
+		if session.Level < user.LevelAdmin && toID(t["id"]) != session.Id {
+			return nil // 남의 정보 — tenantGuard 가 거부
+		}
 		if !hashOne(t) {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "password error"})
+			return failed()
 		}
 	case []interface{}:
+		if len(t) > maxPasswordBatch {
+			c.Status(fiber.StatusRequestEntityTooLarge).JSON(fiber.Map{"code": "error", "message": "한 번에 등록할 수 있는 사용자 수를 넘었습니다"})
+			return errStop
+		}
 		for _, v := range t {
 			if obj, ok := v.(map[string]interface{}); ok && !hashOne(obj) {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "password error"})
+				return failed()
 			}
 		}
 	default:
-		return c.Next()
+		return nil
 	}
 
 	if out, err := json.Marshal(body); err == nil {
 		c.Request().SetBody(out)
 	}
 
-	return c.Next()
+	return nil
 }
 
 // 업체 관리자(admin) 이상만 쓰는 커스텀 API — 엑셀 일괄 등록(기존 데이터 삭제·덮어쓰기 포함), 메일·SMS 발송

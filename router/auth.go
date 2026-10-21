@@ -93,6 +93,9 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 					})
 				}
 				c.Locals("user", current)
+				if err := hashUserPasswords(c, current); err != nil {
+					return nil // 응답은 이미 씀
+				}
 				return tenantGuard(c, current)
 			}
 		}

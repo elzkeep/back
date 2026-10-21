@@ -25,15 +25,29 @@ const (
 	signupMaxLicenses = 10
 )
 
-// 공개 API 요청 횟수 제한 키 — 앞단 프록시(nginx) 뒤에서는 c.IP() 가 모두 같으므로 X-Real-IP / X-Forwarded-For 를 우선
+// 공개 API 요청 횟수 제한 키. 바로 앞 연결이 사설·루프백 주소(nginx 등 프록시)일 때만 프록시 헤더를 믿는다 —
+// 외부에서 직접 붙은 요청이 X-Forwarded-For 를 바꿔 가며 제한을 피하지 못하게.
+// X-Forwarded-For 는 프록시가 끝에 덧붙이므로 마지막 값을 쓴다 (앞쪽은 클라이언트가 넣을 수 있다)
 func clientKey(c *fiber.Ctx) string {
+	remote := c.Context().RemoteIP()
+	if remote == nil {
+		return c.IP()
+	}
+	if !remote.IsLoopback() && !remote.IsPrivate() {
+		return remote.String()
+	}
+
+	if v := c.Get("X-Forwarded-For"); v != "" {
+		parts := strings.Split(v, ",")
+		if last := strings.TrimSpace(parts[len(parts)-1]); last != "" {
+			return last
+		}
+	}
 	if v := strings.TrimSpace(c.Get("X-Real-IP")); v != "" {
 		return v
 	}
-	if v := c.Get("X-Forwarded-For"); v != "" {
-		return strings.TrimSpace(strings.Split(v, ",")[0])
-	}
-	return c.IP()
+
+	return remote.String()
 }
 
 func newPublicLimiter(max int, window time.Duration) fiber.Handler {
