@@ -199,25 +199,28 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 	manager := models.NewUserManager(conn)
 	item := manager.GetByLoginid(loginid)
 
+	// 아이디가 없을 때와 비밀번호가 틀릴 때 응답(메시지·시간)을 같게 — 계정 존재 여부를 알려 주지 않는다
+	invalid := map[string]interface{}{
+		"code":    "error",
+		"message": "invalid login",
+	}
+
 	if item == nil {
-		return map[string]interface{}{
-			"code":    "error",
-			"message": "user not found",
-		}
+		global.BurnPasswordCheck(passwd)
+		return invalid
 	}
 
 	ok, upgrade := global.CheckPassword(item.Passwd, passwd)
 	if !ok {
-		return map[string]interface{}{
-			"code":    "error",
-			"message": "wrong password",
-		}
+		return invalid
 	}
 
 	// 평문으로 저장돼 있던 예전 계정은 로그인에 성공했을 때 해시로 바꿔 둔다
 	if upgrade {
 		if hash := global.HashPassword(passwd); hash != "" {
 			manager.UpdatePasswd(hash, item.Id)
+		} else {
+			log.Println("password upgrade skipped (bcrypt 72바이트 초과 등) user", item.Id)
 		}
 	}
 

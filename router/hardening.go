@@ -83,6 +83,21 @@ func SanitizeResponse(c *fiber.Ctx) error {
 	return err
 }
 
+// StripSecretFilters 는 /api 요청의 passwd·egiropasswd 쿼리를 지운다.
+// 생성 CRUD 의 목록·개수·합계는 모든 컬럼을 검색 조건으로 받아서(합계는 like), 아직 해시로 바뀌지 않은
+// 예전 평문 비밀번호를 ?passwd= 로 한 글자씩 맞혀 볼 수 있었다
+func StripSecretFilters(c *fiber.Ctx) error {
+	if strings.HasPrefix(c.Path(), "/api/") {
+		args := c.Request().URI().QueryArgs()
+		for _, k := range []string{"passwd", "egiropasswd"} {
+			if args.Has(k) {
+				args.Del(k)
+			}
+		}
+	}
+	return c.Next()
+}
+
 func KeepSecretsOnUpdate(c *fiber.Ctx) error {
 	// 인증 전 단계라 토큰이 없는 요청은 DB 를 보지 않는다 (토큰 검증은 JwtAuthRequired)
 	if c.Method() != fiber.MethodPut || c.Path() != "/api/company" || !strings.HasPrefix(c.Get("Authorization"), "Bearer ") {

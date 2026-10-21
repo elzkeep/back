@@ -19,4 +19,11 @@ func TestPassword(t *testing.T) {
 	if ok, _ := CheckPassword("", ""); ok {
 		t.Error("empty")
 	}
+	long := make([]byte, MaxPasswordInput+1)
+	for i := range long {
+		long[i] = 'a'
+	}
+	if ok, _ := CheckPassword(string(long), string(long)); ok {
+		t.Error("too long input must be rejected")
+	}
 }

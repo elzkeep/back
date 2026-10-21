@@ -166,4 +166,13 @@ s,j=req('POST','/api/user/batch',A,[{'loginid':'bulk%d'%i,'passwd':'p','name':'x
 check('일괄 등록 200건 초과 거부(413)', s==413, s)
 s,j=req('POST','/api/user/batch',body=[{'loginid':'anon%d'%i,'passwd':'p'} for i in range(5)])
 check('비로그인 일괄 등록 401 (해시 전에 거부)', s==401, s)
+
+# 9-3. 비밀번호 검색 필터 무시·로그인 실패 응답 통일
+sql("set session sql_mode=''; insert into user_tb (u_loginid,u_passwd,u_name,u_level,u_approval,u_status,u_company,u_date) values ('legacy','pw-legacy','예전계정',1,3,1,1,now())")
+s,j=req('GET','/api/user/count',A); total=j.get('total')
+s,j=req('GET','/api/user/count?passwd=pw-legacy',A); check('?passwd= 필터 무시(평문 비밀번호 추측 불가)', j.get('total')==total and total and total>1, (j,total))
+s,j=req('GET','/api/user?passwd=pw-legacy',A); check('목록 ?passwd= 필터 무시', len(j.get('items') or [])==total, len(j.get('items') or []))
+s1,j1=req('POST','/api/jwt',body={'loginid':'no-such-user','passwd':'x'}); s2,j2=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'})
+check('없는 아이디·틀린 비밀번호 응답 동일', j1==j2 and j1.get('message')=='invalid login', (j1,j2))
+check('예전 평문 계정 로그인 후 해시 전환', login('legacy','pw-legacy') is not None and sql("select left(u_passwd,4) from user_tb where u_loginid='legacy'")=='$2a$')
 print('FAILS', fails)

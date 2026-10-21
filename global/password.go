@@ -28,9 +28,28 @@ func HashPassword(passwd string) string {
 	return string(hash)
 }
 
+// 입력 비밀번호 길이 상한 — 이보다 긴 입력은 비교 없이 거부 (bcrypt 전처리 비용)
+const MaxPasswordInput = 256
+
+var dummyHashOnce sync.Once
+var dummyHash []byte
+
+// BurnPasswordCheck 는 결과 없이 bcrypt 비교 한 번만큼 시간을 쓴다.
+// 없는 아이디·평문 계정도 해시 계정과 같은 시간이 걸리게 해 응답 시간으로 계정 존재를 알 수 없게 한다
+func BurnPasswordCheck(input string) {
+	dummyHashOnce.Do(func() {
+		dummyHash, _ = bcrypt.GenerateFromPassword([]byte("timing-equalizer"), bcrypt.DefaultCost)
+	})
+	if len(input) > MaxPasswordInput {
+		input = input[:MaxPasswordInput]
+	}
+	bcrypt.CompareHashAndPassword(dummyHash, []byte(input))
+}
+
 // CheckPassword 는 저장값과 입력을 비교한다. upgrade = 평문 저장값이라 해시로 바꿔야 함
 func CheckPassword(stored string, input string) (ok bool, upgrade bool) {
-	if stored == "" || input == "" {
+	if stored == "" || input == "" || len(input) > MaxPasswordInput {
+		BurnPasswordCheck("")
 		return false, false
 	}
 
@@ -38,6 +57,8 @@ func CheckPassword(stored string, input string) (ok bool, upgrade bool) {
 		return bcrypt.CompareHashAndPassword([]byte(stored), []byte(input)) == nil, false
 	}
 
+	// 예전 평문 계정 — 비교 시간을 해시 계정과 맞춘다
+	BurnPasswordCheck(input)
 	if subtle.ConstantTimeCompare([]byte(stored), []byte(input)) == 1 {
 		return true, true
 	}
