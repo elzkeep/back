@@ -126,6 +126,7 @@ func Http() {
 	app.Use(router.KeepSecretsOnUpdate)
 	router.SetSignupRouter(app)
 	router.SetRouter(app)
+	router.SetAccountRouter(app) // 인증 필요 — SetRouter 의 JwtAuthRequired 뒤에 등록
 
 	// SPA 화면 경로 새로고침 시 index.html 반환
 	app.Get("/*", func(c *fiber.Ctx) error {

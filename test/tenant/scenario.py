@@ -175,4 +175,12 @@ s,j=req('GET','/api/user?passwd=pw-legacy',A); check('목록 ?passwd= 필터 무
 s1,j1=req('POST','/api/jwt',body={'loginid':'no-such-user','passwd':'x'}); s2,j2=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'})
 check('없는 아이디·틀린 비밀번호 응답 동일', j1==j2 and j1.get('message')=='invalid login', (j1,j2))
 check('예전 평문 계정 로그인 후 해시 전환', login('legacy','pw-legacy') is not None and sql("select left(u_passwd,4) from user_tb where u_loginid='legacy'")=='$2a$')
+# 10. 회원 탈퇴
+s,j=req('POST','/api/account/withdraw',AU,{'passwd':'wrong'}); check('탈퇴: 비밀번호 틀리면 거부', j.get('code')=='error', j)
+s,j=req('POST','/api/account/withdraw',A,{'passwd':'pw-a-admin'}); check('탈퇴: 직원이 남은 마지막 관리자는 거부', j.get('code')=='error' and '관리자' in j.get('message',''), j)
+s,j=req('POST','/api/account/withdraw',AU,{'passwd':'pw-a-user-2'}); check('탈퇴: 일반 직원 탈퇴', j.get('code')=='ok', j)
+check('탈퇴 후 로그인 불가', login('a_user','pw-a-user-2') is None)
+check('탈퇴 계정 개인정보 삭제', sql("select concat(u_name,'|',u_email,'|',u_status) from user_tb where u_id=2")=='탈퇴회원||2')
+s,j=req('GET','/api/customer',AU); check('탈퇴 계정 기존 토큰 거부', s==401, s)
+s,j=req('POST','/api/account/withdraw',body={'passwd':'x'}); check('탈퇴: 비로그인 거부', s==401, s)
 print('FAILS', fails)
