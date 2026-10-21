@@ -47,7 +47,7 @@ func (c *BillingController) Search(page int, pagesize int) {
 	} else if _endbilldate != "" {
 		args = append(args, models.Where{Column: "billdate", Value: _endbilldate, Compare: "<="})
 	}
-	_company := c.Geti64("company")
+	_company := c.TenantCompany(c.Geti64("company"))
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}

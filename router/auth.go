@@ -50,8 +50,16 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 
 			_, err := jwt.ParseWithClaims(token, &claims, key)
 			if err == nil {
-				c.Locals("user", &(claims.User))
-				return c.Next()
+				// 토큰의 사용자 정보는 발급 시점 값이라(유효기간이 길다) 레벨·업체·상태는 DB 에서 다시 읽는다
+				current := currentUser(claims.User.Id)
+				if current == nil || current.Status != user.StatusUse {
+					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+						"code":    "error",
+						"message": "unauthorized",
+					})
+				}
+				c.Locals("user", current)
+				return tenantGuard(c, current)
 			}
 		}
 	}
@@ -61,10 +69,6 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 
 	// API 외 경로(정적 파일, SPA 화면)는 인증 대상이 아님
 	if !strings.HasPrefix(u.Path, "/api/") && u.Path != "/api" {
-		return c.Next()
-	}
-
-	if c.Method() == "GET" && u.Path == "/api/user" {
 		return c.Next()
 	}
 
@@ -86,29 +90,12 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	if c.Method() == "POST" && u.Path == "/api/user/findid" {
+	// 회원가입 화면의 자격 종류·등급 선택지 (기준 정보)
+	if c.Method() == "GET" && (u.Path == "/api/licensecategory" || u.Path == "/api/licenselevel") {
 		return c.Next()
 	}
 
-	if c.Method() == "POST" && u.Path == "/api/user/password" {
-		return c.Next()
-	}
-
-	if c.Method() == "POST" && u.Path == "/api/user" {
-		return c.Next()
-	}
-
-	if c.Method() == "POST" && u.Path == "/api/company" {
-		return c.Next()
-	}
-
-	if c.Method() == "GET" && u.Path == "/api/company" {
-		return c.Next()
-	}
-
-	if c.Method() == "GET" && u.Path == "/api/department" {
-		return c.Next()
-	}
+	// 회원가입은 /api/signup/* (router/signup.go, 이 미들웨어보다 먼저 등록) — 사용자·업체 API 는 더 이상 공개하지 않는다
 
 	if u.Path == "/api/jwt" {
 		return c.Next()
@@ -120,6 +107,24 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		"code":    "error",
 		"message": "unauthorized",
 	})
+}
+
+func currentUser(id int64) *models.User {
+	if id <= 0 {
+		return nil
+	}
+
+	conn := sharedDB()
+	if conn == nil {
+		return nil
+	}
+
+	item := models.NewUserManager(conn).Get(id)
+	if item != nil {
+		item.Passwd = ""
+	}
+
+	return item
 }
 
 func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{} {

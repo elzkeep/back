@@ -9,6 +9,7 @@ import (
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
+	companymodel "zkeep/models/company"
 
 	"strings"
 )
@@ -307,8 +308,9 @@ func (c *CustomerController) Upload(filename string) {
 		companyno := f.GetCell("B", pos)
 
 		item := companyManager.GetByCompanyno(companyno)
-		if item == nil {
+		if !controllers.ReusableCompany(item) {
 			item = &models.Company{}
+			item.Type = companymodel.TypeBuilding
 			item.Companyno = companyno
 			item.Name = name
 			item.Ceo = f.GetCell("C", pos)
@@ -331,7 +333,7 @@ func (c *CustomerController) Upload(filename string) {
 		buildingName := f.GetCell("D", pos)
 		building := buildingManager.GetByCompanyName(item.Id, buildingName)
 
-		if building == nil {
+		if !controllers.ReusableBuilding(building, user.Company) {
 			building = &models.Building{}
 			building.Name = buildingName
 			building.Companyno = f.GetCell("E", pos)
