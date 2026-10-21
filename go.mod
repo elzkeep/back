@@ -13,11 +13,12 @@ require (
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/google/uuid v1.4.0
-	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/robfig/cron v1.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/signintech/gopdf v0.22.2
 	github.com/sirupsen/logrus v1.9.3
+	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
+	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/xuri/excelize/v2 v2.8.1
 	google.golang.org/api v0.142.0
 	gopkg.in/yaml.v3 v3.0.1
