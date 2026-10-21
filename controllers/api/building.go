@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"log"
 	"zkeep/controllers"
 	"zkeep/global"
 	"zkeep/models"
@@ -353,10 +354,29 @@ func CalculateScore2(conn *sql.DB, id int64) {
 
 // @POST()
 func (c *BuildingController) Score(id int64) {
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
+
 	db := c.NewConnection()
 	defer db.Close()
 
-	conn, _ := db.Begin()
+	// 세션 회사와 계약된 건물만 점수를 다시 계산할 수 있음
+	if !c.IsRootadmin() {
+		customerManager := models.NewCustomerManager(db)
+		if customerManager.GetByCompanyBuilding(c.Session.Company, id) == nil {
+			c.Error("building not found")
+			return
+		}
+	}
+
+	conn, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		c.Error("database error")
+		return
+	}
 	defer conn.Rollback()
 
 	CalculateScore(conn, id)

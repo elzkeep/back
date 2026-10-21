@@ -6,6 +6,7 @@ import (
 	"zkeep/config"
 	"zkeep/global"
 	"zkeep/models"
+	usermodel "zkeep/models/user"
 
 	"database/sql"
 	"fmt"
@@ -262,9 +263,10 @@ func (c *Controller) DefaultQueryf(name string, defaultValue float64) float64 {
 }
 
 func (c *Controller) Download(filename string, downloadFilename string) {
-	filesize, _ := os.Stat(filename)
 	c.Context.Append("Content-Type", "application/octet-stream")
-	c.Context.Append("Content-Length", fmt.Sprintf("%v", filesize))
+	if info, err := os.Stat(filename); err == nil {
+		c.Context.Append("Content-Length", fmt.Sprintf("%v", info.Size()))
+	}
 	c.Context.Append("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\";", downloadFilename))
 	c.Context.Append("Content-Transfer-Encoding", "binary")
 	c.Context.Append("Pragma", "no-cache")
@@ -328,6 +330,26 @@ func (c *Controller) GetUpload(uploadPath string, name string) (string, string) 
 		return "", ""
 	}
 
+	// 저장 경로가 UploadPath 밖으로 벗어나지 않도록 상대 경로만 허용
+	if uploadPath != "" {
+		if path.IsAbs(uploadPath) || strings.Contains(uploadPath, "\\") {
+			log.Println("invalid upload path :", uploadPath)
+			return "", ""
+		}
+
+		for _, v := range strings.Split(uploadPath, "/") {
+			if v == ".." {
+				log.Println("invalid upload path :", uploadPath)
+				return "", ""
+			}
+		}
+
+		uploadPath = path.Clean(uploadPath)
+		if uploadPath == "." {
+			uploadPath = ""
+		}
+	}
+
 	t := time.Now()
 	u2 := uuid.NewV4()
 
@@ -347,4 +369,27 @@ func (c *Controller) GetUpload(uploadPath string, name string) (string, string) 
 
 func (c *Controller) IsAdmin() bool {
 	return false
+}
+
+func (c *Controller) IsRootadmin() bool {
+	return c.Session != nil && c.Session.Level == usermodel.LevelRootadmin
+}
+
+// 관리(테넌트) API에서 사용할 회사: 전체관리자는 요청한 회사(0이면 전체),
+// 그 외 사용자는 요청 값과 관계없이 세션 회사로 고정. 호출 전에 Session nil 검사 필요
+func (c *Controller) TenantCompany(requested int64) int64 {
+	if c.IsRootadmin() {
+		return requested
+	}
+
+	return c.Session.Company
+}
+
+// 클라이언트가 보낸 업로드 파일명은 UploadPath 바로 아래의 파일명만 허용
+func IsSafeFilename(name string) bool {
+	if name == "" || name == "." || strings.Contains(name, "..") {
+		return false
+	}
+
+	return !strings.ContainsAny(name, "/\\\x00")
 }

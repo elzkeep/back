@@ -40,6 +40,12 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	session := c.Session
 
+	if session == nil || len(ids) == 0 {
+		c.Error("invalid request")
+		c.Context.Status(400).JSON(c.Result)
+		return
+	}
+
 	companyManager := models.NewCompanyManager(conn)
 	billingManager := models.NewBillingManager(conn)
 	customerManager := models.NewCustomerManager(conn)
@@ -47,11 +53,13 @@ func (c *DownloadController) Giro(ids []int64) {
 
 	items := billingManager.Find([]interface{}{
 		models.Where{Column: "id", Value: ids, Compare: "in"},
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
 	})
 
-	for _, v := range items {
-		v.Giro = billing.GiroComplete
-		billingManager.Update(&v)
+	if len(items) == 0 {
+		c.Error("billing not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
 	}
 
 	pdf := gopdf.GoPdf{}
@@ -72,26 +80,32 @@ func (c *DownloadController) Giro(ids []int64) {
 	}
 
 	my := companyManager.Get(session.Company)
+	if my == nil {
+		c.Error("company not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
+	}
 
 	xRatio := 2.9
+
+	// PDF에 실제로 출력된 청구만 지로 발행 완료 처리
+	rendered := make([]models.Billing, 0)
 
 	for _, v := range items {
 		building := v.Extra["building"].(models.Building)
 		company := v.Extra["company"].(models.Company)
 
 		customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
+		if customer == nil {
+			log.Println("giro customer not found", v.Id, building.Id)
+			continue
+		}
 
-		billdate := ""
-		temp := strings.Split(v.Billdate, "-")
-		year := global.Atoi(temp[0])
-		month := global.Atoi(temp[1])
+		billdate := giroPeriod(v)
 
-		//lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-
-		if v.Period == 1 {
-			billdate = fmt.Sprintf("%v/%v", year, month)
-		} else {
-			billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+		month := 0
+		if temp := strings.Split(v.Billdate, "-"); len(temp) >= 2 {
+			month = global.Atoi(temp[1])
 		}
 
 		pdf.SetFont("noto", "", 13)
@@ -239,101 +253,130 @@ func (c *DownloadController) Giro(ids []int64) {
 
 		pdf.SetFont("ocr", "", 12)
 
-		price := v.Price + v.Vat
-		sum := 0
-
-		muls := []int{7, 3, 1}
-		mulsPos := 0
-		for i := 1; i <= 7; i++ {
-			remain := price % 10
-
-			sum += remain * muls[mulsPos]
-
-			mulsPos++
-			if mulsPos == 3 {
-				mulsPos = 0
-			}
-
-			price -= remain
-			price /= 10
-
-			if price == 0 {
-				break
-			}
-		}
-
-		digit := 0
-		if sum < 10 {
-			digit = 10 - sum
-		} else {
-			sum = sum % 10
-			if sum > 0 {
-				digit = 10 - sum
-			}
-		}
+		digit := giroPriceDigit(v.Price + v.Vat)
 
 		strPrice := global.Itoa(v.Price + v.Vat)
-		spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+		spaces := repeatSpace(10 - (len(strPrice) + 1))
 
 		//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 		companyNo := 1000000000 + v.Id
-
-		sum = 0
-
-		var sum2 int64
-		co := companyNo
-
-		muls2 := []int64{2, 1}
-		mulsPos = 0
-		for i := 1; i <= 20; i++ {
-			remain := co % 10
-
-			temp := remain * muls2[mulsPos]
-
-			if temp >= 10 {
-				sum2 += temp%10 + 1
-			} else {
-				sum2 += temp
-			}
-
-			mulsPos++
-			if mulsPos == 2 {
-				mulsPos = 0
-			}
-
-			co -= remain
-			co /= 10
-
-			if co == 0 {
-				break
-			}
-		}
-
-		var digit2 int64
-		if sum2 < 10 {
-			digit2 = 10 - sum2
-		} else {
-			sum2 = sum2 % 10
-			if sum2 > 0 {
-				digit2 = 10 - sum2
-			}
-		}
+		digit2 := giroNumberDigit(companyNo)
 
 		strCompanyNo := fmt.Sprintf("%v", companyNo)
-		spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+		spaces2 := repeatSpace(20 - (len(strCompanyNo) + 1))
 
 		str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
 		pdf.SetXY(xRatio*68, 2.8*242+marginY)
 		pdf.Cell(nil, str)
+
+		rendered = append(rendered, v)
+	}
+
+	if len(rendered) == 0 {
+		c.Error("customer not found")
+		c.Context.Status(404).JSON(c.Result)
+		return
 	}
 
 	fullFilename := global.GetTempFilename()
 	log.Println("fullFilename", fullFilename)
 
-	pdf.WritePdf(fullFilename)
+	if err := pdf.WritePdf(fullFilename); err != nil {
+		log.Println(err)
+		os.Remove(fullFilename)
+		c.Error("pdf error")
+		c.Context.Status(500).JSON(c.Result)
+		return
+	}
 
-	c.Download(fullFilename, "hello.pdf")
+	for _, v := range rendered {
+		v.Giro = billing.GiroComplete
+		billingManager.Update(&v)
+	}
+
+	c.Download(fullFilename, "giro.pdf")
 	os.Remove(fullFilename)
+}
+
+// 금액 검증번호: 일의 자리부터 7,3,1 가중치를 곱한 합계의 일의 자리를 10에서 뺀 값 (0이면 0)
+func giroPriceDigit(price int) int {
+	muls := []int{7, 3, 1}
+	sum := 0
+	for i := 0; price > 0; i++ {
+		sum += (price % 10) * muls[i%3]
+		price /= 10
+	}
+
+	return (10 - sum%10) % 10
+}
+
+// 조회번호 검증번호: 일의 자리부터 2,1 가중치(두 자리면 각 자리 합)를 적용한 Luhn 방식
+func giroNumberDigit(no int64) int64 {
+	muls := []int64{2, 1}
+	var sum int64
+	for i := 0; no > 0; i++ {
+		temp := (no % 10) * muls[i%2]
+		sum += temp/10 + temp%10
+		no /= 10
+	}
+
+	return (10 - sum%10) % 10
+}
+
+func repeatSpace(count int) string {
+	if count < 0 {
+		count = 0
+	}
+
+	return strings.Repeat(" ", count)
+}
+
+func parseYearMonth(str string) (int, int, bool) {
+	temp := strings.Split(str, "-")
+	if len(temp) < 2 {
+		return 0, 0, false
+	}
+
+	year := global.Atoi(temp[0])
+	month := global.Atoi(temp[1])
+	if year <= 0 || month < 1 || month > 12 {
+		return 0, 0, false
+	}
+
+	return year, month, true
+}
+
+// 지로 청구 기간 표시: "2024/3", "2024/3~5", 해를 넘기면 "2024/11~2025/2"
+func giroPeriod(v models.Billing) string {
+	year, month, ok := parseYearMonth(v.Month)
+	if !ok {
+		year, month, ok = parseYearMonth(v.Billdate)
+		if !ok {
+			return ""
+		}
+	}
+
+	endYear, endMonth, ok := parseYearMonth(v.Endmonth)
+	if !ok {
+		period := v.Period
+		if period < 1 {
+			period = 1
+		}
+
+		t := time.Date(year, time.Month(month+period-1), 1, 0, 0, 0, 0, time.Local)
+		endYear = t.Year()
+		endMonth = int(t.Month())
+	}
+
+	if endYear == year && endMonth == month {
+		return fmt.Sprintf("%v/%v", year, month)
+	}
+
+	if endYear == year {
+		return fmt.Sprintf("%v/%v~%v", year, month, endMonth)
+	}
+
+	return fmt.Sprintf("%v/%v~%v/%v", year, month, endYear, endMonth)
 }
 
 type Setting struct {
@@ -408,17 +451,11 @@ func (c *DownloadController) GiroWork(ids []int64) {
 
 			customer := customerManager.GetByCompanyBuilding(session.Company, building.Id)
 
-			billdate := ""
-			temp := strings.Split(v.Billdate, "-")
-			year := global.Atoi(temp[0])
-			month := global.Atoi(temp[1])
+			billdate := giroPeriod(v)
 
-			//lastday := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-
-			if v.Period == 1 {
-				billdate = fmt.Sprintf("%v/%v", year, month)
-			} else {
-				billdate = fmt.Sprintf("%v/%v~%v", year, month, month+v.Period-1)
+			month := 0
+			if temp := strings.Split(v.Billdate, "-"); len(temp) >= 2 {
+				month = global.Atoi(temp[1])
 			}
 
 			vat := int(v.Price / 11)
@@ -541,88 +578,17 @@ func (c *DownloadController) GiroWork(ids []int64) {
 
 			pdf.SetFont("ocr", "", 12)
 
-			price := v.Price
-			sum := 0
-
-			muls := []int{7, 3, 1}
-			mulsPos := 0
-			for i := 1; i <= 7; i++ {
-				remain := price % 10
-
-				sum += remain * muls[mulsPos]
-
-				mulsPos++
-				if mulsPos == 3 {
-					mulsPos = 0
-				}
-
-				price -= remain
-				price /= 10
-
-				if price == 0 {
-					break
-				}
-			}
-
-			digit := 0
-			if sum < 10 {
-				digit = 10 - sum
-			} else {
-				sum = sum % 10
-				if sum > 0 {
-					digit = 10 - sum
-				}
-			}
+			digit := giroPriceDigit(v.Price)
 
 			strPrice := global.Itoa(v.Price)
-			spaces := strings.Repeat(" ", 10-(len(strPrice)+1))
+			spaces := repeatSpace(10 - (len(strPrice) + 1))
 
 			//companyNo := 1000000000 + int64(user.Company)*100000 + int64(customer.Number)
 			companyNo := 1000000000 + v.Id
-
-			sum = 0
-
-			var sum2 int64
-			co := companyNo
-
-			muls2 := []int64{2, 1}
-			mulsPos = 0
-			for i := 1; i <= 20; i++ {
-				remain := co % 10
-
-				temp := remain * muls2[mulsPos]
-
-				if temp >= 10 {
-					sum2 += temp%10 + 1
-				} else {
-					sum2 += temp
-				}
-
-				mulsPos++
-				if mulsPos == 2 {
-					mulsPos = 0
-				}
-
-				co -= remain
-				co /= 10
-
-				if co == 0 {
-					break
-				}
-			}
-
-			var digit2 int64
-			if sum2 < 10 {
-				digit2 = 10 - sum2
-			} else {
-				sum2 = sum2 % 10
-				if sum2 > 0 {
-					digit2 = 10 - sum2
-				}
-			}
+			digit2 := giroNumberDigit(companyNo)
 
 			strCompanyNo := fmt.Sprintf("%v", companyNo)
-			spaces2 := strings.Repeat(" ", 20-(len(strCompanyNo)+1))
+			spaces2 := repeatSpace(20 - (len(strCompanyNo) + 1))
 
 			str := fmt.Sprintf(" <%v+%v+%v%v+ %v+%v%v< <11<", my.Giro, spaces2, strCompanyNo, digit2, spaces, strPrice, digit)
 			pdf.SetXY(xRatio*68, yRatio*241.5+marginY)
@@ -699,7 +665,7 @@ func (c *DownloadController) User() {
 		str := ""
 		for _, v2 := range departments {
 			if v.Department == v2.Id {
-				str = v.Name
+				str = v2.Name
 				break
 			}
 		}
@@ -726,6 +692,75 @@ func (c *DownloadController) User() {
 	log.Println("filename", fullFilename)
 
 	c.Download(fullFilename, "user.xlsx")
+	os.Remove(fullFilename)
+}
+
+func (c *DownloadController) Statistics() {
+	conn := c.NewConnection()
+
+	session := c.Session
+
+	args := []interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+	}
+
+	startdate := c.Get("startdate")
+	enddate := c.Get("enddate")
+	if startdate != "" && enddate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: [2]string{startdate, enddate}, Compare: "between"})
+	} else if startdate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: startdate, Compare: ">="})
+	} else if enddate != "" {
+		args = append(args, models.Where{Column: "billdate", Value: enddate, Compare: "<="})
+	}
+
+	var users []int64
+	for _, v := range strings.Split(c.Get("users"), ",") {
+		if id := global.Atol(strings.TrimSpace(v)); id > 0 {
+			users = append(users, id)
+		}
+	}
+	if len(users) > 0 {
+		args = append(args, models.Where{Column: "user", Value: users, Compare: "in"})
+	}
+
+	args = append(args, models.Ordering("bi_billdate"))
+
+	billinguserlistManager := models.NewBillinguserlistManager(conn)
+	items := billinguserlistManager.Find(args)
+
+	header := []string{"번호", "기간", "건물명", "금액", "담당자"}
+	width := []int{15, 30, 80, 30, 30}
+	align := []string{"C", "C", "L", "R", "L"}
+	excel := global.NewExcel("매출 현황", "", 12, header, width, align)
+	excel.SetHeight(30)
+
+	total := 0
+	for i, v := range items {
+		billdate := v.Billdate
+		if len(billdate) > 10 {
+			billdate = billdate[:10]
+		}
+
+		excel.CellInt(i + 1)
+		excel.Cell(billdate)
+		excel.Cell(v.Buildingname)
+		excel.CellInt(v.Price)
+		excel.Cell(v.Username)
+
+		total += v.Price
+	}
+
+	excel.Cell("합계")
+	excel.Cell("")
+	excel.Cell(fmt.Sprintf("%v건", len(items)))
+	excel.CellInt(total)
+	excel.Cell("")
+
+	fullFilename := excel.Save("")
+	log.Println("filename", fullFilename)
+
+	c.Download(fullFilename, "statistics.xlsx")
 	os.Remove(fullFilename)
 }
 
@@ -949,7 +984,7 @@ func (c *DownloadController) All(category int) {
 				excel.Cell(fmt.Sprintf("%v", v.Score))
 				excel.Cell(v.Joindate)
 
-				licenses := licenseManager.FindByUser(session.Id)
+				licenses := licenseManager.FindByUser(v.Id)
 				if len(licenses) == 0 {
 					excel.Cell("")
 					excel.Cell("")

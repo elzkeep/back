@@ -114,39 +114,55 @@ type Pair struct {
 func (c *BillingController) Make(durationtype int, base int, year int, month int, durationmonth []int, ids []int64, price []int, vat []int, remark []string) {
 	session := c.Session
 
-	conn := c.NewConnection()
+	if session == nil {
+		c.Error("invalid request")
+		return
+	}
 
-	customerManager := models.NewCustomerManager(conn)
-	billingManager := models.NewBillingManager(conn)
-
-	customers := customerManager.Find([]interface{}{
-		models.Where{Column: "company", Value: session.Company, Compare: "="},
-		models.Where{Column: "building", Value: ids, Compare: "in"},
-	})
+	if len(ids) == 0 || len(price) != len(ids) || len(vat) != len(ids) || len(remark) != len(ids) {
+		c.Error("invalid request")
+		return
+	}
 
 	now := time.Now()
 
 	months := make([]Pair, 0)
 	if durationtype == 2 {
-		if len(durationmonth) == 0 {
+		if len(durationmonth) == 0 || year <= 0 {
+			c.Error("invalid period")
 			return
 		}
 
-		months = append(months, Pair{Year: year, Month: durationmonth[0], Period: 1})
-
-		inc := 1
-		for _, v := range durationmonth[1:] {
-			current := months[len(months)-1]
-			if v == current.Month+inc {
-				current.Month = v
-				months[len(months)-1].Period++
-				inc++
-			} else {
-				months = append(months, Pair{Year: year, Month: v, Period: 1})
-				inc = 1
+		// 월이 이전 월보다 작아지면 다음 해로 넘어간 것으로 처리 (예: 11,12,1,2 → 11월~다음해 2월)
+		// 연속 여부는 년*12+월 기준으로 판단하므로 12월→1월도 연속으로 묶임
+		seen := make(map[int]bool)
+		prev := 0
+		for i, v := range durationmonth {
+			if v < 1 || v > 12 || seen[v] {
+				c.Error("invalid period")
+				return
 			}
+			seen[v] = true
+
+			current := year*12 + v - 1
+			for i > 0 && current < prev {
+				current += 12
+			}
+
+			if i > 0 && current == prev+1 {
+				months[len(months)-1].Period++
+			} else {
+				months = append(months, Pair{Year: current / 12, Month: current%12 + 1, Period: 1})
+			}
+
+			prev = current
 		}
 	} else {
+		if month < 1 {
+			c.Error("invalid period")
+			return
+		}
+
 		year = now.Year()
 		currentMonth := int(now.Month())
 		targetMonth := 1
@@ -171,6 +187,26 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 
 		months = append(months, Pair{Year: year, Month: targetMonth, Period: month})
 	}
+
+	conn := c.NewConnection()
+
+	// 진행(1) 상태인 고객만 청구
+	customerManager := models.NewCustomerManager(conn)
+	customers := customerManager.Find([]interface{}{
+		models.Where{Column: "company", Value: session.Company, Compare: "="},
+		models.Where{Column: "building", Value: ids, Compare: "in"},
+		models.Where{Column: "status", Value: 1, Compare: "="},
+	})
+
+	tx, err := conn.Begin()
+	if err != nil {
+		log.Println(err)
+		c.Error("database error")
+		return
+	}
+	defer tx.Rollback()
+
+	billingManager := models.NewBillingManager(tx)
 
 	today := global.GetCurrentDatetime()
 
@@ -231,7 +267,16 @@ func (c *BillingController) Make(durationtype int, base int, year int, month int
 				Depositprice: 0,
 			}
 
-			billingManager.Insert(&item)
+			if err := billingManager.Insert(&item); err != nil {
+				log.Println(err)
+				c.Error("billing insert error")
+				return
+			}
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+		c.Error("database error")
 	}
 }

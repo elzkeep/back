@@ -12,6 +12,10 @@ type BillinguserlistController struct {
 }
 
 func (c *BillinguserlistController) Excel(company int64, startdate string, enddate string, users []int64) {
+	if c.Session == nil {
+		c.Error("invalid request")
+		return
+	}
 
 	conn := c.NewConnection()
 
@@ -44,6 +48,10 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 		args = append(args, models.Where{Column: "billdate", Value: _endbilldate, Compare: "<="})
 	}
 	_company := c.Geti64("company")
+	if _company == 0 {
+		_company = company
+	}
+	_company = c.TenantCompany(_company)
 	if _company != 0 {
 		args = append(args, models.Where{Column: "company", Value: _company, Compare: "="})
 	}
@@ -88,8 +96,9 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 		args = append(args, models.Where{Column: "username", Value: _username, Compare: "like"})
 	}
 
-	if len(users) > 0 {
-		args = append(args, models.Where{Column: "user", Value: users, Compare: "in"})
+	// 빈 값일 때 라우터가 [0]을 넘기므로 0은 제외
+	if ids := validIds(users); len(ids) > 0 {
+		args = append(args, models.Where{Column: "user", Value: ids, Compare: "in"})
 	}
 
 	page := 0
@@ -129,4 +138,15 @@ func (c *BillinguserlistController) Excel(company int64, startdate string, endda
 
 	total := manager.Count(args)
 	c.Set("total", total)
+}
+
+func validIds(ids []int64) []int64 {
+	var items []int64
+	for _, v := range ids {
+		if v > 0 {
+			items = append(items, v)
+		}
+	}
+
+	return items
 }

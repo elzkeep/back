@@ -119,8 +119,11 @@ func (c *UserController) GetByCompanyTelName(company int64 ,tel string ,name str
 
 
 func (c *UserController) Insert(item *models.User) {
-    
-    
+	if item == nil || strings.TrimSpace(item.Passwd) == "" {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
     
 	manager := models.NewUserManager(conn)
@@ -155,6 +158,15 @@ func (c *UserController) Update(item *models.User) {
 	conn := c.NewConnection()
 
 	manager := models.NewUserManager(conn)
+
+	// 응답에서 비밀번호를 제외하므로, 비어 있으면 기존 비밀번호 유지 (수동 수정)
+	if item.Passwd == "" {
+		old := manager.Get(item.Id)
+		if old != nil {
+			item.Passwd = old.Passwd
+		}
+	}
+
 	manager.Update(item)
 }
 
@@ -524,11 +536,24 @@ func (c *UserController) UpdateLoginid(loginid string, id int64) {
 }
 // @Put()
 func (c *UserController) UpdatePasswd(passwd string, id int64) {
-    
-    
+	if c.Session == nil || strings.TrimSpace(passwd) == "" {
+		c.Error("invalid request")
+		return
+	}
+
 	conn := c.NewConnection()
 
 	_manager := models.NewUserManager(conn)
+
+	// 본인, 같은 회사 관리자, 전체관리자만 변경 가능
+	if id != c.Session.Id && !c.IsRootadmin() {
+		old := _manager.Get(id)
+		if old == nil || c.Session.Level != user.LevelAdmin || old.Company != c.Session.Company {
+			c.Error("permission denied")
+			return
+		}
+	}
+
 	_manager.UpdatePasswd(passwd, id)
 }
 // @Put()

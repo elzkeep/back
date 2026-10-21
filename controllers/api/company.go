@@ -127,12 +127,18 @@ func (c *CompanyController) Upload(filename string) {
 
 	user := c.Session
 
+	if user == nil || !controllers.IsSafeFilename(filename) {
+		c.Error("invalid request")
+		return
+	}
+
 	fullFilename := path.Join(config.UploadPath, filename)
 	f := global.NewExcelReader(fullFilename)
 	if f == nil {
 		log.Println("not found file")
 		return
 	}
+	defer f.Close()
 
 	sheet := "Sheet1"
 	f.SetSheet(sheet)

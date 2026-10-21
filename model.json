@@ -192,7 +192,7 @@
       "map": [
         {
           "name": "status",
-          "data": ["", "wait:입금대기", "complete:입금완료"]
+          "data": ["", "wait:입금대기", "part:부분입금", "complete:입금완료"]
         },
         {
           "name": "giro",
