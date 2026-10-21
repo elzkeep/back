@@ -9,7 +9,7 @@
 
 ```sh
 cp .env.yml.example .env.yml          # DB·SMS·메일 값 채우기 (또는 DB_PASSWORD 등 환경변수)
-export JWT_SECRET=<32자 이상 임의 문자열>   # 필수 (운영은 없으면 기동 거부)
+export JWT_SECRET=$(openssl rand -hex 32)  # 필수 (운영은 없으면 기동 거부). 운영 값은 한 번 만들어 서버 env 에 고정
 go run main.go                        # :9303 develop
 go test ./...
 ```

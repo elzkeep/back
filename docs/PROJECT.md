@@ -60,18 +60,19 @@
 
 ## 5. 인증과 업체 분리
 
-- 로그인 `POST /api/jwt` → JWT(30일, `JWT_SECRET` 필수). 요청마다 DB 에서 사용자 레벨·업체·상태·승인을 다시 읽는다
+- 로그인 `POST /api/jwt` → JWT(30일, `JWT_SECRET` 필수). 요청마다 DB 에서 사용자 레벨·업체·상태·승인을 다시 읽는다.
+  없는 아이디·틀린 비밀번호는 같은 응답(메시지·시간)
 - 비밀번호 bcrypt (평문으로 저장돼 있던 예전 계정은 로그인 시 전환)
 - 비로그인 공개: `POST /api/jwt`, `/api/signup/*`(가입·중복확인·업체/팀 선택지), 공지·문의 등록, 자격 종류 — 나머지 `/api/*` 는 토큰 필요
 - 업체 분리(`router/tenant.go`): 전체관리자가 아니면 목록은 자기 업체로 고정, id 접근·쓰기는 소유 확인, 참조(건물·점검·사용자)도 확인,
   응답의 비밀번호 제거. 엑셀 일괄등록·메일·SMS 는 업체 관리자 이상
-- 검증: `test/tenant/scenario.py` (두 업체 시나리오 98개)
+- 검증: `test/tenant/scenario.py` (두 업체 시나리오 107개)
 
 ## 6. 실행·배포
 
 ```sh
 # back — .env.yml.example 을 .env.yml 로 복사해 값 채움 (또는 DB_PASSWORD 등 환경변수)
-JWT_SECRET=<32자 이상> go run main.go            # :9303, develop 모드
+JWT_SECRET=$(openssl rand -hex 32) go run main.go   # :9303, develop 모드 (운영 값은 고정해 env 로)
 JWT_SECRET=... ./main --mode production
 
 # front
