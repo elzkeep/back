@@ -92,10 +92,10 @@ DB 뷰 변경(`view.sql`)은 운영 DB 에 직접 적용한다.
 | 단계 | 내용 | PR |
 |---|---|---|
 | 보안 1·2 | 공개 API 축소·가입 API, 업체 분리, 레벨 상승·승인 강제 | back#3, front#3, app#3 |
-| 앱 빌드 | Android 툴체인, 주소검색 대체, common_control 메서드 | app#5, common_control#23 |
+| 앱 빌드 | Android 툴체인, 주소검색 대체, common_control 메서드 | app#9, common_control#23 |
 | 보고서 PDF | 점검 데이터로 기록표 생성 | back#5 |
 | 비밀값·인증 | 비밀 파일 추적 해제, JWT 키 필수, bcrypt, POST 로그인 | back#7, front#4, app#6 |
-| 출시 준비 | 앱 이름·아이콘·권한·서명·탈퇴 | back#9, app 「release/prep」 |
+| 출시 준비 | 앱 이름·아이콘·권한·서명·탈퇴 | back#9, app#8 |
 
 **남은 일**
 - 공개 저장소에 노출됐던 비밀값 교체 (DB·SMS·Gmail 비밀번호, SSL 인증서), 운영 `JWT_SECRET` 설정
