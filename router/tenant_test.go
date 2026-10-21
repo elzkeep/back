@@ -1,6 +1,12 @@
 package router
 
-import "testing"
+import (
+	"io"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func TestClassifyRoute(t *testing.T) {
 	cases := []struct {
@@ -71,5 +77,27 @@ func TestNormalizeKeys(t *testing.T) {
 	}
 	if _, ok := normalizeKeys(map[string]interface{}{"\u212Aey": 1.0}); ok {
 		t.Error("non-ascii key must fail")
+	}
+}
+
+func TestClientKeyIgnoresHeadersFromPublicPeer(t *testing.T) {
+	app := fiber.New()
+	app.Get("/", func(c *fiber.Ctx) error { return c.SendString(clientKey(c)) })
+
+	keys := map[string]bool{}
+	for _, xff := range []string{"1.1.1.1", "2.2.2.2", "3.3.3.3, 4.4.4.4"} {
+		req := httptest.NewRequest("GET", "/", nil)
+		req.Header.Set("X-Forwarded-For", xff)
+		req.Header.Set("X-Real-IP", xff)
+		res, err := app.Test(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(res.Body)
+		keys[string(body)] = true
+	}
+	// app.Test 의 연결 주소(0.0.0.0)는 사설·루프백이 아니므로 헤더를 바꿔도 키가 같아야 한다
+	if len(keys) != 1 {
+		t.Errorf("keys = %v", keys)
 	}
 }

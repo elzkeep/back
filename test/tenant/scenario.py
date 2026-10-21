@@ -12,7 +12,7 @@ def req(method, path, token=None, body=None):
         try: return e.code, json.loads(e.read() or b'{}')
         except Exception: return e.code, {}
 def login(i,p):
-    s,j=req('GET','/api/jwt?'+urllib.parse.urlencode({'loginid':i,'passwd':p})); return j.get('token')
+    s,j=req('POST','/api/jwt',body={'loginid':i,'passwd':p}); return j.get('token')
 A=login('a_admin','pw-a-admin'); AU=login('a_user','pw-a-user'); BB=login('b_admin','pw-b-admin'); R=login('root','pw-root')
 assert A and AU and BB and R, 'login failed'
 fails=0
@@ -132,7 +132,7 @@ try: code=urllib.request.urlopen(r).status
 except urllib.error.HTTPError as e: code=e.code
 check('JSON 아닌 본문 쓰기 거부', code==403, code)
 s,j=req('DELETE','/api/facility/batch',A,[None]); check('[null] 배치 거부(서버 오류 없이)', s==403, s)
-s,j=req('GET','/api/jwt?'+urllib.parse.urlencode({'loginid':'newbie','passwd':'p'})); check('승인 대기 계정 로그인 거부', j.get('code')=='error', j)
+s,j=req('POST','/api/jwt',body={'loginid':'newbie','passwd':'p'}); check('승인 대기 계정 로그인 거부', j.get('code')=='error', j)
 subprocess.run(['docker','exec',os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb'),'mariadb','-uroot','-ptest','zkeep','-e','update user_tb set u_approval=2 where u_id=2'])
 s,j=req('GET','/api/customer',AU); check('거절된 계정의 기존 토큰 거부', s==401, s)
 subprocess.run(['docker','exec',os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb'),'mariadb','-uroot','-ptest','zkeep','-e','update user_tb set u_approval=3 where u_id=2'])
@@ -140,4 +140,39 @@ codes=[]
 for i in range(12):
     s,j=req('POST','/api/signup/company',body={'company':{'name':'RL%d'%i,'companyno':'rl-%d'%i},'user':{'loginid':'rl%d'%i,'passwd':'p','name':'x'}}); codes.append(s)
 check('가입 요청 횟수 제한(시간당 10회)', 429 in codes and codes.count(200)<=10, codes)
+
+# 9. 4단계: 로그인·비밀번호 해시
+DB=os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb')
+def sql(q): return subprocess.run(['docker','exec',DB,'mariadb','-uroot','-ptest','zkeep','-N','-e',q],capture_output=True,text=True).stdout.strip()
+s,j=req('GET','/api/jwt?loginid=a_admin&passwd=pw-a-admin'); check('GET 로그인 차단(비밀번호 URL 노출)', s==405, (s,j))
+check('평문 계정은 로그인 후 bcrypt 로 전환', sql("select left(u_passwd,4) from user_tb where u_id=1")=='$2a$')
+check('전환 후에도 같은 비밀번호로 로그인', login('a_admin','pw-a-admin') is not None)
+s,j=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'}); check('틀린 비밀번호 거부', j.get('code')=='error', j)
+check('가입 계정 비밀번호는 해시로 저장', sql("select left(u_passwd,4) from user_tb where u_loginid='c_admin'")=='$2a$')
+s,j=req('POST','/api/user',A,{'loginid':'made_by_admin','passwd':'pw-new','name':'신규','level':1,'status':1,'approval':3})
+check('관리자가 만든 계정 비밀번호 해시', sql("select left(u_passwd,4) from user_tb where u_loginid='made_by_admin'")=='$2a$')
+check('관리자가 만든 계정 로그인', login('made_by_admin','pw-new') is not None)
+s,j=req('PUT','/api/user/passwd',A,{'id':int(sql("select u_id from user_tb where u_loginid='made_by_admin'")),'passwd':'pw-changed'})
+check('비밀번호 변경도 해시·로그인', sql("select left(u_passwd,4) from user_tb where u_loginid='made_by_admin'")=='$2a$' and login('made_by_admin','pw-changed') is not None)
+import base64
+tok=login('a_admin','pw-a-admin'); payload=json.loads(base64.urlsafe_b64decode(tok.split('.')[1]+'=='))
+import time as _t
+check('토큰 유효기간 30일', 29*86400 < payload['exp']-_t.time() <= 30*86400+60, payload['exp']-_t.time())
+
+# 9-2. 비밀번호 해시는 인증 뒤, 권한 있는 쓰기만
+s,j=req('PUT','/api/user/passwd',AU,{'id':2,'passwd':'pw-a-user-2'})
+check('일반 직원 자기 비밀번호 변경 → 해시·로그인', sql("select left(u_passwd,4) from user_tb where u_id=2")=='$2a$' and login('a_user','pw-a-user-2') is not None)
+s,j=req('POST','/api/user/batch',A,[{'loginid':'bulk%d'%i,'passwd':'p','name':'x','level':1} for i in range(201)])
+check('일괄 등록 200건 초과 거부(413)', s==413, s)
+s,j=req('POST','/api/user/batch',body=[{'loginid':'anon%d'%i,'passwd':'p'} for i in range(5)])
+check('비로그인 일괄 등록 401 (해시 전에 거부)', s==401, s)
+
+# 9-3. 비밀번호 검색 필터 무시·로그인 실패 응답 통일
+sql("set session sql_mode=''; insert into user_tb (u_loginid,u_passwd,u_name,u_level,u_approval,u_status,u_company,u_date) values ('legacy','pw-legacy','예전계정',1,3,1,1,now())")
+s,j=req('GET','/api/user/count',A); total=j.get('total')
+s,j=req('GET','/api/user/count?passwd=pw-legacy',A); check('?passwd= 필터 무시(평문 비밀번호 추측 불가)', j.get('total')==total and total and total>1, (j,total))
+s,j=req('GET','/api/user?passwd=pw-legacy',A); check('목록 ?passwd= 필터 무시', len(j.get('items') or [])==total, len(j.get('items') or []))
+s1,j1=req('POST','/api/jwt',body={'loginid':'no-such-user','passwd':'x'}); s2,j2=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'})
+check('없는 아이디·틀린 비밀번호 응답 동일', j1==j2 and j1.get('message')=='invalid login', (j1,j2))
+check('예전 평문 계정 로그인 후 해시 전환', login('legacy','pw-legacy') is not None and sql("select left(u_passwd,4) from user_tb where u_loginid='legacy'")=='$2a$')
 print('FAILS', fails)

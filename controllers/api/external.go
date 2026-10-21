@@ -434,7 +434,7 @@ func ExcelProcess(start int, max int, typeid int, myCompanyId int64, cells [][]s
 				userItem.Company = myCompanyId
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
-				userItem.Passwd = "0000"
+				userItem.Passwd = global.DefaultPasswordHash()
 				userItem.Status = user.StatusNotuse
 				userItem.Approval = user.ApprovalComplete
 				userItem.Score = 60
@@ -763,7 +763,7 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 				userItem.Company = myCompanyId
 				userItem.Name = userName
 				userItem.Loginid = userItem.Name
-				userItem.Passwd = "0000"
+				userItem.Passwd = global.DefaultPasswordHash()
 				if typeid == 1 {
 					userItem.Status = user.StatusUse
 				} else {
@@ -791,7 +791,7 @@ func ExcelProcessOld(filename string, typeid int, myCompanyId int64) {
 				userItem.Company = myCompanyId
 				userItem.Name = salesuserName
 				userItem.Loginid = userItem.Name
-				userItem.Passwd = "0000"
+				userItem.Passwd = global.DefaultPasswordHash()
 				if typeid == 1 {
 					userItem.Status = user.StatusUse
 				} else {
@@ -1132,7 +1132,7 @@ func (c *ExternalController) User(filename string) {
 		if userItem == nil {
 			item.Company = company
 			item.Loginid = item.Name
-			item.Passwd = "0000"
+			item.Passwd = global.DefaultPasswordHash()
 			item.Score = 60
 
 			userManager.Insert(&item)
@@ -1327,7 +1327,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 			if userItem == nil {
 				item.Company = myCompanyId
 				item.Loginid = loginid
-				item.Passwd = "0000"
+				item.Passwd = global.DefaultPasswordHash()
 				item.Score = 60
 
 				userManager.Insert(&item)
@@ -1501,7 +1501,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 					userItem.Company = myCompanyId
 					userItem.Name = userName
 					userItem.Loginid = userItem.Name
-					userItem.Passwd = "0000"
+					userItem.Passwd = global.DefaultPasswordHash()
 					userItem.Status = user.StatusUse
 					userItem.Approval = user.ApprovalComplete
 					userItem.Score = 60
@@ -1527,7 +1527,7 @@ func AllProcess(start int, max int, category int, myCompanyId int64, userCells [
 					userItem.Company = myCompanyId
 					userItem.Name = salesuserName
 					userItem.Loginid = userItem.Name
-					userItem.Passwd = "0000"
+					userItem.Passwd = global.DefaultPasswordHash()
 					userItem.Status = user.StatusUse
 					userItem.Approval = user.ApprovalComplete
 					userItem.Score = 60

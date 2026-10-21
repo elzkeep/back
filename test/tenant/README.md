@@ -14,7 +14,7 @@ docker exec -i zkeep-testdb mariadb -uroot -ptest zkeep < view.sql
 docker exec -i zkeep-testdb mariadb -uroot -ptest zkeep < test/tenant/seed.sql
 
 # 2) 서버: 로컬 DB 를 가리키는 .env.yml 이 있는 별도 폴더에서 실행 (develop, port 19303, db 127.0.0.1:33306 zkeep/test)
-JWT_SECRET=local-test-secret ./zkeep
+JWT_SECRET=local-test-secret-0123456789abcdefghijklmn ./zkeep
 
 # 3) 테스트 (시드 직후 1회 — 가입 테스트가 계정을 만든다)
 python3 test/tenant/scenario.py   # 마지막 줄 FAILS 0

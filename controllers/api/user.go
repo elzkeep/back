@@ -258,7 +258,7 @@ func (c *UserController) Upload(filename string) {
 			user := models.User{
 				Name:       name,
 				Loginid:    loginid,
-				Passwd:     "0000",
+				Passwd:     global.DefaultPasswordHash(),
 				Email:      email,
 				Tel:        tel,
 				Address:    address,

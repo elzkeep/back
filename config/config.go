@@ -58,16 +58,12 @@ var Port string
 var Cors []string
 
 func init() {
-	buf, err := os.ReadFile(".env.yml")
-	if err != nil {
-		return
-	}
-
 	config := &Config{}
-	err = yaml.Unmarshal(buf, config)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-		return
+	if buf, err := os.ReadFile(".env.yml"); err == nil {
+		if err := yaml.Unmarshal(buf, config); err != nil {
+			log.Fatalf("Unmarshal: %v", err)
+			return
+		}
 	}
 
 	Mode = os.Getenv("APP_MODE")
@@ -116,6 +112,8 @@ func init() {
 		Database.Port = "3306"
 	}
 
+	applyEnv()
+
 	if Database.ConnectionString == "" {
 		Database.ConnectionString = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", Database.User, Database.Password, Database.Host, Database.Port, Database.Name)
 	}
@@ -123,5 +121,27 @@ func init() {
 	Version = config.Version
 
 	log.Println("MODE :", Mode)
-	log.Println("DATABASE :", Database.ConnectionString)
+	// 접속 문자열엔 비밀번호가 들어 있어 남기지 않는다
+	log.Printf("DATABASE : %v@%v:%v/%v", Database.User, Database.Host, Database.Port, Database.Name)
+}
+
+// 비밀값은 .env.yml(저장소에 올리지 않음) 대신 환경변수로도 줄 수 있다 — 환경변수가 우선
+func applyEnv() {
+	set := func(target *string, key string) {
+		if v := os.Getenv(key); v != "" {
+			*target = v
+		}
+	}
+
+	set(&Database.Host, "DB_HOST")
+	set(&Database.Port, "DB_PORT")
+	set(&Database.Name, "DB_NAME")
+	set(&Database.User, "DB_USER")
+	set(&Database.Password, "DB_PASSWORD")
+	set(&Sms.User, "SMS_USER")
+	set(&Sms.Key, "SMS_KEY")
+	set(&Sms.Sender, "SMS_SENDER")
+	set(&Mail.Sender, "MAIL_SENDER")
+	set(&Mail.User, "MAIL_USER")
+	set(&Mail.Password, "MAIL_PASSWORD")
 }
