@@ -175,4 +175,23 @@ s,j=req('GET','/api/user?passwd=pw-legacy',A); check('목록 ?passwd= 필터 무
 s1,j1=req('POST','/api/jwt',body={'loginid':'no-such-user','passwd':'x'}); s2,j2=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'})
 check('없는 아이디·틀린 비밀번호 응답 동일', j1==j2 and j1.get('message')=='invalid login', (j1,j2))
 check('예전 평문 계정 로그인 후 해시 전환', login('legacy','pw-legacy') is not None and sql("select left(u_passwd,4) from user_tb where u_loginid='legacy'")=='$2a$')
+# 10. 회원 탈퇴
+s,j=req('POST','/api/account/withdraw',AU,{'passwd':'wrong'}); check('탈퇴: 비밀번호 틀리면 거부', j.get('code')=='error', j)
+s,j=req('POST','/api/account/withdraw',A,{'passwd':'pw-a-admin'}); check('탈퇴: 직원이 남은 마지막 관리자는 거부', j.get('code')=='error' and '관리자' in j.get('message',''), j)
+s,j=req('POST','/api/account/withdraw',AU,{'passwd':'pw-a-user-2'}); check('탈퇴: 일반 직원 탈퇴', j.get('code')=='ok', j)
+check('탈퇴 후 로그인 불가', login('a_user','pw-a-user-2') is None)
+check('탈퇴 계정 개인정보 삭제', sql("select concat(u_name,'|',u_email,'|',u_status) from user_tb where u_id=2")=='탈퇴회원||2')
+s,j=req('GET','/api/customer',AU); check('탈퇴 계정 기존 토큰 거부', s==401, s)
+s,j=req('POST','/api/account/withdraw',body={'passwd':'x'}); check('탈퇴: 비로그인 거부', s==401, s)
+s,j=req('POST','/api/account/withdraw',A,{'passwd':'x'*300}); check('탈퇴: 너무 긴 비밀번호 거부', j.get('code')=='error', j)
+# 같은 업체 관리자 둘이 동시에 탈퇴해도 관리자가 0명이 되지 않는다
+sql("set session sql_mode=''; insert into user_tb (u_loginid,u_passwd,u_name,u_level,u_approval,u_status,u_company,u_date) values ('a_admin2','pw-a-admin2','A관리자2',3,3,1,1,now())")
+A2=login('a_admin2','pw-a-admin2')
+import threading
+res={}
+def go(name,tok,pw): res[name]=req('POST','/api/account/withdraw',tok,{'passwd':pw})[1]
+t1=threading.Thread(target=go,args=('a1',A,'pw-a-admin')); t2=threading.Thread(target=go,args=('a2',A2,'pw-a-admin2'))
+t1.start(); t2.start(); t1.join(); t2.join()
+oks=[k for k,v in res.items() if v.get('code')=='ok']
+check('동시 탈퇴: 관리자 한 명만 탈퇴되고 한 명은 남는다', len(oks)==1 and sql("select count(*) from user_tb where u_company=1 and u_level=3 and u_status=1")=='1', (res, sql("select count(*) from user_tb where u_company=1 and u_level=3 and u_status=1")))
 print('FAILS', fails)
