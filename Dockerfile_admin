@@ -11,6 +11,9 @@ RUN  mkdir -p /usr/local/main/webdata
 RUN  mkdir -p /usr/local/main/webdata/temp
 COPY ./fonts/noto.ttf /usr/local/main/fonts/noto.ttf
 COPY ./fonts/OCR-B1.ttf /usr/local/main/fonts/OCR-B1.ttf
+# 점검 보고서 PDF (controllers/api/reportpdf.go)
+COPY ./fonts/NotoSansKR-Regular.ttf /usr/local/main/fonts/NotoSansKR-Regular.ttf
+COPY ./fonts/NotoSansKR-Bold.ttf /usr/local/main/fonts/NotoSansKR-Bold.ttf
 
 WORKDIR /usr/local/main
 CMD    ./main --mode production
