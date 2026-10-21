@@ -1,12 +1,17 @@
 package router
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+	"zkeep/config"
+	"zkeep/global"
 	"zkeep/models"
 	"zkeep/models/user"
 
@@ -22,13 +27,35 @@ type AuthTokenClaims struct {
 
 var _secretCode string = jwtSecret()
 
-// JWT_SECRET 환경변수가 있으면 사용, 없으면 기존 키 유지 (발급된 토큰 호환)
+// JWT 서명키는 JWT_SECRET 환경변수로만 받는다. 예전 기본키는 공개 저장소에 있어 누구나 토큰을 만들 수 있었다.
+// 운영(production)에서 없으면 서버를 띄우지 않고, 개발에서는 실행마다 임의 키(재시작하면 다시 로그인)
 func jwtSecret() string {
-	if v := os.Getenv("JWT_SECRET"); v != "" {
+	if v := os.Getenv("JWT_SECRET"); len(v) >= 32 {
 		return v
+	} else if v != "" {
+		log.Fatal("JWT_SECRET 은 32자 이상이어야 합니다")
 	}
 
-	return "WkaQHd100%"
+	if config.Mode == "production" {
+		log.Fatal("JWT_SECRET 환경변수가 없습니다 (32자 이상 임의 문자열)")
+	}
+
+	buf := make([]byte, 32)
+	if _, err := rand.Read(buf); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("JWT_SECRET 미설정 — 개발용 임시 키 사용")
+
+	return hex.EncodeToString(buf)
+}
+
+// 토큰 유효기간 (JWT_TTL_HOURS, 기본 30일). 예전엔 10년이었다
+func jwtTTL() time.Duration {
+	if v, err := strconv.Atoi(os.Getenv("JWT_TTL_HOURS")); err == nil && v > 0 {
+		return time.Duration(v) * time.Hour
+	}
+
+	return 30 * 24 * time.Hour
 }
 
 var JwtAuthRequired = func(c *fiber.Ctx) error {
@@ -176,10 +203,18 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 		}
 	}
 
-	if item.Passwd != passwd {
+	ok, upgrade := global.CheckPassword(item.Passwd, passwd)
+	if !ok {
 		return map[string]interface{}{
 			"code":    "error",
 			"message": "wrong password",
+		}
+	}
+
+	// 평문으로 저장돼 있던 예전 계정은 로그인에 성공했을 때 해시로 바꿔 둔다
+	if upgrade {
+		if hash := global.HashPassword(passwd); hash != "" {
+			manager.UpdatePasswd(hash, item.Id)
 		}
 	}
 
@@ -203,7 +238,7 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 	at := AuthTokenClaims{
 		User: *item,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: jwt.At(time.Now().Add(time.Hour * 24 * 365 * 10)),
+			ExpiresAt: jwt.At(time.Now().Add(jwtTTL())),
 		},
 	}
 

@@ -12,7 +12,7 @@ def req(method, path, token=None, body=None):
         try: return e.code, json.loads(e.read() or b'{}')
         except Exception: return e.code, {}
 def login(i,p):
-    s,j=req('GET','/api/jwt?'+urllib.parse.urlencode({'loginid':i,'passwd':p})); return j.get('token')
+    s,j=req('POST','/api/jwt',body={'loginid':i,'passwd':p}); return j.get('token')
 A=login('a_admin','pw-a-admin'); AU=login('a_user','pw-a-user'); BB=login('b_admin','pw-b-admin'); R=login('root','pw-root')
 assert A and AU and BB and R, 'login failed'
 fails=0
@@ -132,7 +132,7 @@ try: code=urllib.request.urlopen(r).status
 except urllib.error.HTTPError as e: code=e.code
 check('JSON 아닌 본문 쓰기 거부', code==403, code)
 s,j=req('DELETE','/api/facility/batch',A,[None]); check('[null] 배치 거부(서버 오류 없이)', s==403, s)
-s,j=req('GET','/api/jwt?'+urllib.parse.urlencode({'loginid':'newbie','passwd':'p'})); check('승인 대기 계정 로그인 거부', j.get('code')=='error', j)
+s,j=req('POST','/api/jwt',body={'loginid':'newbie','passwd':'p'}); check('승인 대기 계정 로그인 거부', j.get('code')=='error', j)
 subprocess.run(['docker','exec',os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb'),'mariadb','-uroot','-ptest','zkeep','-e','update user_tb set u_approval=2 where u_id=2'])
 s,j=req('GET','/api/customer',AU); check('거절된 계정의 기존 토큰 거부', s==401, s)
 subprocess.run(['docker','exec',os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb'),'mariadb','-uroot','-ptest','zkeep','-e','update user_tb set u_approval=3 where u_id=2'])
@@ -140,4 +140,22 @@ codes=[]
 for i in range(12):
     s,j=req('POST','/api/signup/company',body={'company':{'name':'RL%d'%i,'companyno':'rl-%d'%i},'user':{'loginid':'rl%d'%i,'passwd':'p','name':'x'}}); codes.append(s)
 check('가입 요청 횟수 제한(시간당 10회)', 429 in codes and codes.count(200)<=10, codes)
+
+# 9. 4단계: 로그인·비밀번호 해시
+DB=os.environ.get('ZKEEP_DB_CONTAINER','zkeep-testdb')
+def sql(q): return subprocess.run(['docker','exec',DB,'mariadb','-uroot','-ptest','zkeep','-N','-e',q],capture_output=True,text=True).stdout.strip()
+s,j=req('GET','/api/jwt?loginid=a_admin&passwd=pw-a-admin'); check('GET 로그인 차단(비밀번호 URL 노출)', s==405, (s,j))
+check('평문 계정은 로그인 후 bcrypt 로 전환', sql("select left(u_passwd,4) from user_tb where u_id=1")=='$2a$')
+check('전환 후에도 같은 비밀번호로 로그인', login('a_admin','pw-a-admin') is not None)
+s,j=req('POST','/api/jwt',body={'loginid':'a_admin','passwd':'wrong'}); check('틀린 비밀번호 거부', j.get('code')=='error', j)
+check('가입 계정 비밀번호는 해시로 저장', sql("select left(u_passwd,4) from user_tb where u_loginid='c_admin'")=='$2a$')
+s,j=req('POST','/api/user',A,{'loginid':'made_by_admin','passwd':'pw-new','name':'신규','level':1,'status':1,'approval':3})
+check('관리자가 만든 계정 비밀번호 해시', sql("select left(u_passwd,4) from user_tb where u_loginid='made_by_admin'")=='$2a$')
+check('관리자가 만든 계정 로그인', login('made_by_admin','pw-new') is not None)
+s,j=req('PUT','/api/user/passwd',A,{'id':int(sql("select u_id from user_tb where u_loginid='made_by_admin'")),'passwd':'pw-changed'})
+check('비밀번호 변경도 해시·로그인', sql("select left(u_passwd,4) from user_tb where u_loginid='made_by_admin'")=='$2a$' and login('made_by_admin','pw-changed') is not None)
+import base64
+tok=login('a_admin','pw-a-admin'); payload=json.loads(base64.urlsafe_b64decode(tok.split('.')[1]+'=='))
+import time as _t
+check('토큰 유효기간 30일', 29*86400 < payload['exp']-_t.time() <= 30*86400+60, payload['exp']-_t.time())
 print('FAILS', fails)

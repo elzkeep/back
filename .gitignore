@@ -5,3 +5,9 @@ webdata
 
 # 파이썬 캐시
 __pycache__/
+
+# 비밀값 — 저장소에 올리지 않는다 (예시: .env.yml.example, model.json.example)
+.env.yml
+model.json
+certs/
+rest.org

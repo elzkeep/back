@@ -8,8 +8,10 @@ package router
 
 import (
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
+	"zkeep/global"
 	"zkeep/models"
 	"zkeep/models/company"
 	"zkeep/models/user"
@@ -94,6 +96,23 @@ func signupBody(c *fiber.Ctx) error {
 func SetSignupRouter(r *fiber.App) {
 	check := newPublicLimiter(60, 10*time.Minute)
 	create := newPublicLimiter(10, time.Hour)
+
+	// 로그인: 비밀번호를 URL(접근 로그·프록시 로그)에 남기지 않게 POST JSON 만 받는다.
+	// router.go(생성)의 GET /api/jwt 보다 먼저 등록해 GET 은 막는다
+	login := newPublicLimiter(30, 10*time.Minute)
+	r.Post("/api/jwt", login, signupBody, func(c *fiber.Ctx) error {
+		var req struct {
+			Loginid string `json:"loginid"`
+			Passwd  string `json:"passwd"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return signupError(c, "잘못된 요청입니다")
+		}
+		return c.JSON(JwtAuth(c, strings.TrimSpace(req.Loginid), req.Passwd))
+	})
+	r.Get("/api/jwt", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusMethodNotAllowed).JSON(fiber.Map{"code": "error", "message": "POST /api/jwt 로 로그인하세요"})
+	})
 
 	r.Post("/api/signup/check", check, signupBody, signupCheck)
 	r.Get("/api/signup/companies", check, signupCompanies)
@@ -242,9 +261,13 @@ func insertSignupUser(tx *sql.Tx, u signupUser, level user.Level, approval user.
 	}
 
 	userManager := models.NewUserManager(tx)
+	passwd := global.HashPassword(u.Passwd)
+	if passwd == "" {
+		return 0, errors.New("password hash error")
+	}
 	item := models.User{
 		Loginid:    u.Loginid,
-		Passwd:     u.Passwd,
+		Passwd:     passwd,
 		Name:       u.Name,
 		Email:      u.Email,
 		Tel:        u.Tel,

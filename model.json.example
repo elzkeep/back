@@ -1,9 +1,9 @@
 {
   "buildtool": "1.1",
   "database": "zkeep",
-  "user": "yuhki",
+  "user": "<DB 사용자>",
   "server": "crud.netb.co.kr",
-  "password": "dkTkfl123!",
+  "password": "<DB 비밀번호>",
   "auth": "jwt",
   "adminLevel": "3",  
   "table": [

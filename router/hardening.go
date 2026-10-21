@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"strings"
 	"sync"
+	"zkeep/global"
 	"zkeep/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -103,6 +104,58 @@ func KeepSecretsOnUpdate(c *fiber.Ctx) error {
 		if body, err := json.Marshal(obj); err == nil {
 			c.Request().SetBody(body)
 		}
+	}
+
+	return c.Next()
+}
+
+// HashPasswordOnWrite 는 사용자 생성·수정 요청의 passwd 를 bcrypt 해시로 바꾼다 (빈 값은 그대로 — 수정 시 기존 유지)
+func HashPasswordOnWrite(c *fiber.Ctx) error {
+	path := c.Path()
+	method := c.Method()
+	if !((method == fiber.MethodPost && (path == "/api/user" || path == "/api/user/batch")) ||
+		(method == fiber.MethodPut && (path == "/api/user" || path == "/api/user/passwd"))) {
+		return c.Next()
+	}
+
+	var body interface{}
+	if json.Unmarshal(c.Body(), &body) != nil {
+		return c.Next()
+	}
+
+	hashOne := func(obj map[string]interface{}) bool {
+		for k, v := range obj {
+			if strings.ToLower(k) != "passwd" {
+				continue
+			}
+			if p, _ := v.(string); p != "" {
+				hash := global.HashPassword(p)
+				if hash == "" {
+					return false
+				}
+				obj[k] = hash
+			}
+		}
+		return true
+	}
+
+	switch t := body.(type) {
+	case map[string]interface{}:
+		if !hashOne(t) {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "password error"})
+		}
+	case []interface{}:
+		for _, v := range t {
+			if obj, ok := v.(map[string]interface{}); ok && !hashOne(obj) {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "password error"})
+			}
+		}
+	default:
+		return c.Next()
+	}
+
+	if out, err := json.Marshal(body); err == nil {
+		c.Request().SetBody(out)
 	}
 
 	return c.Next()
