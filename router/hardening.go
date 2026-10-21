@@ -78,7 +78,8 @@ func SanitizeResponse(c *fiber.Ctx) error {
 }
 
 func KeepSecretsOnUpdate(c *fiber.Ctx) error {
-	if c.Method() != fiber.MethodPut || c.Path() != "/api/company" {
+	// 인증 전 단계라 토큰이 없는 요청은 DB 를 보지 않는다 (토큰 검증은 JwtAuthRequired)
+	if c.Method() != fiber.MethodPut || c.Path() != "/api/company" || !strings.HasPrefix(c.Get("Authorization"), "Bearer ") {
 		return c.Next()
 	}
 

@@ -9,6 +9,8 @@ func TestClassifyRoute(t *testing.T) {
 		want   routeShape
 	}{
 		{"GET", nil, shapeList},
+		{"HEAD", []string{"12"}, shapeRead},
+		{"HEAD", nil, shapeList},
 		{"GET", []string{"count"}, shapeList},
 		{"GET", []string{"12"}, shapeRead},
 		{"GET", []string{"get", "companybuilding", "3"}, shapeParamGet},
@@ -56,5 +58,18 @@ func TestStripSecrets(t *testing.T) {
 func TestRequiresTenantAdmin(t *testing.T) {
 	if !requiresTenantAdmin("/api/external") || !requiresTenantAdmin("/api/user/upload/a.xlsx") || requiresTenantAdmin("/api/user") || requiresTenantAdmin("/api/externalx") {
 		t.Error("requiresTenantAdmin")
+	}
+}
+
+func TestNormalizeKeys(t *testing.T) {
+	out, ok := normalizeKeys(map[string]interface{}{"Building": 1.0, "id": 2.0})
+	if !ok || out["building"] != 1.0 || out["id"] != 2.0 {
+		t.Errorf("normalize = %v", out)
+	}
+	if _, ok := normalizeKeys(map[string]interface{}{"building": 1.0, "Building": 2.0}); ok {
+		t.Error("case collision must fail")
+	}
+	if _, ok := normalizeKeys(map[string]interface{}{"\u212Aey": 1.0}); ok {
+		t.Error("non-ascii key must fail")
 	}
 }

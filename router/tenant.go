@@ -16,6 +16,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -128,9 +129,11 @@ func (s *tenantScope) ownerCondition(rule entityRule) (string, []interface{}) {
 		return rule.companyColumn() + " = ?", []interface{}{S}
 	case kindCompany:
 		// 연결·계약으로 보이는 업체는 건물주 업체뿐 — 다른 점검업체(테넌트)의 업체 정보(계좌·e지로)는 보이지 않는다
-		return "(c_id = ? or (c_type = ? and (c_id in (select cc_customer from customercompany_tb where cc_company = ?) or c_id in (select b_company from building_tb join customer_tb on cu_building = b_id where cu_company = ?))))", []interface{}{S, int(company.TypeBuilding), S, S}
+		// (예전 엑셀 일괄등록이 c_type 을 비워 둔 건물주가 있어 「점검업체가 아님」으로 본다)
+		return "(c_id = ? or (c_type <> ? and (c_id in (select cc_customer from customercompany_tb where cc_company = ?) or c_id in (select b_company from building_tb join customer_tb on cu_building = b_id where cu_company = ?))))", []interface{}{S, int(company.TypeWork), S, S}
 	case kindOwnerCompany:
-		return "(c_type = ? and not exists (select 1 from customercompany_tb where cc_customer = c_id and cc_company <> ?))", []interface{}{int(company.TypeBuilding), S}
+		// 새로 연결할 수 있는 건물주: 점검업체가 아니고, 다른 업체와 연결·계약이 없는 것
+		return "(c_type <> ? and not exists (select 1 from customercompany_tb where cc_customer = c_id and cc_company <> ?) and not exists (select 1 from building_tb join customer_tb on cu_building = b_id where b_company = c_id and cu_company <> ?))", []interface{}{int(company.TypeWork), S, S}
 	case kindBuilding:
 		return buildingCond, buildingArgs
 	case kindFacility:
@@ -152,26 +155,37 @@ func (s *tenantScope) ownedIDs(rule entityRule, ids []int64) (map[int64]bool, er
 	}
 
 	cond, args := s.ownerCondition(rule)
-	holders := make([]string, len(ids))
-	params := make([]interface{}, 0, len(ids)+len(args))
-	for i, id := range ids {
-		holders[i] = "?"
-		params = append(params, id)
-	}
-	params = append(params, args...)
 
-	query := fmt.Sprintf("select distinct %v from %v where %v in (%v) and %v", rule.idColumn(), rule.table, rule.idColumn(), strings.Join(holders, ","), cond)
-	rows, err := s.conn.Query(query, params...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int64
-		if rows.Scan(&id) == nil {
-			owned[id] = true
+	// placeholder 상한을 넘지 않게 나눠서 묻는다
+	const chunk = 500
+	for start := 0; start < len(ids); start += chunk {
+		end := start + chunk
+		if end > len(ids) {
+			end = len(ids)
 		}
+		part := ids[start:end]
+
+		holders := make([]string, len(part))
+		params := make([]interface{}, 0, len(part)+len(args))
+		for i, id := range part {
+			holders[i] = "?"
+			params = append(params, id)
+		}
+		params = append(params, args...)
+
+		query := fmt.Sprintf("select distinct %v from %v where %v in (%v) and %v", rule.idColumn(), rule.table, rule.idColumn(), strings.Join(holders, ","), cond)
+		rows, err := s.conn.Query(query, params...)
+		if err != nil {
+			log.Println("tenant owner query :", err)
+			return nil, err
+		}
+		for rows.Next() {
+			var id int64
+			if rows.Scan(&id) == nil {
+				owned[id] = true
+			}
+		}
+		rows.Close()
 	}
 
 	return owned, nil
@@ -222,6 +236,29 @@ func forbidden(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "error", "message": "forbidden"})
 }
 
+func serverError(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "database error"})
+}
+
+// normalizeKeys 는 요청 JSON 키를 소문자로 맞춘다. 핸들러는 구조체에 대소문자 무시로 바인딩하므로
+// "Building"·"Level" 같은 키가 검사를 피해 가지 않게 한다. 대소문자만 다른 키가 둘이거나 ASCII 가 아닌 키는 거부
+func normalizeKeys(obj map[string]interface{}) (map[string]interface{}, bool) {
+	out := make(map[string]interface{}, len(obj))
+	for k, v := range obj {
+		for _, r := range k {
+			if r > 127 {
+				return nil, false
+			}
+		}
+		lower := strings.ToLower(k)
+		if _, dup := out[lower]; dup {
+			return nil, false
+		}
+		out[lower] = v
+	}
+	return out, true
+}
+
 type routeShape int
 
 const (
@@ -240,7 +277,7 @@ const (
 
 func classifyRoute(method string, rest []string) routeShape {
 	switch method {
-	case fiber.MethodGet:
+	case fiber.MethodGet, fiber.MethodHead:
 		if len(rest) == 0 || (len(rest) == 1 && (rest[0] == "count" || rest[0] == "sum")) {
 			return shapeList
 		}
@@ -287,7 +324,10 @@ func tenantGuard(c *fiber.Ctx, session *models.User) error {
 		return c.Next()
 	}
 
-	u, _ := url.Parse(c.Path())
+	u, err := url.Parse(c.Path())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": "error", "message": "bad request"})
+	}
 
 	if requiresTenantAdmin(u.Path) && session.Level < user.LevelAdmin {
 		return forbidden(c)
@@ -305,6 +345,14 @@ func tenantGuard(c *fiber.Ctx, session *models.User) error {
 	}
 
 	method := c.Method()
+	switch method {
+	case fiber.MethodGet, fiber.MethodHead, fiber.MethodPost, fiber.MethodPut, fiber.MethodDelete:
+	default:
+		return forbidden(c)
+	}
+	if method == fiber.MethodHead {
+		method = fiber.MethodGet
+	}
 	shape := classifyRoute(method, rest)
 
 	switch rule.kind {
@@ -331,23 +379,32 @@ func tenantGuard(c *fiber.Ctx, session *models.User) error {
 
 	conn := sharedDB()
 	if conn == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error", "message": "database error"})
+		return serverError(c)
 	}
 
 	scope := &tenantScope{conn: conn, session: session}
 
 	switch shape {
 	case shapeList:
+		aggregate := len(rest) == 1 // count, sum
 		if rule.kind == kindTenant {
 			c.Request().URI().QueryArgs().Set("company", strconv.FormatInt(scope.company(), 10))
+			if aggregate {
+				return c.Next() // 업체가 고정된 집계 — 응답에 행이 없다
+			}
+		} else if aggregate {
+			if rest[0] == "sum" {
+				return forbidden(c) // 업체 컬럼이 없는 테이블의 합계는 전 업체 합계
+			}
+			return c.Next()
 		}
 		return scope.filterResponse(c, entity, rule)
 	case shapeRead:
 		id, _ := strconv.ParseInt(rest[0], 10, 64)
-		if !scope.ownsAll(entity, []int64{id}) {
+		if id <= 0 || !scope.ownsAll(entity, []int64{id}) {
 			return forbidden(c)
 		}
-		return c.Next()
+		return scope.filterResponse(c, entity, rule)
 	case shapeParamGet:
 		key := entity + "/" + rest[0] + "/" + rest[1]
 		value, _ := strconv.ParseInt(rest[2], 10, 64)
@@ -372,11 +429,16 @@ func tenantGuard(c *fiber.Ctx, session *models.User) error {
 }
 
 func (s *tenantScope) guardWrite(c *fiber.Ctx, entity string, rule entityRule, shape routeShape, rest []string) error {
-	var objects []map[string]interface{}
+	// 다시 쓴 JSON 본문이 그대로 핸들러에 가도록 JSON·비압축만 받는다
+	if !strings.HasPrefix(strings.ToLower(string(c.Request().Header.ContentType())), fiber.MIMEApplicationJSON) || len(c.Request().Header.Peek(fiber.HeaderContentEncoding)) > 0 {
+		return forbidden(c)
+	}
+
+	var raw []map[string]interface{}
 	batch := shape == shapeInsertBatch || shape == shapeDeleteBatch
 
 	if batch {
-		if err := json.Unmarshal(c.Body(), &objects); err != nil {
+		if err := json.Unmarshal(c.Body(), &raw); err != nil {
 			return forbidden(c)
 		}
 	} else {
@@ -384,7 +446,22 @@ func (s *tenantScope) guardWrite(c *fiber.Ctx, entity string, rule entityRule, s
 		if err := json.Unmarshal(c.Body(), &obj); err != nil || obj == nil {
 			return forbidden(c)
 		}
-		objects = []map[string]interface{}{obj}
+		raw = []map[string]interface{}{obj}
+	}
+
+	objects := make([]map[string]interface{}, 0, len(raw))
+	for _, obj := range raw {
+		if obj == nil {
+			return forbidden(c)
+		}
+		normalized, ok := normalizeKeys(obj)
+		if !ok {
+			return forbidden(c)
+		}
+		objects = append(objects, normalized)
+	}
+	if len(objects) == 0 {
+		return forbidden(c)
 	}
 
 	field := ""
@@ -472,6 +549,32 @@ func (s *tenantScope) allowUserWrite(shape routeShape, field string, objects []m
 	}
 
 	if s.isTenantAdmin() {
+		// 업체 관리자는 자기보다 높은 레벨(전체관리자 포함)의 사용자를 만들거나 고치거나 지우지 못한다
+		for _, obj := range objects {
+			if v, has := obj["level"]; has && toID(v) > int64(s.session.Level) {
+				return false
+			}
+		}
+		ids := []int64{}
+		for _, obj := range objects {
+			if id := toID(obj["id"]); id > 0 && id != s.session.Id {
+				ids = append(ids, id)
+			}
+		}
+		if len(ids) > 0 {
+			holders := strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")
+			params := []interface{}{}
+			for _, id := range ids {
+				params = append(params, id)
+			}
+			var maxLevel sql.NullInt64
+			if err := s.conn.QueryRow("select max(u_level) from user_tb where u_id in ("+holders+")", params...).Scan(&maxLevel); err != nil {
+				return false
+			}
+			if maxLevel.Valid && maxLevel.Int64 > int64(s.session.Level) {
+				return false
+			}
+		}
 		return true
 	}
 
@@ -520,6 +623,7 @@ func (s *tenantScope) filterResponse(c *fiber.Ctx, entity string, rule entityRul
 	changed := false
 	S := float64(s.company())
 
+	failed := false
 	keep := func(rows []map[string]interface{}) map[int]bool {
 		ok := map[int]bool{}
 		if rule.kind == kindTenant {
@@ -537,6 +641,7 @@ func (s *tenantScope) filterResponse(c *fiber.Ctx, entity string, rule entityRul
 		}
 		owned, err := s.ownedIDs(rule, ids)
 		if err != nil {
+			failed = true
 			return ok
 		}
 		for i, row := range rows {
@@ -575,6 +680,10 @@ func (s *tenantScope) filterResponse(c *fiber.Ctx, entity string, rule entityRul
 			result["item"] = nil
 			changed = true
 		}
+	}
+
+	if failed {
+		return serverError(c)
 	}
 
 	if changed {

@@ -9,12 +9,41 @@ package router
 import (
 	"database/sql"
 	"strings"
+	"time"
 	"zkeep/models"
 	"zkeep/models/company"
 	"zkeep/models/user"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
+
+const (
+	signupBodyLimit   = 64 * 1024
+	signupMaxLicenses = 10
+)
+
+// 공개 API 요청 횟수 제한 키 — 앞단 프록시(nginx) 뒤에서는 c.IP() 가 모두 같으므로 X-Real-IP / X-Forwarded-For 를 우선
+func clientKey(c *fiber.Ctx) string {
+	if v := strings.TrimSpace(c.Get("X-Real-IP")); v != "" {
+		return v
+	}
+	if v := c.Get("X-Forwarded-For"); v != "" {
+		return strings.TrimSpace(strings.Split(v, ",")[0])
+	}
+	return c.IP()
+}
+
+func newPublicLimiter(max int, window time.Duration) fiber.Handler {
+	return limiter.New(limiter.Config{
+		Max:          max,
+		Expiration:   window,
+		KeyGenerator: clientKey,
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"code": "error", "message": "잠시 후 다시 시도하세요"})
+		},
+	})
+}
 
 type signupUser struct {
 	Loginid    string `json:"loginid"`
@@ -55,12 +84,22 @@ func signupError(c *fiber.Ctx, message string) error {
 	return c.JSON(fiber.Map{"code": "error", "message": message})
 }
 
+func signupBody(c *fiber.Ctx) error {
+	if len(c.Body()) > signupBodyLimit {
+		return c.Status(fiber.StatusRequestEntityTooLarge).JSON(fiber.Map{"code": "error", "message": "요청이 너무 큽니다"})
+	}
+	return c.Next()
+}
+
 func SetSignupRouter(r *fiber.App) {
-	r.Post("/api/signup/check", signupCheck)
-	r.Get("/api/signup/companies", signupCompanies)
-	r.Get("/api/signup/departments", signupDepartments)
-	r.Post("/api/signup/company", signupCreateCompany)
-	r.Post("/api/signup/user", signupCreateUser)
+	check := newPublicLimiter(60, 10*time.Minute)
+	create := newPublicLimiter(10, time.Hour)
+
+	r.Post("/api/signup/check", check, signupBody, signupCheck)
+	r.Get("/api/signup/companies", check, signupCompanies)
+	r.Get("/api/signup/departments", check, signupDepartments)
+	r.Post("/api/signup/company", create, signupBody, signupCreateCompany)
+	r.Post("/api/signup/user", create, signupBody, signupCreateUser)
 }
 
 // POST /api/signup/check {loginid, email, companyno, except} → 각 값의 사용 여부(true = 이미 있음)만 돌려준다.
@@ -82,23 +121,30 @@ func signupCheck(c *fiber.Ctx) error {
 	}
 	defer conn.Close()
 
-	exists := func(query string, value string) bool {
-		if strings.TrimSpace(value) == "" {
+	failed := false
+	exists := func(query string, args ...interface{}) bool {
+		if s, _ := args[0].(string); strings.TrimSpace(s) == "" {
 			return false
 		}
 		var n int
-		if err := conn.QueryRow(query, value, req.Except).Scan(&n); err != nil {
+		if err := conn.QueryRow(query, args...).Scan(&n); err != nil {
+			failed = true
 			return false
 		}
 		return n > 0
 	}
 
-	return c.JSON(fiber.Map{
+	result := fiber.Map{
 		"code":      "ok",
-		"loginid":   exists("select count(*) from user_tb where u_loginid = ? and u_id <> ?", req.Loginid),
-		"email":     exists("select count(*) from user_tb where u_email = ? and u_id <> ?", req.Email),
-		"companyno": exists("select count(*) from company_tb where c_companyno = ? and c_id <> ?", req.Companyno),
-	})
+		"loginid":   exists("select count(*) from user_tb where u_loginid = ? and u_id <> ?", req.Loginid, req.Except),
+		"email":     exists("select count(*) from user_tb where u_email = ? and u_id <> ?", req.Email, req.Except),
+		"companyno": exists("select count(*) from company_tb where c_companyno = ? and c_type = ?", req.Companyno, int(company.TypeWork)),
+	}
+	if failed {
+		return signupError(c, "database error")
+	}
+
+	return c.JSON(result)
 }
 
 // GET /api/signup/companies → 가입할 수 있는 점검업체(id, name) 목록
@@ -172,12 +218,16 @@ func validateSignupUser(conn *sql.DB, u *signupUser) string {
 	}
 
 	var n int
-	conn.QueryRow("select count(*) from user_tb where u_loginid = ?", u.Loginid).Scan(&n)
+	if err := conn.QueryRow("select count(*) from user_tb where u_loginid = ?", u.Loginid).Scan(&n); err != nil {
+		return "database error"
+	}
 	if n > 0 {
 		return "이미 등록된 로그인아이디 입니다"
 	}
 	if u.Email != "" {
-		conn.QueryRow("select count(*) from user_tb where u_email = ?", u.Email).Scan(&n)
+		if err := conn.QueryRow("select count(*) from user_tb where u_email = ?", u.Email).Scan(&n); err != nil {
+			return "database error"
+		}
 		if n > 0 {
 			return "이미 등록된 이메일 입니다"
 		}
@@ -187,6 +237,10 @@ func validateSignupUser(conn *sql.DB, u *signupUser) string {
 }
 
 func insertSignupUser(tx *sql.Tx, u signupUser, level user.Level, approval user.Approval, licenses []signupLicense) (int64, error) {
+	if len(licenses) > signupMaxLicenses {
+		licenses = licenses[:signupMaxLicenses]
+	}
+
 	userManager := models.NewUserManager(tx)
 	item := models.User{
 		Loginid:    u.Loginid,
@@ -247,7 +301,9 @@ func signupCreateCompany(c *fiber.Ctx) error {
 		return signupError(c, msg)
 	}
 	var n int
-	conn.QueryRow("select count(*) from company_tb where c_companyno = ?", req.Company.Companyno).Scan(&n)
+	if err := conn.QueryRow("select count(*) from company_tb where c_companyno = ? and c_type = ?", req.Company.Companyno, int(company.TypeWork)).Scan(&n); err != nil {
+		return signupError(c, "database error")
+	}
 	if n > 0 {
 		return signupError(c, "이미 등록된 사업장입니다")
 	}
@@ -306,13 +362,11 @@ func signupCreateUser(c *fiber.Ctx) error {
 	}
 
 	var n int
-	conn.QueryRow("select count(*) from company_tb where c_id = ? and c_type = ?", req.User.Company, int(company.TypeWork)).Scan(&n)
-	if n == 0 {
+	if err := conn.QueryRow("select count(*) from company_tb where c_id = ? and c_type = ?", req.User.Company, int(company.TypeWork)).Scan(&n); err != nil || n == 0 {
 		return signupError(c, "소속 업체를 선택하세요")
 	}
 	if req.User.Department != 0 {
-		conn.QueryRow("select count(*) from department_tb where de_id = ? and de_company = ?", req.User.Department, req.User.Company).Scan(&n)
-		if n == 0 {
+		if err := conn.QueryRow("select count(*) from department_tb where de_id = ? and de_company = ?", req.User.Department, req.User.Company).Scan(&n); err != nil || n == 0 {
 			return signupError(c, "팀을 다시 선택하세요")
 		}
 	}
