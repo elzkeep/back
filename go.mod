@@ -20,6 +20,7 @@ require (
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/xuri/excelize/v2 v2.8.1
+	golang.org/x/image v0.14.0
 	google.golang.org/api v0.142.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -62,7 +63,6 @@ require (
 	github.com/xuri/nfp v0.0.0-20230919160717-d98342af3f05 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect

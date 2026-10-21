@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"time"
 	"zkeep/controllers"
 	"zkeep/models"
 
@@ -146,6 +147,8 @@ func (c *ReportController) Insert(item *models.Report) {
 	item.Id = id
 }
 
+var reportPdfSlots = make(chan struct{}, 2)
+
 // GET /api/report/download/:id — 점검 보고서 PDF (reportpdf.go). 다른 업체 보고서는 거부
 func (c *ReportController) Download(id int64) {
 	ctx := c.Context
@@ -159,6 +162,15 @@ func (c *ReportController) Download(id int64) {
 	report := models.NewReportManager(conn).Get(id)
 	if report == nil || (!c.IsRootadmin() && report.Company != c.Session.Company) {
 		ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"code": "error", "message": "report not found"})
+		return
+	}
+
+	// PDF 생성은 사진을 풀어 다시 인코딩해 메모리를 쓰므로 동시에 몇 건만 만든다
+	select {
+	case reportPdfSlots <- struct{}{}:
+		defer func() { <-reportPdfSlots }()
+	case <-time.After(30 * time.Second):
+		ctx.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"code": "error", "message": "잠시 후 다시 시도하세요"})
 		return
 	}
 

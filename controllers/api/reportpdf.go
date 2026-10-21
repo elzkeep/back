@@ -13,8 +13,9 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	_ "image/jpeg"
+	"image/jpeg"
 	_ "image/png"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -27,6 +28,7 @@ import (
 	"github.com/signintech/gopdf"
 	"github.com/srwiley/oksvg"
 	"github.com/srwiley/rasterx"
+	xdraw "golang.org/x/image/draw"
 )
 
 var reportTopcategoryNames = map[int]string{
@@ -150,9 +152,18 @@ func actionText(item models.Item) string {
 	return labelAt(reportActionLabels, item.Action)
 }
 
+// 사진·서명 상한 — 작은 파일이 거대한 이미지로 풀리는 압축 폭탄이나 대용량 사진으로 서버 메모리를 다 쓰지 않게
+const (
+	reportMaxImagePixels = 50_000_000 // 약 50MP (휴대폰 고화소 촬영까지)
+	reportMaxImages      = 60         // 보고서 한 건에 넣는 사진 수 (넘으면 「사진 없음」)
+	reportMaxSignature   = 512 * 1024 // 서명 SVG 바이트
+	reportImageDPIScale  = 3.0        // 상자 크기(pt)의 3배 픽셀(약 216dpi)로 줄여 넣는다
+)
+
 type reportWriter struct {
-	pdf *gopdf.GoPdf
-	y   float64
+	pdf    *gopdf.GoPdf
+	y      float64
+	images int
 }
 
 func (w *reportWriter) font(bold bool, size float64) {
@@ -248,8 +259,14 @@ func uploadPath(name string) string {
 	return filepath.Join(config.UploadPath, filepath.FromSlash(name))
 }
 
-// image 는 사진을 box 안에 비율을 지켜 넣는다. 실패하면 false
+// image 는 사진을 box 안에 비율을 지켜 넣는다. 실패하면 false.
+// 원본을 PDF 라이브러리에 바로 넘기지 않는다(gopdf 의 PNG 파서는 크기 제한 없이 압축을 푼다) —
+// 크기를 먼저 확인하고, 상자에 맞게 줄인 뒤 흰 배경 JPEG 로 다시 만들어 넣는다
 func (w *reportWriter) image(file string, x, y, boxW, boxH float64) bool {
+	if w.images >= reportMaxImages {
+		return false
+	}
+
 	p := uploadPath(file)
 	if p == "" || !fileExists(p) {
 		return false
@@ -259,9 +276,17 @@ func (w *reportWriter) image(file string, x, y, boxW, boxH float64) bool {
 	if err != nil {
 		return false
 	}
+	defer f.Close()
+
 	cfg, _, err := image.DecodeConfig(f)
-	f.Close()
-	if err != nil || cfg.Width == 0 || cfg.Height == 0 {
+	if err != nil || cfg.Width <= 0 || cfg.Height <= 0 || cfg.Width*cfg.Height > reportMaxImagePixels {
+		return false
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return false
+	}
+	src, _, err := image.Decode(f)
+	if err != nil {
 		return false
 	}
 
@@ -271,7 +296,32 @@ func (w *reportWriter) image(file string, x, y, boxW, boxH float64) bool {
 	}
 	iw, ih := float64(cfg.Width)*scale, float64(cfg.Height)*scale
 
-	return w.pdf.Image(p, x+(boxW-iw)/2, y+(boxH-ih)/2, &gopdf.Rect{W: iw, H: ih}) == nil
+	pw, ph := int(iw*reportImageDPIScale), int(ih*reportImageDPIScale)
+	if pw > cfg.Width || ph > cfg.Height {
+		pw, ph = cfg.Width, cfg.Height
+	}
+	if pw < 1 {
+		pw = 1
+	}
+	if ph < 1 {
+		ph = 1
+	}
+
+	dst := image.NewRGBA(image.Rect(0, 0, pw, ph))
+	draw.Draw(dst, dst.Bounds(), &image.Uniform{C: color.White}, image.Point{}, draw.Src)
+	xdraw.ApproxBiLinear.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
+
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, dst, &jpeg.Options{Quality: 82}); err != nil {
+		return false
+	}
+	holder, err := gopdf.ImageHolderByBytes(buf.Bytes())
+	if err != nil {
+		return false
+	}
+
+	w.images++
+	return w.pdf.ImageByHolder(holder, x+(boxW-iw)/2, y+(boxH-ih)/2, &gopdf.Rect{W: iw, H: ih}) == nil
 }
 
 // signature 는 SVG 서명을 box 안에 그린다
@@ -284,6 +334,9 @@ func (w *reportWriter) signature(svg string, x, y, boxW, boxH float64) bool {
 }
 
 func rasterizeSignature(svg string, width, height int) (image.Image, error) {
+	if len(svg) > reportMaxSignature {
+		return nil, errors.New("signature too large")
+	}
 	if !strings.Contains(svg, "<svg") {
 		return nil, errors.New("not svg")
 	}

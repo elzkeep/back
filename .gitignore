@@ -2,3 +2,6 @@ bin
 web
 dist
 webdata
+
+# 파이썬 캐시
+__pycache__/
